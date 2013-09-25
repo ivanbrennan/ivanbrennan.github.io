@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[My Octopress Blog]]></title>
-  <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
+  <title><![CDATA[Category: greetings | My Octopress Blog]]></title>
+  <link href="http://ivanbrennan.github.io/blog/categories/greetings/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
   <updated>2013-09-24T23:45:36-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
