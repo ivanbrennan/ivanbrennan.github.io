@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[My Octopress Blog]]></title>
-  <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
+  <title><![CDATA[Category: ruby | My Octopress Blog]]></title>
+  <link href="http://ivanbrennan.github.io/blog/categories/ruby/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
   <updated>2013-10-08T09:00:08-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
@@ -86,15 +86,6 @@ end
 </code></pre>
 
 <p>Not all the tastiest combinations, but that&rsquo;s how <code>#zip</code> works, it just matches up the elements in whatever order they appeared in the original arrays.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[hello world]]></title>
-    <link href="http://ivanbrennan.github.io/blog/2013/09/24/hello-world/"/>
-    <updated>2013-09-24T20:18:00-04:00</updated>
-    <id>http://ivanbrennan.github.io/blog/2013/09/24/hello-world</id>
-    <content type="html"><![CDATA[<p>Hello world, are you out there? I&rsquo;m just testing my octopress skills.</p>
 ]]></content>
   </entry>
   
