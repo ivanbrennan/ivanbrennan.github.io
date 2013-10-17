@@ -4,7 +4,7 @@
   <title><![CDATA[Category: modules | Detached Head]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/modules/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2013-10-17T12:57:51-04:00</updated>
+  <updated>2013-10-17T13:00:16-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -18,8 +18,9 @@
     <link href="http://ivanbrennan.github.io/blog/2013/10/17/modules/"/>
     <updated>2013-10-17T12:50:00-04:00</updated>
     <id>http://ivanbrennan.github.io/blog/2013/10/17/modules</id>
-    <content type="html"><![CDATA[<p><img src="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg" title="Pterosaur, bat, and bird wings" alt="convergent evolution of wings" />
-Both bats and pterosaurs can (or <em>could</em> fly). Each evolved a similar <a href="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg">wing</a> independently. This is an example of <a href="http://en.wikipedia.org/wiki/Convergent_evolution">convergent evolution</a>, the &ldquo;independent evolution of similar features in species of different lineages&rdquo;.</p>
+    <content type="html"><![CDATA[<p><img src="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg" title="Pterosaur, bat, and bird wings" alt="convergent evolution of wings" /></p>
+
+<p>Both bats and pterosaurs can (or <em>could</em> fly). Each evolved a similar <a href="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg">wing</a> independently. This is an example of <a href="http://en.wikipedia.org/wiki/Convergent_evolution">convergent evolution</a>, the &ldquo;independent evolution of similar features in species of different lineages&rdquo;.</p>
 
 <p>In Ruby, classes allow you to group objects into a lineage, with child classes inheriting features from their ancestors. Modules, on the other hand, allow unrelated classes to share functionality. Let&rsquo;s consider flight:</p>
 
