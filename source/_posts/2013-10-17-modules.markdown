@@ -1,0 +1,65 @@
+---
+layout: post
+title: "modules vs classes vs pterosaurs"
+date: 2013-10-17 12:50
+comments: true
+categories: ruby modules
+---
+Both bats and pterosaurs can (or [em]could[/em] fly). Each evolved a similar [wing](http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg) independently. This is an example of [convergent evolution](http://en.wikipedia.org/wiki/Convergent_evolution), the "independent evolution of similar features in species of different lineages".
+
+In Ruby, classes allow you to group objects into a lineage, with child classes inheriting features from their ancestors. Modules, on the other hand, allow unrelated classes to share functionality. Let's consider flight:
+
+``` ruby
+module Wing
+  def fly
+    puts "A #{self.class} is flying."
+  end
+end
+
+class Bat
+  include Wing
+
+  def echolocate
+    puts "A #{self.class} can see in the dark."
+  end
+end
+
+class Pterosaur
+  include Wing
+end
+
+bert = Bat.new
+bert.fly
+# => "A Bat is flying."
+
+phil = Pterosaur.new
+phil.fly
+# => "A Pterosaur is flying."
+```
+
+Contrast this with sharing functionality via classes. Let's create a couple species of bat by defining descendents of the Bat class:
+
+``` ruby
+class SeminoleBat < Bat
+end
+
+class CanyonBat < Bat
+end
+
+sam = SeminoleBat.new
+sam.echolocate
+# => "A SeminoleBat can see in the dark."
+
+cammy = CanyonBat.new
+cammy.echolocate
+# => "A CanyonBat can see in the dark."
+```
+
+Both `sam` and `cammy` can echolocate, since both `SeminoleBat` and `CanyonBat` are descendents of the `Bat` class. Features defined in `Bat` are inherited by `SeminoleBat` and `CanyonBat`. But `Pterosaur` is unrelated to `Bat`, and cannot echolocate.
+
+``` ruby
+phil.echolocate
+# => NoMethodError: undefined method `echolocate' for #<Pterosaur:0x007fdcbc082eb0>
+```
+
+There is a bit more to Modules (they can be used to define class methods as well as instance methods, and they can include constants), but the general purpose they serve is to enable sharing functionality across unrelated classes.
