@@ -1,24 +1,25 @@
 ---
 layout: post
-title: "modules vs classes vs pterosaurs"
+title: "modules, classes, pterosaurs"
 date: 2013-10-17 12:50
 comments: true
 categories: ruby modules
 ---
-![convergent evolution of wings](http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg "Pterosaur, bat, and bird wings")
-Both bats and pterosaurs can (or *could* fly). Each evolved a similar [wing](http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg) independently. This is an example of [convergent evolution](http://en.wikipedia.org/wiki/Convergent_evolution), the "independent evolution of similar features in species of different lineages".
+{% img illustration http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg 'wings' 'Pterosaur, bat, and bird wings' %}
 
-In Ruby, classes allow you to group objects into a lineage, with child classes inheriting features from their ancestors. Modules, on the other hand, allow unrelated classes to share functionality. Let's consider flight:
+Both bats and pterosaurs can (or *could* fly), but each evolved this ability independent of one another. This is an example of [convergent evolution](http://en.wikipedia.org/wiki/Convergent_evolution), the *"independent evolution of similar features in species of different lineages"*. The wings of bats, pterosaurs, and birds, the body-plans of marsupials and mammals, and the eyes of vertebrates and cephalopods are some examples of this phenomena. 
+
+In Ruby, classes allow you to group objects into a lineage, using inheritence to pass features from a parent class to all it's descendants. But we often want to share functionality across unrelated classes. Modules allow us to do just that. Let's consider the case of pterosaurs and bats.
 
 ``` ruby
-module Wing
+module Flyable
   def fly
     puts "A #{self.class} is flying."
   end
 end
 
 class Bat
-  include Wing
+  include Flyable
 
   def echolocate
     puts "A #{self.class} can see in the dark."
@@ -26,7 +27,7 @@ class Bat
 end
 
 class Pterosaur
-  include Wing
+  include Flyable
 end
 
 bert = Bat.new
@@ -38,7 +39,7 @@ phil.fly
 # => "A Pterosaur is flying."
 ```
 
-Contrast this with sharing functionality via classes. Let's create a couple species of bat by defining descendents of the Bat class:
+Contrast this with sharing functionality via classes. Let's create a couple species of bat by defining descendants of the Bat class:
 
 ``` ruby
 class SeminoleBat < Bat
@@ -56,7 +57,7 @@ cammy.echolocate
 # => "A CanyonBat can see in the dark."
 ```
 
-Both `sam` and `cammy` can echolocate, since both `SeminoleBat` and `CanyonBat` are descendents of the `Bat` class. Features defined in `Bat` are inherited by `SeminoleBat` and `CanyonBat`. But `Pterosaur` is unrelated to `Bat`, and cannot echolocate.
+Both `sam` and `cammy` can echolocate, since both `SeminoleBat` and `CanyonBat` are descendants of the `Bat` class. Features defined in `Bat` are inherited by `SeminoleBat` and `CanyonBat`. But `Pterosaur` is unrelated to `Bat`, and cannot echolocate.
 
 ``` ruby
 phil.echolocate
