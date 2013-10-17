@@ -1,9 +1,9 @@
 ---
 layout: post
-title: "Enumerables"
+title: "enumerables"
 date: 2013-10-08 08:38
 comments: true
-categories: ruby
+categories: ruby array enumerable methods
 ---
 Ruby provides lots of built-in methods for working with arrays, but at first glance, some seem to be missing from the [Array documentation](http://ruby-doc.org/core-2.0.0/Array.html). A good example is the `#find` method, which returns the first element satisfying the criteria you provide in a block.
 
