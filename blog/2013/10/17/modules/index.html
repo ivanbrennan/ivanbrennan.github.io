@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>modules vs classes vs pterosaurs - Detached Head</title>
+  <title>modules, classes, pterosaurs - detached head</title>
   <meta name="author" content="Ivan Brennan">
 
   
-  <meta name="description" content="Both bats and pterosaurs can (or could fly). Each evolved a similar wing independently. This is an example of convergent evolution, the &ldquo; &hellip;">
+  <meta name="description" content="Both bats and pterosaurs can (or could fly), but each evolved this ability independent of one another. This is an example of convergent evolution, &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://ivanbrennan.github.io/blog/2013/10/17/modules">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Detached Head" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="detached head" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,7 +36,7 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Detached Head</a></h1>
+  <h1><a href="/">detached head</a></h1>
   
 </hgroup>
 
@@ -66,7 +66,7 @@
   
   <header>
     
-      <h1 class="entry-title">Modules vs Classes vs Pterosaurs</h1>
+      <h1 class="entry-title">Modules, Classes, Pterosaurs</h1>
     
     
       <p class="meta">
@@ -89,11 +89,11 @@
   </header>
 
 
-<div class="entry-content"><p><img src="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg" title="Pterosaur, bat, and bird wings" alt="convergent evolution of wings" /></p>
+<div class="entry-content"><p><img class="illustration" src="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg" title="wings" alt="Pterosaur, bat, and bird wings"></p>
 
-<p>Both bats and pterosaurs can (or <em>could</em> fly). Each evolved a similar <a href="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg">wing</a> independently. This is an example of <a href="http://en.wikipedia.org/wiki/Convergent_evolution">convergent evolution</a>, the &ldquo;independent evolution of similar features in species of different lineages&rdquo;.</p>
+<p>Both bats and pterosaurs can (or <em>could</em> fly), but each evolved this ability independent of one another. This is an example of <a href="http://en.wikipedia.org/wiki/Convergent_evolution">convergent evolution</a>, the <em>&ldquo;independent evolution of similar features in species of different lineages&rdquo;</em>. The wings of bats, pterosaurs, and birds, the body-plans of marsupials and mammals, and the eyes of vertebrates and cephalopods are some examples of this phenomena.</p>
 
-<p>In Ruby, classes allow you to group objects into a lineage, with child classes inheriting features from their ancestors. Modules, on the other hand, allow unrelated classes to share functionality. Let&rsquo;s consider flight:</p>
+<p>In Ruby, classes allow you to group objects into a lineage, using inheritence to pass features from a parent class to all it&rsquo;s descendants. But we often want to share functionality across unrelated classes. Modules allow us to do just that. Let&rsquo;s consider the case of pterosaurs and bats.</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -120,14 +120,14 @@
 <span class='line-number'>23</span>
 <span class='line-number'>24</span>
 <span class='line-number'>25</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">Wing</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">Flyable</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">fly</span>
 </span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;A </span><span class="si">#{</span><span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="si">}</span><span class="s2"> is flying.&quot;</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
 </span><span class='line'>
 </span><span class='line'><span class="k">class</span> <span class="nc">Bat</span>
-</span><span class='line'>  <span class="kp">include</span> <span class="no">Wing</span>
+</span><span class='line'>  <span class="kp">include</span> <span class="no">Flyable</span>
 </span><span class='line'>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">echolocate</span>
 </span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;A </span><span class="si">#{</span><span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="si">}</span><span class="s2"> can see in the dark.&quot;</span>
@@ -135,7 +135,7 @@
 </span><span class='line'><span class="k">end</span>
 </span><span class='line'>
 </span><span class='line'><span class="k">class</span> <span class="nc">Pterosaur</span>
-</span><span class='line'>  <span class="kp">include</span> <span class="no">Wing</span>
+</span><span class='line'>  <span class="kp">include</span> <span class="no">Flyable</span>
 </span><span class='line'><span class="k">end</span>
 </span><span class='line'>
 </span><span class='line'><span class="n">bert</span> <span class="o">=</span> <span class="no">Bat</span><span class="o">.</span><span class="n">new</span>
@@ -148,7 +148,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Contrast this with sharing functionality via classes. Let&rsquo;s create a couple species of bat by defining descendents of the Bat class:</p>
+<p>Contrast this with sharing functionality via classes. Let&rsquo;s create a couple species of bat by defining descendants of the Bat class:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -179,7 +179,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Both <code>sam</code> and <code>cammy</code> can echolocate, since both <code>SeminoleBat</code> and <code>CanyonBat</code> are descendents of the <code>Bat</code> class. Features defined in <code>Bat</code> are inherited by <code>SeminoleBat</code> and <code>CanyonBat</code>. But <code>Pterosaur</code> is unrelated to <code>Bat</code>, and cannot echolocate.</p>
+<p>Both <code>sam</code> and <code>cammy</code> can echolocate, since both <code>SeminoleBat</code> and <code>CanyonBat</code> are descendants of the <code>Bat</code> class. Features defined in <code>Bat</code> are inherited by <code>SeminoleBat</code> and <code>CanyonBat</code>. But <code>Pterosaur</code> is unrelated to <code>Bat</code>, and cannot echolocate.</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -250,7 +250,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2013/10/17/modules/">Modules vs Classes vs Pterosaurs</a>
+        <a href="/blog/2013/10/17/modules/">Modules, Classes, Pterosaurs</a>
       </li>
     
       <li class="post">
@@ -262,6 +262,35 @@
       </li>
     
   </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/ivanbrennan">@ivanbrennan</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'ivanbrennan',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
 </section>
 
 

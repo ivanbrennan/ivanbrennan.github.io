@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Category: array - Detached Head</title>
+  <title>Category: array - detached head</title>
   <meta name="author" content="Ivan Brennan">
 
   
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://ivanbrennan.github.ioblog/categories/array">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Detached Head" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="detached head" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,7 +36,7 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">Detached Head</a></h1>
+  <h1><a href="/">detached head</a></h1>
   
 </hgroup>
 
@@ -102,7 +102,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2013/10/17/modules/">Modules vs Classes vs Pterosaurs</a>
+        <a href="/blog/2013/10/17/modules/">Modules, Classes, Pterosaurs</a>
       </li>
     
       <li class="post">
@@ -114,6 +114,35 @@
       </li>
     
   </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/ivanbrennan">@ivanbrennan</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'ivanbrennan',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
 </section>
 
 

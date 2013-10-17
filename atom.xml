@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Detached Head]]></title>
+  <title><![CDATA[detached head]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2013-10-17T13:00:16-04:00</updated>
+  <updated>2013-10-17T14:34:14-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -14,15 +14,15 @@
 
   
   <entry>
-    <title type="html"><![CDATA[modules vs classes vs pterosaurs]]></title>
+    <title type="html"><![CDATA[modules, classes, pterosaurs]]></title>
     <link href="http://ivanbrennan.github.io/blog/2013/10/17/modules/"/>
     <updated>2013-10-17T12:50:00-04:00</updated>
     <id>http://ivanbrennan.github.io/blog/2013/10/17/modules</id>
-    <content type="html"><![CDATA[<p><img src="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg" title="Pterosaur, bat, and bird wings" alt="convergent evolution of wings" /></p>
+    <content type="html"><![CDATA[<p><img class="illustration" src="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg" title="wings" alt="Pterosaur, bat, and bird wings"></p>
 
-<p>Both bats and pterosaurs can (or <em>could</em> fly). Each evolved a similar <a href="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg">wing</a> independently. This is an example of <a href="http://en.wikipedia.org/wiki/Convergent_evolution">convergent evolution</a>, the &ldquo;independent evolution of similar features in species of different lineages&rdquo;.</p>
+<p>Both bats and pterosaurs can (or <em>could</em> fly), but each evolved this ability independent of one another. This is an example of <a href="http://en.wikipedia.org/wiki/Convergent_evolution">convergent evolution</a>, the <em>&ldquo;independent evolution of similar features in species of different lineages&rdquo;</em>. The wings of bats, pterosaurs, and birds, the body-plans of marsupials and mammals, and the eyes of vertebrates and cephalopods are some examples of this phenomena.</p>
 
-<p>In Ruby, classes allow you to group objects into a lineage, with child classes inheriting features from their ancestors. Modules, on the other hand, allow unrelated classes to share functionality. Let&rsquo;s consider flight:</p>
+<p>In Ruby, classes allow you to group objects into a lineage, using inheritence to pass features from a parent class to all it&rsquo;s descendants. But we often want to share functionality across unrelated classes. Modules allow us to do just that. Let&rsquo;s consider the case of pterosaurs and bats.</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -49,14 +49,14 @@
 <span class='line-number'>23</span>
 <span class='line-number'>24</span>
 <span class='line-number'>25</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">Wing</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">Flyable</span>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">fly</span>
 </span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;A </span><span class="si">#{</span><span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="si">}</span><span class="s2"> is flying.&quot;</span>
 </span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
 </span><span class='line'>
 </span><span class='line'><span class="k">class</span> <span class="nc">Bat</span>
-</span><span class='line'>  <span class="kp">include</span> <span class="no">Wing</span>
+</span><span class='line'>  <span class="kp">include</span> <span class="no">Flyable</span>
 </span><span class='line'>
 </span><span class='line'>  <span class="k">def</span> <span class="nf">echolocate</span>
 </span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;A </span><span class="si">#{</span><span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="si">}</span><span class="s2"> can see in the dark.&quot;</span>
@@ -64,7 +64,7 @@
 </span><span class='line'><span class="k">end</span>
 </span><span class='line'>
 </span><span class='line'><span class="k">class</span> <span class="nc">Pterosaur</span>
-</span><span class='line'>  <span class="kp">include</span> <span class="no">Wing</span>
+</span><span class='line'>  <span class="kp">include</span> <span class="no">Flyable</span>
 </span><span class='line'><span class="k">end</span>
 </span><span class='line'>
 </span><span class='line'><span class="n">bert</span> <span class="o">=</span> <span class="no">Bat</span><span class="o">.</span><span class="n">new</span>
@@ -77,7 +77,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Contrast this with sharing functionality via classes. Let&rsquo;s create a couple species of bat by defining descendents of the Bat class:</p>
+<p>Contrast this with sharing functionality via classes. Let&rsquo;s create a couple species of bat by defining descendants of the Bat class:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -108,7 +108,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Both <code>sam</code> and <code>cammy</code> can echolocate, since both <code>SeminoleBat</code> and <code>CanyonBat</code> are descendents of the <code>Bat</code> class. Features defined in <code>Bat</code> are inherited by <code>SeminoleBat</code> and <code>CanyonBat</code>. But <code>Pterosaur</code> is unrelated to <code>Bat</code>, and cannot echolocate.</p>
+<p>Both <code>sam</code> and <code>cammy</code> can echolocate, since both <code>SeminoleBat</code> and <code>CanyonBat</code> are descendants of the <code>Bat</code> class. Features defined in <code>Bat</code> are inherited by <code>SeminoleBat</code> and <code>CanyonBat</code>. But <code>Pterosaur</code> is unrelated to <code>Bat</code>, and cannot echolocate.</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>

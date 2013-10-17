@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: modules | Detached Head]]></title>
+  <title><![CDATA[Category: modules | detached head]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/modules/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2013-10-17T13:00:16-04:00</updated>
+  <updated>2013-10-17T14:34:14-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -14,18 +14,18 @@
 
   
   <entry>
-    <title type="html"><![CDATA[modules vs classes vs pterosaurs]]></title>
+    <title type="html"><![CDATA[modules, classes, pterosaurs]]></title>
     <link href="http://ivanbrennan.github.io/blog/2013/10/17/modules/"/>
     <updated>2013-10-17T12:50:00-04:00</updated>
     <id>http://ivanbrennan.github.io/blog/2013/10/17/modules</id>
-    <content type="html"><![CDATA[<p><img src="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg" title="Pterosaur, bat, and bird wings" alt="convergent evolution of wings" /></p>
+    <content type="html"><![CDATA[<p><img class="illustration <a" src="href="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg">http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg</a>" title="&lsquo;wings&rsquo; &lsquo;Pterosaur, bat, and bird wings&rsquo;" ></p>
 
-<p>Both bats and pterosaurs can (or <em>could</em> fly). Each evolved a similar <a href="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg">wing</a> independently. This is an example of <a href="http://en.wikipedia.org/wiki/Convergent_evolution">convergent evolution</a>, the &ldquo;independent evolution of similar features in species of different lineages&rdquo;.</p>
+<p>Both bats and pterosaurs can (or <em>could</em> fly), but each evolved this ability independent of one another. This is an example of <a href="http://en.wikipedia.org/wiki/Convergent_evolution">convergent evolution</a>, the <em>&ldquo;independent evolution of similar features in species of different lineages&rdquo;</em>. The wings of bats, pterosaurs, and birds, the body-plans of marsupials and mammals, and the eyes of vertebrates and cephalopods are some examples of this phenomena.</p>
 
-<p>In Ruby, classes allow you to group objects into a lineage, with child classes inheriting features from their ancestors. Modules, on the other hand, allow unrelated classes to share functionality. Let&rsquo;s consider flight:</p>
+<p>In Ruby, classes allow you to group objects into a lineage, using inheritence to pass features from a parent class to all it&rsquo;s descendants. But we often want to share functionality across unrelated classes. Modules allow us to do just that. Let&rsquo;s consider the case of pterosaurs and bats.</p>
 
 <p>``` ruby
-module Wing
+module Flyable
   def fly</p>
 
 <pre><code>puts "A #{self.class} is flying."
@@ -35,7 +35,7 @@ module Wing
 end</p>
 
 <p>class Bat
-  include Wing</p>
+  include Flyable</p>
 
 <p>  def echolocate</p>
 
@@ -46,7 +46,7 @@ end</p>
 end</p>
 
 <p>class Pterosaur
-  include Wing
+  include Flyable
 end</p>
 
 <p>bert = Bat.new
@@ -61,7 +61,7 @@ phil.fly</p>
 
 <p>```</p>
 
-<p>Contrast this with sharing functionality via classes. Let&rsquo;s create a couple species of bat by defining descendents of the Bat class:</p>
+<p>Contrast this with sharing functionality via classes. Let&rsquo;s create a couple species of bat by defining descendants of the Bat class:</p>
 
 <p>``` ruby
 class SeminoleBat &lt; Bat
@@ -82,7 +82,7 @@ cammy.echolocate</p>
 
 <p>```</p>
 
-<p>Both <code>sam</code> and <code>cammy</code> can echolocate, since both <code>SeminoleBat</code> and <code>CanyonBat</code> are descendents of the <code>Bat</code> class. Features defined in <code>Bat</code> are inherited by <code>SeminoleBat</code> and <code>CanyonBat</code>. But <code>Pterosaur</code> is unrelated to <code>Bat</code>, and cannot echolocate.</p>
+<p>Both <code>sam</code> and <code>cammy</code> can echolocate, since both <code>SeminoleBat</code> and <code>CanyonBat</code> are descendants of the <code>Bat</code> class. Features defined in <code>Bat</code> are inherited by <code>SeminoleBat</code> and <code>CanyonBat</code>. But <code>Pterosaur</code> is unrelated to <code>Bat</code>, and cannot echolocate.</p>
 
 <p>``` ruby
 phil.echolocate</p>
