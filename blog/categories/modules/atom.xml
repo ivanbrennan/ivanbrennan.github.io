@@ -4,7 +4,7 @@
   <title><![CDATA[Category: modules | detached head]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/modules/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2013-10-17T14:34:14-04:00</updated>
+  <updated>2013-10-17T14:59:20-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -20,9 +20,9 @@
     <id>http://ivanbrennan.github.io/blog/2013/10/17/modules</id>
     <content type="html"><![CDATA[<p><img class="illustration <a" src="href="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg">http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg</a>" title="&lsquo;wings&rsquo; &lsquo;Pterosaur, bat, and bird wings&rsquo;" ></p>
 
-<p>Both bats and pterosaurs can (or <em>could</em> fly), but each evolved this ability independent of one another. This is an example of <a href="http://en.wikipedia.org/wiki/Convergent_evolution">convergent evolution</a>, the <em>&ldquo;independent evolution of similar features in species of different lineages&rdquo;</em>. The wings of bats, pterosaurs, and birds, the body-plans of marsupials and mammals, and the eyes of vertebrates and cephalopods are some examples of this phenomena.</p>
+<p>Pterosaurs, bats, and birds can/could all fly, but each evolved the ability independent of the others. This is an example of <a href="http://en.wikipedia.org/wiki/Convergent_evolution">convergent evolution</a>, the <em>&ldquo;independent evolution of similar features in species of different lineages&rdquo;</em>. The wings of bats, pterosaurs, and birds, the body-plans of marsupials and mammals, and the eyes of vertebrates and cephalopods are just some examples of this.</p>
 
-<p>In Ruby, classes allow you to group objects into a lineage, using inheritence to pass features from a parent class to all it&rsquo;s descendants. But we often want to share functionality across unrelated classes. Modules allow us to do just that. Let&rsquo;s consider the case of pterosaurs and bats.</p>
+<p>In Ruby, classes allow objects to be arranged into a hierarchical lineage, using inheritence to pass features from a parent class to all it&rsquo;s descendants. But we often want to share functionality across unrelated classes. Modules allow us to do just that. Let&rsquo;s consider the case of pterosaurs and bats.</p>
 
 <p>``` ruby
 module Flyable
@@ -75,14 +75,14 @@ sam.echolocate</p>
 
 <h1>=> &ldquo;A SeminoleBat can see in the dark.&rdquo;</h1>
 
-<p>cammy = CanyonBat.new
-cammy.echolocate</p>
+<p>candice = CanyonBat.new
+candice.echolocate</p>
 
 <h1>=> &ldquo;A CanyonBat can see in the dark.&rdquo;</h1>
 
 <p>```</p>
 
-<p>Both <code>sam</code> and <code>cammy</code> can echolocate, since both <code>SeminoleBat</code> and <code>CanyonBat</code> are descendants of the <code>Bat</code> class. Features defined in <code>Bat</code> are inherited by <code>SeminoleBat</code> and <code>CanyonBat</code>. But <code>Pterosaur</code> is unrelated to <code>Bat</code>, and cannot echolocate.</p>
+<p>Both <code>sam</code> and <code>candice</code> can echolocate, since both <code>SeminoleBat</code> and <code>CanyonBat</code> are descendants of the <code>Bat</code> class. Features defined in <code>Bat</code> are inherited by <code>SeminoleBat</code> and <code>CanyonBat</code>. But <code>Pterosaur</code> is unrelated to <code>Bat</code>, and cannot echolocate.</p>
 
 <p>``` ruby
 phil.echolocate</p>
