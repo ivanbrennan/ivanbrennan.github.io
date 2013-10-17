@@ -4,7 +4,7 @@
   <title><![CDATA[Detached Head]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2013-10-16T23:53:11-04:00</updated>
+  <updated>2013-10-17T00:09:16-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -20,70 +20,120 @@
     <id>http://ivanbrennan.github.io/blog/2013/10/08/enumerables</id>
     <content type="html"><![CDATA[<p>Ruby provides lots of built-in methods for working with arrays, but at first glance, some seem to be missing from the <a href="http://ruby-doc.org/core-2.0.0/Array.html">Array documentation</a>. A good example is the <code>#find</code> method, which returns the first element satisfying the criteria you provide in a block.</p>
 
-<pre><code>[1,2,3,4,5].find { |x| x &gt; 2 }  # =&gt; 3
-</code></pre>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="o">].</span><span class="n">find</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="p">}</span>  <span class="c1"># =&gt; 3</span>
+</span></code></pre></td></tr></table></div></figure>
+
 
 <p>The fact is, these methods are mixed in from the <a href="http://ruby-doc.org/core-2.0.0/Enumerable.html">Enumerable module</a>, a collection of useful methods that can be applied to Arrays, Ranges, and Sets, among other Ruby classes. A simple check <code>whatever_object.is_a? Enumerable</code> will confirm whether whatever object your dealing with includes the Enumerable module.</p>
 
 <p>One of these methods, <code>#zip</code>, has been calling out to me since I started learning Ruby. It seemed like an alchemical process that merged arrays in a mysterious way. In practice, it simply merges the corresponding elements of each array, returning an array of arrays.</p>
 
-<pre><code>i_got   = ["I got the style",
-           "I got the clothes",
-           "I got the bread",
-           "I got the winda"]
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">i_got</span>   <span class="o">=</span> <span class="o">[</span><span class="s2">&quot;I got the style&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;I got the clothes&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;I got the bread&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;I got the winda&quot;</span><span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">but_not</span> <span class="o">=</span> <span class="o">[</span><span class="s2">&quot;but not the grace&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;but not the face&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;but not the butter&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;but not the shutter&quot;</span><span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">i_got</span><span class="o">.</span><span class="n">zip</span><span class="p">(</span><span class="n">but_not</span><span class="p">)</span>
+</span><span class='line'><span class="c1"># =&gt; [[&quot;I got the style&quot;, &quot;but not the grace&quot;],</span>
+</span><span class='line'><span class="c1">#     [&quot;I got the clothes&quot;, &quot;but not the face&quot;],</span>
+</span><span class='line'><span class="c1">#     [&quot;I got the bread&quot;, &quot;but not the butter&quot;],</span>
+</span><span class='line'><span class="c1">#     [&quot;I got the winda&quot;, &quot;but not the shutter&quot;]]</span>
+</span></code></pre></td></tr></table></div></figure>
 
-but_not = ["but not the grace",
-           "but not the face",
-           "but not the butter",
-           "but not the shutter"]
-
-i_got.zip(but_not)
-# =&gt; [["I got the style", "but not the grace"],
-      ["I got the clothes", "but not the face"],
-      ["I got the bread", "but not the butter"],
-      ["I got the winda", "but not the shutter"]]
-</code></pre>
 
 <p>Pretty nice, but why don&rsquo;t we do <a href="http://www.youtube.com/watch?v=ByomIJf5n9w">Tom Waits</a> proud and join those phrases?</p>
 
-<pre><code>i_got.zip(but_not) {|got_not| got_not.join(", ")}
-# =&gt; nil
-</code></pre>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">i_got</span><span class="o">.</span><span class="n">zip</span><span class="p">(</span><span class="n">but_not</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">got_not</span><span class="o">|</span> <span class="n">got_not</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="p">)}</span>
+</span><span class='line'><span class="c1"># =&gt; nil</span>
+</span></code></pre></td></tr></table></div></figure>
+
 
 <p>Whoops! Passing <code>#zip</code> a block will invoke the block for each output array, but return <code>nil</code> at the end of the day. A call <code>#map</code> to will do the trick.</p>
 
-<pre><code>i_got.zip(but_not).map {|got_not| got_not.join(", ")}
-# =&gt; ["I got the style, but not the grace",
-      "I got the clothes, but not the face",
-      "I got the bread, but not the butter",
-      "I got the winda, but not the shutter"]
-</code></pre>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">i_got</span><span class="o">.</span><span class="n">zip</span><span class="p">(</span><span class="n">but_not</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">got_not</span><span class="o">|</span> <span class="n">got_not</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="p">)}</span>
+</span><span class='line'><span class="c1"># =&gt; [&quot;I got the style, but not the grace&quot;,</span>
+</span><span class='line'><span class="c1">#     &quot;I got the clothes, but not the face&quot;,</span>
+</span><span class='line'><span class="c1">#     &quot;I got the bread, but not the butter&quot;,</span>
+</span><span class='line'><span class="c1">#     &quot;I got the winda, but not the shutter&quot;]</span>
+</span></code></pre></td></tr></table></div></figure>
+
 
 <p>In fact, <code>#zip</code> can merge any number of arrays&hellip;</p>
 
-<pre><code>bagels  = ["sesame bagel",
-           "plain bagel",
-           "poppy bagel",
-           "pumpernickel bagel"]
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">bagels</span>  <span class="o">=</span> <span class="o">[</span><span class="s2">&quot;sesame bagel&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;plain bagel&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;poppy bagel&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;pumpernickel bagel&quot;</span><span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">spreads</span> <span class="o">=</span> <span class="o">[</span><span class="s2">&quot;cream cheese&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;butter&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;peanut-butter&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;jam&quot;</span><span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">extras</span>  <span class="o">=</span> <span class="o">[</span><span class="s2">&quot;lox&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;tomato&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;chives&quot;</span><span class="p">,</span>
+</span><span class='line'>           <span class="s2">&quot;lettuce&quot;</span><span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">bagels</span><span class="o">.</span><span class="n">zip</span><span class="p">(</span><span class="n">spreads</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">bgl</span><span class="p">,</span> <span class="n">spd</span><span class="p">,</span> <span class="n">xtr</span><span class="o">|</span>
+</span><span class='line'>  <span class="s2">&quot;</span><span class="si">#{</span><span class="n">bgl</span><span class="si">}</span><span class="s2"> with </span><span class="si">#{</span><span class="n">spd</span><span class="si">}</span><span class="s2"> and </span><span class="si">#{</span><span class="n">xtr</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'><span class="c1"># =&gt; [&quot;sesame bagel with cream cheese and lox&quot;,</span>
+</span><span class='line'><span class="c1">#     &quot;plain bagel with butter and tomato&quot;,</span>
+</span><span class='line'><span class="c1">#     &quot;poppy bagel with peanut-butter and chives&quot;,</span>
+</span><span class='line'><span class="c1">#     &quot;pumpernickel bagel with jam and lettuce&quot;]</span>
+</span></code></pre></td></tr></table></div></figure>
 
-spreads = ["cream cheese",
-           "butter",
-           "peanut-butter",
-           "jam"]
-
-extras  = ["lox",
-           "tomato",
-           "chives",
-           "lettuce"]
-
-bagels.zip(spreads, extras).map do |bgl, spd, xtr|
-  "#{bgl} with #{spd} and #{xtr}"
-end
-# =&gt; ["sesame bagel with cream cheese and lox",
-      "plain bagel with butter and tomato",
-      "poppy bagel with peanut-butter and chives",
-      "pumpernickel bagel with jam and lettuce"]
-</code></pre>
 
 <p>Not all the tastiest combinations, but that&rsquo;s how <code>#zip</code> works, it just matches up the elements in whatever order they appeared in the original arrays.</p>
 ]]></content>

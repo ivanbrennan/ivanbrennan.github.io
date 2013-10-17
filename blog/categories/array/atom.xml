@@ -4,7 +4,7 @@
   <title><![CDATA[Category: array | Detached Head]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/array/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2013-10-16T23:53:11-04:00</updated>
+  <updated>2013-10-17T00:09:16-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -18,74 +18,96 @@
     <link href="http://ivanbrennan.github.io/blog/2013/10/08/enumerables/"/>
     <updated>2013-10-08T08:38:00-04:00</updated>
     <id>http://ivanbrennan.github.io/blog/2013/10/08/enumerables</id>
-    <content type="html"><![CDATA[<p>Ruby provides lots of built-in methods for working with arrays, but at first glance, some seem to be missing from the <a href="http://ruby-doc.org/core-2.0.0/Array.html">Array documentation</a>. A good example is the <code>#find</code> method, which returns the first element satisfying the criteria you provide in a block.</p>
+    <content type="html"><![CDATA[<p>Ruby provides lots of built-in methods for working with arrays, but at first glance, some seem to be missing from the <a href="http://ruby-doc.org/core-2.0.0/Array.html">Array documentation</a>. A good example is the <code>#find</code> method, which returns the first element satisfying the criteria you provide in a block.
+<code>ruby
+[1,2,3,4,5].find { |x| x &gt; 2 }  # =&gt; 3
+</code>
+The fact is, these methods are mixed in from the <a href="http://ruby-doc.org/core-2.0.0/Enumerable.html">Enumerable module</a>, a collection of useful methods that can be applied to Arrays, Ranges, and Sets, among other Ruby classes. A simple check <code>whatever_object.is_a? Enumerable</code> will confirm whether whatever object your dealing with includes the Enumerable module.</p>
 
-<pre><code>[1,2,3,4,5].find { |x| x &gt; 2 }  # =&gt; 3
+<p>One of these methods, <code>#zip</code>, has been calling out to me since I started learning Ruby. It seemed like an alchemical process that merged arrays in a mysterious way. In practice, it simply merges the corresponding elements of each array, returning an array of arrays.
+``` ruby
+i_got   = [&ldquo;I got the style&rdquo;,</p>
+
+<pre><code>       "I got the clothes",
+       "I got the bread",
+       "I got the winda"]
 </code></pre>
 
-<p>The fact is, these methods are mixed in from the <a href="http://ruby-doc.org/core-2.0.0/Enumerable.html">Enumerable module</a>, a collection of useful methods that can be applied to Arrays, Ranges, and Sets, among other Ruby classes. A simple check <code>whatever_object.is_a? Enumerable</code> will confirm whether whatever object your dealing with includes the Enumerable module.</p>
+<p>but_not = [&ldquo;but not the grace&rdquo;,</p>
 
-<p>One of these methods, <code>#zip</code>, has been calling out to me since I started learning Ruby. It seemed like an alchemical process that merged arrays in a mysterious way. In practice, it simply merges the corresponding elements of each array, returning an array of arrays.</p>
-
-<pre><code>i_got   = ["I got the style",
-           "I got the clothes",
-           "I got the bread",
-           "I got the winda"]
-
-but_not = ["but not the grace",
-           "but not the face",
-           "but not the butter",
-           "but not the shutter"]
-
-i_got.zip(but_not)
-# =&gt; [["I got the style", "but not the grace"],
-      ["I got the clothes", "but not the face"],
-      ["I got the bread", "but not the butter"],
-      ["I got the winda", "but not the shutter"]]
+<pre><code>       "but not the face",
+       "but not the butter",
+       "but not the shutter"]
 </code></pre>
 
-<p>Pretty nice, but why don&rsquo;t we do <a href="http://www.youtube.com/watch?v=ByomIJf5n9w">Tom Waits</a> proud and join those phrases?</p>
+<p>i_got.zip(but_not)</p>
 
-<pre><code>i_got.zip(but_not) {|got_not| got_not.join(", ")}
-# =&gt; nil
+<h1>=> [[&ldquo;I got the style&rdquo;, &ldquo;but not the grace&rdquo;],</h1>
+
+<h1>[&ldquo;I got the clothes&rdquo;, &ldquo;but not the face&rdquo;],</h1>
+
+<h1>[&ldquo;I got the bread&rdquo;, &ldquo;but not the butter&rdquo;],</h1>
+
+<h1>[&ldquo;I got the winda&rdquo;, &ldquo;but not the shutter&rdquo;]]</h1>
+
+<p><code>
+Pretty nice, but why don't we do [Tom Waits](http://www.youtube.com/watch?v=ByomIJf5n9w) proud and join those phrases?
+</code> ruby
+i_got.zip(but_not) {|got_not| got_not.join(&ldquo;, &rdquo;)}</p>
+
+<h1>=> nil</h1>
+
+<p><code>
+Whoops! Passing `#zip` a block will invoke the block for each output array, but return `nil` at the end of the day. A call `#map` to will do the trick.
+</code> ruby
+i_got.zip(but_not).map {|got_not| got_not.join(&ldquo;, &rdquo;)}</p>
+
+<h1>=> [&ldquo;I got the style, but not the grace&rdquo;,</h1>
+
+<h1>&ldquo;I got the clothes, but not the face&rdquo;,</h1>
+
+<h1>&ldquo;I got the bread, but not the butter&rdquo;,</h1>
+
+<h1>&ldquo;I got the winda, but not the shutter&rdquo;]</h1>
+
+<p><code>
+In fact, `#zip` can merge any number of arrays...
+</code> ruby
+bagels  = [&ldquo;sesame bagel&rdquo;,</p>
+
+<pre><code>       "plain bagel",
+       "poppy bagel",
+       "pumpernickel bagel"]
 </code></pre>
 
-<p>Whoops! Passing <code>#zip</code> a block will invoke the block for each output array, but return <code>nil</code> at the end of the day. A call <code>#map</code> to will do the trick.</p>
+<p>spreads = [&ldquo;cream cheese&rdquo;,</p>
 
-<pre><code>i_got.zip(but_not).map {|got_not| got_not.join(", ")}
-# =&gt; ["I got the style, but not the grace",
-      "I got the clothes, but not the face",
-      "I got the bread, but not the butter",
-      "I got the winda, but not the shutter"]
+<pre><code>       "butter",
+       "peanut-butter",
+       "jam"]
 </code></pre>
 
-<p>In fact, <code>#zip</code> can merge any number of arrays&hellip;</p>
+<p>extras  = [&ldquo;lox&rdquo;,</p>
 
-<pre><code>bagels  = ["sesame bagel",
-           "plain bagel",
-           "poppy bagel",
-           "pumpernickel bagel"]
-
-spreads = ["cream cheese",
-           "butter",
-           "peanut-butter",
-           "jam"]
-
-extras  = ["lox",
-           "tomato",
-           "chives",
-           "lettuce"]
-
-bagels.zip(spreads, extras).map do |bgl, spd, xtr|
-  "#{bgl} with #{spd} and #{xtr}"
-end
-# =&gt; ["sesame bagel with cream cheese and lox",
-      "plain bagel with butter and tomato",
-      "poppy bagel with peanut-butter and chives",
-      "pumpernickel bagel with jam and lettuce"]
+<pre><code>       "tomato",
+       "chives",
+       "lettuce"]
 </code></pre>
 
-<p>Not all the tastiest combinations, but that&rsquo;s how <code>#zip</code> works, it just matches up the elements in whatever order they appeared in the original arrays.</p>
+<p>bagels.zip(spreads, extras).map do |bgl, spd, xtr|
+  &ldquo;#{bgl} with #{spd} and #{xtr}&rdquo;
+end</p>
+
+<h1>=> [&ldquo;sesame bagel with cream cheese and lox&rdquo;,</h1>
+
+<h1>&ldquo;plain bagel with butter and tomato&rdquo;,</h1>
+
+<h1>&ldquo;poppy bagel with peanut-butter and chives&rdquo;,</h1>
+
+<h1>&ldquo;pumpernickel bagel with jam and lettuce&rdquo;]</h1>
+
+<p><code>``
+Not all the tastiest combinations, but that's how</code>#zip` works, it just matches up the elements in whatever order they appeared in the original arrays.</p>
 ]]></content>
   </entry>
   
