@@ -11,7 +11,7 @@ Pterosaurs, bats, and birds can/could all fly, but each evolved the ability inde
 
 In Ruby, classes allow objects to be arranged into a hierarchical lineage, using inheritence to pass features from a parent class to all it's descendants. But we often want to share functionality across unrelated classes. Modules allow us to do just that. Let's consider the case of pterosaurs and bats.
 
-``` ruby
+{% highlight ruby %}}
 module Flyable
   def fly
     puts "A #{self.class} is flying."
@@ -37,8 +37,7 @@ bert.fly
 phil = Pterosaur.new
 phil.fly
 # => "A Pterosaur is flying."
-```
-
+{% end highlight %}
 Contrast this with sharing functionality via classes. Let's create a couple species of bat by defining descendants of the Bat class:
 
 ``` ruby
