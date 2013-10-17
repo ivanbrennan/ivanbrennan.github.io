@@ -7,9 +7,9 @@ categories: ruby modules
 ---
 {% img illustration http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg 'wings' 'Pterosaur, bat, and bird wings' %}
 
-Both bats and pterosaurs can (or *could* fly), but each evolved this ability independent of one another. This is an example of [convergent evolution](http://en.wikipedia.org/wiki/Convergent_evolution), the *"independent evolution of similar features in species of different lineages"*. The wings of bats, pterosaurs, and birds, the body-plans of marsupials and mammals, and the eyes of vertebrates and cephalopods are some examples of this phenomena. 
+Pterosaurs, bats, and birds can/could all fly, but each evolved the ability independent of the others. This is an example of [convergent evolution](http://en.wikipedia.org/wiki/Convergent_evolution), the *"independent evolution of similar features in species of different lineages"*. The wings of bats, pterosaurs, and birds, the body-plans of marsupials and mammals, and the eyes of vertebrates and cephalopods are just some examples of this.
 
-In Ruby, classes allow you to group objects into a lineage, using inheritence to pass features from a parent class to all it's descendants. But we often want to share functionality across unrelated classes. Modules allow us to do just that. Let's consider the case of pterosaurs and bats.
+In Ruby, classes allow objects to be arranged into a hierarchical lineage, using inheritence to pass features from a parent class to all it's descendants. But we often want to share functionality across unrelated classes. Modules allow us to do just that. Let's consider the case of pterosaurs and bats.
 
 ``` ruby
 module Flyable
@@ -52,12 +52,12 @@ sam = SeminoleBat.new
 sam.echolocate
 # => "A SeminoleBat can see in the dark."
 
-cammy = CanyonBat.new
-cammy.echolocate
+candice = CanyonBat.new
+candice.echolocate
 # => "A CanyonBat can see in the dark."
 ```
 
-Both `sam` and `cammy` can echolocate, since both `SeminoleBat` and `CanyonBat` are descendants of the `Bat` class. Features defined in `Bat` are inherited by `SeminoleBat` and `CanyonBat`. But `Pterosaur` is unrelated to `Bat`, and cannot echolocate.
+Both `sam` and `candice` can echolocate, since both `SeminoleBat` and `CanyonBat` are descendants of the `Bat` class. Features defined in `Bat` are inherited by `SeminoleBat` and `CanyonBat`. But `Pterosaur` is unrelated to `Bat`, and cannot echolocate.
 
 ``` ruby
 phil.echolocate
