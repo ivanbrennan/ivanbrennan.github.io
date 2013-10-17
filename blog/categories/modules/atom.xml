@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: modules | Detached Head]]></title>
+  <link href="http://ivanbrennan.github.io/blog/categories/modules/atom.xml" rel="self"/>
+  <link href="http://ivanbrennan.github.io/"/>
+  <updated>2013-10-17T12:52:06-04:00</updated>
+  <id>http://ivanbrennan.github.io/</id>
+  <author>
+    <name><![CDATA[Ivan Brennan]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[modules vs classes vs pterosaurs]]></title>
+    <link href="http://ivanbrennan.github.io/blog/2013/10/17/modules/"/>
+    <updated>2013-10-17T12:50:00-04:00</updated>
+    <id>http://ivanbrennan.github.io/blog/2013/10/17/modules</id>
+    <content type="html"><![CDATA[<p>Both bats and pterosaurs can (or [em]could[/em] fly). Each evolved a similar <a href="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg">wing</a> independently. This is an example of <a href="http://en.wikipedia.org/wiki/Convergent_evolution">convergent evolution</a>, the &ldquo;independent evolution of similar features in species of different lineages&rdquo;.</p>
+
+<p>In Ruby, classes allow you to group objects into a lineage, with child classes inheriting features from their ancestors. Modules, on the other hand, allow unrelated classes to share functionality. Let&rsquo;s consider flight:</p>
+
+<p>``` ruby
+module Wing
+  def fly</p>
+
+<pre><code>puts "A #{self.class} is flying."
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>class Bat
+  include Wing</p>
+
+<p>  def echolocate</p>
+
+<pre><code>puts "A #{self.class} can see in the dark."
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>class Pterosaur
+  include Wing
+end</p>
+
+<p>bert = Bat.new
+bert.fly</p>
+
+<h1>=> &ldquo;A Bat is flying.&rdquo;</h1>
+
+<p>phil = Pterosaur.new
+phil.fly</p>
+
+<h1>=> &ldquo;A Pterosaur is flying.&rdquo;</h1>
+
+<p>```</p>
+
+<p>Contrast this with sharing functionality via classes. Let&rsquo;s create a couple species of bat by defining descendents of the Bat class:</p>
+
+<p>``` ruby
+class SeminoleBat &lt; Bat
+end</p>
+
+<p>class CanyonBat &lt; Bat
+end</p>
+
+<p>sam = SeminoleBat.new
+sam.echolocate</p>
+
+<h1>=> &ldquo;A SeminoleBat can see in the dark.&rdquo;</h1>
+
+<p>cammy = CanyonBat.new
+cammy.echolocate</p>
+
+<h1>=> &ldquo;A CanyonBat can see in the dark.&rdquo;</h1>
+
+<p>```</p>
+
+<p>Both <code>sam</code> and <code>cammy</code> can echolocate, since both <code>SeminoleBat</code> and <code>CanyonBat</code> are descendents of the <code>Bat</code> class. Features defined in <code>Bat</code> are inherited by <code>SeminoleBat</code> and <code>CanyonBat</code>. But <code>Pterosaur</code> is unrelated to <code>Bat</code>, and cannot echolocate.</p>
+
+<p>``` ruby
+phil.echolocate</p>
+
+<h1>=> NoMethodError: undefined method `echolocate' for #&lt;Pterosaur:0x007fdcbc082eb0></h1>
+
+<p>```</p>
+
+<p>There is a bit more to Modules (they can be used to define class methods as well as instance methods, and they can include constants), but the general purpose they serve is to enable sharing functionality across unrelated classes.</p>
+]]></content>
+  </entry>
+  
+</feed>
