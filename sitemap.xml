@@ -2,19 +2,23 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>http://ivanbrennan.github.io/blog/2013/09/24/hello-world/</loc>
-        <lastmod>2013-09-24T23:44:40-04:00</lastmod>
+        <lastmod>2013-10-12T21:12:47-04:00</lastmod>
     </url>
     <url>
         <loc>http://ivanbrennan.github.io/blog/2013/10/08/enumerables/</loc>
-        <lastmod>2013-10-08T08:59:36-04:00</lastmod>
+        <lastmod>2013-10-12T21:13:06-04:00</lastmod>
+    </url>
+    <url>
+        <loc>http://ivanbrennan.github.io/blog/2013/10/12/roman-numerals/</loc>
+        <lastmod>2013-10-15T09:12:31-04:00</lastmod>
     </url>
     <url>
         <loc>http://ivanbrennan.github.io/blog/archives/</loc>
-        <lastmod>2013-10-08T08:59:36-04:00</lastmod>
+        <lastmod>2013-10-15T09:12:31-04:00</lastmod>
     </url>
     <url>
         <loc>http://ivanbrennan.github.io/</loc>
-        <lastmod>2013-10-08T08:59:36-04:00</lastmod>
+        <lastmod>2013-10-15T09:12:31-04:00</lastmod>
     </url>
     <url>
         <loc>http://ivanbrennan.github.io/robots.txt</loc>
