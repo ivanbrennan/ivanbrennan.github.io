@@ -1,5 +1,8 @@
 // This File is imported last, and will override other styles in the cascade
 // Add styles here to make changes without digging in too much
+
+$page-bg: #171f2b !default;
+
 img.illustration {
     float: left;
     margin: 0 20px 20px 0;
@@ -8,3 +11,8 @@ img.illustration {
 .code {
   clear: both;
 }
+
+.highlight {
+  border: 1px solid #e0e0e0 !important;
+}
+
