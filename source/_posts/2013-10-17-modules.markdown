@@ -44,13 +44,13 @@ Contrast this with sharing functionality via classes. Let's create a couple spec
 ``` ruby
 class SeminoleBat < Bat
   def migrate
-    puts "A #{self.class} migrates in the winter."
+    puts "A #{self.class} is migrating."
   end
 end
 
 class CanyonBat < Bat
   def hibernate
-    puts "A #{self.class} hibernates in the winter."
+    puts "A #{self.class} hibernating."
   end
 end
 
