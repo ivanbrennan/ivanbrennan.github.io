@@ -168,28 +168,79 @@
 <span class='line-number'>11</span>
 <span class='line-number'>12</span>
 <span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
 </pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">SeminoleBat</span> <span class="o">&lt;</span> <span class="no">Bat</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">migrate</span>
+</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;A </span><span class="si">#{</span><span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="si">}</span><span class="s2"> migrates in the winter.&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
 </span><span class='line'>
 </span><span class='line'><span class="k">class</span> <span class="nc">CanyonBat</span> <span class="o">&lt;</span> <span class="no">Bat</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">hibernate</span>
+</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;A </span><span class="si">#{</span><span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="si">}</span><span class="s2"> hibernates in the winter.&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
 </span><span class='line'><span class="k">end</span>
 </span><span class='line'>
 </span><span class='line'><span class="n">sam</span> <span class="o">=</span> <span class="no">SeminoleBat</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'><span class="n">sam</span><span class="o">.</span><span class="n">fly</span>
+</span><span class='line'><span class="c1"># =&gt; &quot;A SeminoleBat is flying.&quot;</span>
 </span><span class='line'><span class="n">sam</span><span class="o">.</span><span class="n">echolocate</span>
 </span><span class='line'><span class="c1"># =&gt; &quot;A SeminoleBat can see in the dark.&quot;</span>
 </span><span class='line'>
 </span><span class='line'><span class="n">candice</span> <span class="o">=</span> <span class="no">CanyonBat</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'><span class="n">candice</span><span class="o">.</span><span class="n">fly</span>
+</span><span class='line'><span class="c1"># =&gt; &quot;A CanyonBat is flying.&quot;</span>
 </span><span class='line'><span class="n">candice</span><span class="o">.</span><span class="n">echolocate</span>
 </span><span class='line'><span class="c1"># =&gt; &quot;A CanyonBat can see in the dark.&quot;</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Both <code>sam</code> and <code>candice</code> can echolocate, since both <code>SeminoleBat</code> and <code>CanyonBat</code> are descendants of the <code>Bat</code> class. Features defined in <code>Bat</code> are inherited by <code>SeminoleBat</code> and <code>CanyonBat</code>. But <code>Pterosaur</code> is unrelated to <code>Bat</code>, and cannot echolocate.</p>
+<p>Both <code>sam</code> and <code>candice</code> can echolocate and fly, since the <code>SeminoleBat</code> and <code>CanyonBat</code> classes are descendants of the <code>Bat</code> class. The <code>SeminoleBat</code> and <code>CanyonBat</code> classes also each have unique functionality that distinguishes them, and is not shared between their two classes. Only instances of <code>SeminoleBat</code> can migrate, and only those of <code>CanyonBat</code> can hibernate.</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">sam</span><span class="o">.</span><span class="n">migrate</span>
+</span><span class='line'><span class="c1"># =&gt; &quot;A SeminoleBat is migrating.&quot;</span>
+</span><span class='line'><span class="n">sam</span><span class="o">.</span><span class="n">hibernate</span>
+</span><span class='line'><span class="c1"># =&gt; NoMethodError: undefined method `hibernate&#39; for #&lt;SeminoleBat:0x007f88fe006228&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">candice</span><span class="o">.</span><span class="n">hibernate</span>
+</span><span class='line'><span class="c1"># =&gt; &quot;A CanyonBat is hibernating.&quot;</span>
+</span><span class='line'><span class="n">candice</span><span class="o">.</span><span class="n">migrate</span>
+</span><span class='line'><span class="c1"># =&gt; NoMethodError: undefined method `migrate&#39; for #&lt;CanyonBat:0x007f88fe807c38&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And while <code>Pterosaur</code>, like <code>Bat</code> and all its descendants, can fly, it can&rsquo;t echolocate, migrate, or hibernate.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
 </pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">phil</span><span class="o">.</span><span class="n">echolocate</span>
 </span><span class='line'><span class="c1"># =&gt; NoMethodError: undefined method `echolocate&#39; for #&lt;Pterosaur:0x007fdcbc082eb0&gt;</span>
+</span><span class='line'><span class="n">phil</span><span class="o">.</span><span class="n">migrate</span>
+</span><span class='line'><span class="c1"># =&gt; NoMethodError: undefined method `migrate&#39; for #&lt;Pterosaur:0x007fdcbc082eb0&gt;</span>
+</span><span class='line'><span class="n">phil</span><span class="o">.</span><span class="n">hibernate</span>
+</span><span class='line'><span class="c1"># =&gt; NoMethodError: undefined method `hibernate&#39; for #&lt;Pterosaur:0x007fdcbc082eb0&gt;</span>
 </span></code></pre></td></tr></table></div></figure>
 
 

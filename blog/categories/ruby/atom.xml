@@ -4,7 +4,7 @@
   <title><![CDATA[Category: ruby | detached head]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/ruby/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2013-10-17T23:15:05-04:00</updated>
+  <updated>2013-10-18T07:22:26-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -65,29 +65,78 @@ phil.fly</p>
 
 <p>``` ruby
 class SeminoleBat &lt; Bat
+  def migrate</p>
+
+<pre><code>puts "A #{self.class} migrates in the winter."
+</code></pre>
+
+<p>  end
 end</p>
 
 <p>class CanyonBat &lt; Bat
+  def hibernate</p>
+
+<pre><code>puts "A #{self.class} hibernates in the winter."
+</code></pre>
+
+<p>  end
 end</p>
 
 <p>sam = SeminoleBat.new
-sam.echolocate</p>
+sam.fly</p>
+
+<h1>=> &ldquo;A SeminoleBat is flying.&rdquo;</h1>
+
+<p>sam.echolocate</p>
 
 <h1>=> &ldquo;A SeminoleBat can see in the dark.&rdquo;</h1>
 
 <p>candice = CanyonBat.new
-candice.echolocate</p>
+candice.fly</p>
+
+<h1>=> &ldquo;A CanyonBat is flying.&rdquo;</h1>
+
+<p>candice.echolocate</p>
 
 <h1>=> &ldquo;A CanyonBat can see in the dark.&rdquo;</h1>
 
 <p>```</p>
 
-<p>Both <code>sam</code> and <code>candice</code> can echolocate, since both <code>SeminoleBat</code> and <code>CanyonBat</code> are descendants of the <code>Bat</code> class. Features defined in <code>Bat</code> are inherited by <code>SeminoleBat</code> and <code>CanyonBat</code>. But <code>Pterosaur</code> is unrelated to <code>Bat</code>, and cannot echolocate.</p>
+<p>Both <code>sam</code> and <code>candice</code> can echolocate and fly, since the <code>SeminoleBat</code> and <code>CanyonBat</code> classes are descendants of the <code>Bat</code> class. The <code>SeminoleBat</code> and <code>CanyonBat</code> classes also each have unique functionality that distinguishes them, and is not shared between their two classes. Only instances of <code>SeminoleBat</code> can migrate, and only those of <code>CanyonBat</code> can hibernate.</p>
+
+<p>``` ruby
+sam.migrate</p>
+
+<h1>=> &ldquo;A SeminoleBat is migrating.&rdquo;</h1>
+
+<p>sam.hibernate</p>
+
+<h1>=> NoMethodError: undefined method `hibernate' for #&lt;SeminoleBat:0x007f88fe006228></h1>
+
+<p>candice.hibernate</p>
+
+<h1>=> &ldquo;A CanyonBat is hibernating.&rdquo;</h1>
+
+<p>candice.migrate</p>
+
+<h1>=> NoMethodError: undefined method `migrate' for #&lt;CanyonBat:0x007f88fe807c38></h1>
+
+<p>```</p>
+
+<p>And while <code>Pterosaur</code>, like <code>Bat</code> and all its descendants, can fly, it can&rsquo;t echolocate, migrate, or hibernate.</p>
 
 <p>``` ruby
 phil.echolocate</p>
 
 <h1>=> NoMethodError: undefined method `echolocate' for #&lt;Pterosaur:0x007fdcbc082eb0></h1>
+
+<p>phil.migrate</p>
+
+<h1>=> NoMethodError: undefined method `migrate' for #&lt;Pterosaur:0x007fdcbc082eb0></h1>
+
+<p>phil.hibernate</p>
+
+<h1>=> NoMethodError: undefined method `hibernate' for #&lt;Pterosaur:0x007fdcbc082eb0></h1>
 
 <p>```</p>
 
