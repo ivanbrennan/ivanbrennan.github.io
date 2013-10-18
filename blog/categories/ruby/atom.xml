@@ -4,7 +4,7 @@
   <title><![CDATA[Category: ruby | detached head]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/ruby/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2013-10-18T07:22:26-04:00</updated>
+  <updated>2013-10-18T07:24:42-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -67,7 +67,7 @@ phil.fly</p>
 class SeminoleBat &lt; Bat
   def migrate</p>
 
-<pre><code>puts "A #{self.class} migrates in the winter."
+<pre><code>puts "A #{self.class} is migrating."
 </code></pre>
 
 <p>  end
@@ -76,7 +76,7 @@ end</p>
 <p>class CanyonBat &lt; Bat
   def hibernate</p>
 
-<pre><code>puts "A #{self.class} hibernates in the winter."
+<pre><code>puts "A #{self.class} hibernating."
 </code></pre>
 
 <p>  end
