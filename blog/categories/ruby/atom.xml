@@ -4,7 +4,7 @@
   <title><![CDATA[Category: ruby | detached head]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/ruby/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2013-10-23T23:02:28-04:00</updated>
+  <updated>2013-10-23T23:06:41-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -18,7 +18,7 @@
     <link href="http://ivanbrennan.github.io/blog/2013/10/23/yield-the-weird/"/>
     <updated>2013-10-23T22:32:00-04:00</updated>
     <id>http://ivanbrennan.github.io/blog/2013/10/23/yield-the-weird</id>
-    <content type="html"><![CDATA[<p>I&rsquo;m messing around with <code>yield</code> to get a handle on the various closures in Ruby, and I built this weird <code>rotomap</code> method that returns a rotated-and-mapped array. Sure, you could use the built-in <code>#rotate</code> and <code>#map</code> methods, but what fun is that?
+    <content type="html"><![CDATA[<p>I&rsquo;m messing around with <code>yield</code> to get a handle on the various closures in Ruby, and built a method that returns a rotated-mapped array. You could of course do this with the built-in <code>#rotate</code> and <code>#map</code> methods, but what fun would that be?
 ```ruby
 def rotomap(arr, n)
   arr.each_index.inject([]) do |roto, i|</p>
@@ -34,7 +34,7 @@ end</p>
 <h1>=> [&ldquo;20 merge requests&rdquo;, &ldquo;25 merge requests&rdquo;, &ldquo;5 merge requests&rdquo;, &ldquo;10 merge requests&rdquo;, &ldquo;15 merge requests&rdquo;]</h1>
 
 <p>```
-Kind of a silly method, but it was fun to slap together.</p>
+I don&rsquo;t imagine there&rsquo;s a lot of rotomapping going on out there, but it was fun to slap this together.</p>
 ]]></content>
   </entry>
   
