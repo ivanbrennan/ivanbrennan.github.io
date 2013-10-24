@@ -9,7 +9,7 @@
   <meta name="author" content="Ivan Brennan">
 
   
-  <meta name="description" content="Pterosaurs, bats, and birds can/could all fly, but each evolved the ability independent of the others. This is an example of convergent evolution, &hellip;">
+  <meta name="description" content="I&rsquo;m messing around with yield to get a handle on the various closures in Ruby, and I built this weird rotomap method that returns a rotated-and &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +65,63 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/10/23/yield-the-weird/">Yield the Weird</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-23T22:32:00-04:00" pubdate data-updated="true">Oct 23<span>rd</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I&rsquo;m messing around with <code>yield</code> to get a handle on the various closures in Ruby, and I built this weird <code>rotomap</code> method that returns a rotated-and-mapped array. Sure, you could use the built-in <code>#rotate</code> and <code>#map</code> methods, but what fun is that?</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">rotomap</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">arr</span><span class="o">.</span><span class="n">each_index</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="o">[]</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">roto</span><span class="p">,</span> <span class="n">i</span><span class="o">|</span>
+</span><span class='line'>    <span class="n">roto</span> <span class="o">&lt;&lt;</span> <span class="k">yield</span><span class="p">(</span> <span class="n">arr</span><span class="o">[</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">n</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">count</span><span class="p">)</span> <span class="o">]</span> <span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">rotomap</span><span class="p">(</span><span class="o">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="o">]</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">x</span> <span class="o">*</span> <span class="mi">5</span><span class="si">}</span><span class="s2"> merge requests&quot;</span> <span class="p">}</span>
+</span><span class='line'><span class="c1"># =&gt; [&quot;20 merge requests&quot;, &quot;25 merge requests&quot;, &quot;5 merge requests&quot;, &quot;10 merge requests&quot;, &quot;15 merge requests&quot;]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Kind of a silly method, but it was fun to slap together.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -452,6 +509,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/10/23/yield-the-weird/">Yield the Weird</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2013/10/17/modules/">Modules, Classes, Pterosaurs</a>

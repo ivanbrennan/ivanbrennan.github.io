@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: yield | detached head]]></title>
+  <link href="http://ivanbrennan.github.io/blog/categories/yield/atom.xml" rel="self"/>
+  <link href="http://ivanbrennan.github.io/"/>
+  <updated>2013-10-23T23:02:28-04:00</updated>
+  <id>http://ivanbrennan.github.io/</id>
+  <author>
+    <name><![CDATA[Ivan Brennan]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[yield the weird]]></title>
+    <link href="http://ivanbrennan.github.io/blog/2013/10/23/yield-the-weird/"/>
+    <updated>2013-10-23T22:32:00-04:00</updated>
+    <id>http://ivanbrennan.github.io/blog/2013/10/23/yield-the-weird</id>
+    <content type="html"><![CDATA[<p>I&rsquo;m messing around with <code>yield</code> to get a handle on the various closures in Ruby, and I built this weird <code>rotomap</code> method that returns a rotated-and-mapped array. Sure, you could use the built-in <code>#rotate</code> and <code>#map</code> methods, but what fun is that?
+```ruby
+def rotomap(arr, n)
+  arr.each_index.inject([]) do |roto, i|</p>
+
+<pre><code>roto &lt;&lt; yield( arr[ (i+n) % (arr.count) ] )
+</code></pre>
+
+<p>  end
+end</p>
+
+<p>rotomap([1,2,3,4,5], 3) { |x| &ldquo;#{x * 5} merge requests&rdquo; }</p>
+
+<h1>=> [&ldquo;20 merge requests&rdquo;, &ldquo;25 merge requests&rdquo;, &ldquo;5 merge requests&rdquo;, &ldquo;10 merge requests&rdquo;, &ldquo;15 merge requests&rdquo;]</h1>
+
+<p>```
+Kind of a silly method, but it was fun to slap together.</p>
+]]></content>
+  </entry>
+  
+</feed>
