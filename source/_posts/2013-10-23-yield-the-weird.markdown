@@ -5,7 +5,7 @@ date: 2013-10-23 22:32
 comments: true
 categories: ruby yield
 ---
-I'm messing around with `yield` to get a handle on the various closures in Ruby, and I built a method that returns a rotated-mapped array. You could of course do this with the built-in `#rotate` and `#map` methods, but what fun would that be?
+I'm messing around with `yield` to get a handle on the various closures in Ruby, and I built a method that returns a rotated-mapped array. You could of course do this with the built-in `#rotate` and `#map` methods, but what fun is that?
 ```ruby
 def rotomap(arr, n)
   arr.each_index.inject([]) do |roto, i|
