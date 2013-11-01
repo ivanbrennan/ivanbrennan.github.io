@@ -4,7 +4,7 @@
   <title><![CDATA[Category: dotfiles | detached head]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/dotfiles/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2013-11-01T10:06:41-04:00</updated>
+  <updated>2013-11-01T10:14:20-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -28,7 +28,7 @@
 
 <p>It&rsquo;s a subtle distinction, but one that carries real repercussions. If we move or delete the original <code>~/goblet</code>, then the hard link <code>~/Stockpile/golden_cup</code> will still point at the same data (moving another pointer has no effect on this pointer), but the symlink will be broken. It just pointed at the original path (<code>~/goblet</code>), and now it&rsquo;s connection to the memory location is severed.</p>
 
-<p>Despite this apparent disadvantage to symlinks, the general consensus seems to be to prefer them for linking to dotfiles. They do offer the ability to link across separate filesystems, and besides, I&rsquo;m not planning on moving them from the directory I created in my <code>dotfiles</code> directory, so I went ahead and made some soft links to serve my purpose.</p>
+<p>Despite this apparent disadvantage to symlinks, the general consensus seems to be to prefer them for linking to dotfiles. They do offer the ability to link across separate filesystems, and besides, I&rsquo;m not planning on moving them around, so I went ahead and made some symlinks to serve my purpose.</p>
 
 <p>Take, for example, my <code>~/.bash_profile</code>. I created a directory for my dotfiles at <code>~/Development/resources/dotfiles/</code>, moved the file to that directory, and linked to it with a symlink from its original location in <code>~</code>, allowing my shell to pick it up at the expected location (<code>~</code>).
 <code>
