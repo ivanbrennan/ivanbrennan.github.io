@@ -4,7 +4,7 @@
   <title><![CDATA[detached head]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2013-11-01T02:37:51-04:00</updated>
+  <updated>2013-11-01T02:39:46-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -36,7 +36,7 @@
 </span><span class='line'>ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile</span></code></pre></td></tr></table></div></figure>
 
 
-<p>I removed the <code>.</code> from the target filename both for convenience (so it shows up in Finder), and to distinguish it from the symlink I created at <code>~/.bash_profile</code>. Then I initialized a git repository in the <code>dotfiles</code> directory, putting my precious dotfiles under version control as well as making it easy to share them.</p>
+<p>I removed the <code>.</code> from the target filename both for convenience (so it shows up in Finder), and to distinguish it from the symlink I created at <code>~/.bash_profile</code>. Then I initialized a git repository in the <code>dotfiles</code> directory, putting my precious dotfiles under version control and making it easier to share them.</p>
 ]]></content>
   </entry>
   
