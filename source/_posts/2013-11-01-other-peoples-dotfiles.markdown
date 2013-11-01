@@ -19,4 +19,4 @@ mkdir -p ~/Development/resources/dotfiles/
 mv ~/.bash_profile ~/Development/resources/dotfiles/bash_profile
 ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
 ```
-I removed the `.` from the target filename both for convenience (so it shows up in Finder), and to distinguish it from the symlink I created at `~/.bash_profile`. Then I initialized a git repository in the `dotfiles` directory, putting my precious dotfiles under version control as well as making it easy to share them.
+I removed the `.` from the target filename both for convenience (so it shows up in Finder), and to distinguish it from the symlink I created at `~/.bash_profile`. Then I initialized a git repository in the `dotfiles` directory, putting my precious dotfiles under version control and making it easier to share them.
