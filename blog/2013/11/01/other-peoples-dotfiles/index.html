@@ -105,10 +105,13 @@
 
 <p>Take, for example, my <code>~/.bash_profile</code>. I created a directory for my dotfiles at <code>~/Development/resources/dotfiles/</code>, moved the file to that directory, and linked to it with a symlink from its original location in <code>~</code>, allowing my shell to pick it up at the expected location (<code>~</code>).</p>
 
-<pre><code>mkdir -p ~/Development/resources/dotfiles/
-mv ~/.bash_profile ~/Development/resources/dotfiles/bash_profile
-ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
-</code></pre>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>mkdir -p ~/Development/resources/dotfiles/
+</span><span class='line'>mv ~/.bash_profile ~/Development/resources/dotfiles/bash_profile
+</span><span class='line'>ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile</span></code></pre></td></tr></table></div></figure>
+
 
 <p>I removed the <code>.</code> from the target filename both for convenience (so it shows up in Finder), and to distinguish it from the symlink I created at <code>~/.bash_profile</code>. Then I initialized a git repository in the <code>dotfiles</code> directory, putting my precious dotfiles under version control and making it easier to share them.</p>
 </div>
