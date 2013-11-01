@@ -9,7 +9,7 @@
   <meta name="author" content="Ivan Brennan">
 
   
-  <meta name="description" content="After getting familiar with Git and the concept of version control, I got interested in backing up my dotfiles &mdash; .bash_profile, .vimrc and the &hellip;">
+  <meta name="description" content="After getting familiar with Git and the concept of version control, I got interested in backing up my dotfiles (.bash_profile, .vimrc and the like), &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -94,11 +94,15 @@
   </header>
 
 
-  <div class="entry-content"><p>After getting familiar with Git and the concept of version control, I got interested in backing up my dotfiles &mdash; <code>.bash_profile</code>, <code>.vimrc</code> and the like &mdash; all of which were housed in <code>~/</code>. The idea of turning my home directory into a Git repository made me a little nervous, still being new to the Git workflow, but a classmate suggested I might use symlinks to get around this.</p>
+  <div class="entry-content"><p>After getting familiar with Git and the concept of version control, I got interested in backing up my dotfiles (<code>.bash_profile</code>, <code>.vimrc</code> and the like), most of which were in <code>~</code>. Now, turning my entire home directory into a Git repository would be asking for trouble, but a classmate suggested I might use symlinks to get around this.</p>
 
-<p>The basic idea is pretty simple: move your dotfiles into their own directory, link to them from their original locations, so they&rsquo;re still available to the applications that need them, and run <code>git init</code> with a little less trepidation.</p>
+<p>The basic idea is this: move your dotfiles into their own directory, link to them from their original locations, ensuring they&rsquo;re still available to the applications that need them, and run <code>git init</code> with a little less trepidation.</p>
 
-<p>I did some googling and found I&rsquo;m not the first to think of <a href="http://dotfiles.github.io">this</a>. There are some pretty advanced scripts out there for backing up your dotfiles in this manner, but I wanted to do it myself, since I wasn&rsquo;t backing up that many files and I&rsquo;d like to know the details of how it works. The consensus seems to be to use the <code>-s</code> flag to specify a symlink, which begs the question: what&rsquo;s the difference between a symlink, or &ldquo;soft link&rdquo;, and a hard link? What we think of as a filename is actually a pointer to a specific location in memory. If we have a file <code>~/goblet</code>, which points to memory location <code>X</code>, we could create a hard link to the same location with a different name, say <code>~/Stockpile/treasure/golden_cup</code>. Both <code>~/goblet</code> and <code>~/Stockpile/treasure/golden_cup</code> point directly at the same location in memory. Alternatively, we could create a symlink <code>~/Stockpile/booty/chalice</code> which points directly at <code>~/goblet</code>, which in turn points to location <code>X</code> in memory. It&rsquo;s a subtle distinction, but one that carries real repercussions. If we move or delete <code>~/goblet</code>, the hard link <code>~/Stockpile/treasure/golden_cup</code> will still point at the same data (moving another pointer has no effect on this pointer), but the symlink, which simply pointed at the path to <code>~/goblet</code>, won&rsquo;t be updated, so it&rsquo;s connection to the original data is severed.</p>
+<p>I did some googling and found I&rsquo;m not the first to think of <a href="http://dotfiles.github.io">this</a>. There are some pretty advanced scripts out there for backing up your dotfiles this way, but I wanted to do it myself since I wasn&rsquo;t backing up that many files and I wanted to understand how it worked. The consensus seems to be to use symlinks, which begs the question: what&rsquo;s the difference between a symlink (or &ldquo;soft link&rdquo;), and a hard link?</p>
+
+<p>What we think of as a filename is actually a pointer to a specific location in memory. If we have a file <code>~/goblet</code>, pointing at memory location-X, we could create a hard link to the same location with a different name, say <code>~/Stockpile/golden_cup</code>. Both <code>~/goblet</code> and <code>~/Stockpile/treasure/golden_cup</code> point directly at the same location in memory. We could instead create a symlink <code>~/Cloud/chalice</code> pointing at <code>~/goblet</code>, which in turn points to location-X in memory.</p>
+
+<p>It&rsquo;s a subtle distinction, but one that carries real repercussions. If we move or delete the original <code>~/goblet</code>, then the hard link <code>~/Stockpile/golden_cup</code> will still point at the same data (moving another pointer has no effect on this pointer), but the symlink will be broken. It just pointed at the original path (<code>~/goblet</code>), and now it&rsquo;s connection to the memory location is severed.</p>
 
 <p>Despite this apparent disadvantage to symlinks, the general consensus seems to be to prefer them for linking to dotfiles. They do offer the ability to link across separate filesystems, and besides, I&rsquo;m not planning on moving them from the directory I created in my <code>dotfiles</code> directory, so I went ahead and made some soft links to serve my purpose.</p>
 
