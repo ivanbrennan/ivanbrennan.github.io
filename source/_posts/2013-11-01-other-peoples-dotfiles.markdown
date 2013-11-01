@@ -15,7 +15,7 @@ What we think of as a filename is actually a pointer to a specific location in m
 
 It's a subtle distinction, but one that carries real repercussions. If we move or delete the original `~/goblet`, then the hard link `~/Stockpile/golden_cup` will still point at the same data (moving another pointer has no effect on this pointer), but the symlink will be broken. It just pointed at the original path (`~/goblet`), and now it's connection to the memory location is severed.
 
-Despite this apparent disadvantage to symlinks, the general consensus seems to be to prefer them for linking to dotfiles. They do offer the ability to link across separate filesystems, and besides, I'm not planning on moving them from the directory I created in my `dotfiles` directory, so I went ahead and made some soft links to serve my purpose.
+Despite this apparent disadvantage to symlinks, the general consensus seems to be to prefer them for linking to dotfiles. They do offer the ability to link across separate filesystems, and besides, I'm not planning on moving them around, so I went ahead and made some symlinks to serve my purpose.
 
 Take, for example, my `~/.bash_profile`. I created a directory for my dotfiles at `~/Development/resources/dotfiles/`, moved the file to that directory, and linked to it with a symlink from its original location in `~`, allowing my shell to pick it up at the expected location (`~`).
 ```
