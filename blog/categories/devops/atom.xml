@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: devOps | detached head]]></title>
+  <link href="http://ivanbrennan.github.io/blog/categories/devops/atom.xml" rel="self"/>
+  <link href="http://ivanbrennan.github.io/"/>
+  <updated>2013-11-19T22:36:55-05:00</updated>
+  <id>http://ivanbrennan.github.io/</id>
+  <author>
+    <name><![CDATA[Ivan Brennan]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[sandboxing chef-solo]]></title>
+    <link href="http://ivanbrennan.github.io/blog/2013/11/19/sandboxing-chef-solo/"/>
+    <updated>2013-11-19T22:31:00-05:00</updated>
+    <id>http://ivanbrennan.github.io/blog/2013/11/19/sandboxing-chef-solo</id>
+    <content type="html"><![CDATA[<h1>sandboxing chef-solo</h1>
+
+<p>I&rsquo;m in the early stages of a team project. Our goal is to build a rails app that uses <a href="http://docs.opscode.com/chef_solo.html">chef-solo</a> to automate the creation and provisioning of a DigitalOcean droplet, and deploys to it using <a href="https://github.com/capistrano/capistrano">Capistrano</a>. The idea is to enable a user to deploy there own app up to a <a href="http://digitalocean.com/">DO</a> server using our app to do the heavy lifting.</p>
+
+<p>We&rsquo;re new to chef-solo, and initially I tried plowing through documentation, hoping to build a comprehensive understanding before diving into the project. But we really needed to get our hands dirty to get a feel for it, so we started sandboxing tiny prototypes, and though we were flying blind at times, the small successes kept us moving forward through the project.</p>
+
+<p>The zeroth step was to install some necessary tools, knife-solo and berkshelf. knife-solo is the command line tool for using chef-solo, and berkshelf fulfills a role similar to Bundler, but in the realm of chef.</p>
+
+<p>For our first sandbox venture, we took an existing, chef-ready <a href="https://github.com/TalkingQuickly/rails-server-template">rails server template</a> and used it to provision an existing server.</p>
+
+<p>Next we created a project directory from scratch, initialized a chef repo within it, and cloned an existing cookbook into its cookbooks directory.</p>
+
+<p><img class="production <a" src="href="http://i.imgur.com/gEGr6LJ.jpg">http://i.imgur.com/gEGr6LJ.jpg</a>" title="&lsquo;production&rsquo; &lsquo;production&rsquo;" ></p>
+
+<p>These little exercises were helpful, but we were still bogged down trying to map out the components and configurations encompassed by Chef. We backed up, got some helpful input from the TA&rsquo;s here at Flatiron School, and started mapping out the components necessary to <em>our</em> project, pinpointing which milestones we needed to focus on.</p>
+
+<p><img class="sketch <a" src="href="http://i.imgur.com/oih6feU.jpg">http://i.imgur.com/oih6feU.jpg</a>" title="&lsquo;sketch&rsquo; &lsquo;sketch&rsquo;" ></p>
+
+<h3>step 1: get a project on our local machine communicating with DigitalOcean</h3>
+
+<p>Turns out there&rsquo;s a plugin just for that: <a href="https://github.com/rmoriz/knife-digital_ocean">knife-digital_ocean</a>. We had to put our API-credentials from DigitalOcean into <code>knife.rb</code>, a configuration file for chef-solo. Then, once we&rsquo;d added a public SSH key to our DO account, we were able to create a new DO droplet with the desired OS and our SSH key, all with a command at teh console. Thank you knife-digital_ocean!</p>
+
+<p>There&rsquo;s plenty more work ahead. We need to build the rails app to:</p>
+
+<ul>
+<li>automate knife-digital_ocean commands</li>
+<li>take user input
+
+<ul>
+<li>Github url for the app they want to deploy</li>
+<li>necessary credentials (handle the SSH keys)</li>
+</ul>
+</li>
+<li>run provisioning as a background process (it takes a while)</li>
+<li>deploy with Capistrano</li>
+</ul>
+
+
+<p>It feels much more manageable with step 1 behind us, and I&rsquo;m sure I&rsquo;ll be spending some more quality time in the Chef documentation.</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>yield the weird - detached head</title>
+  <title>sandboxing chef-solo - detached head</title>
   <meta name="author" content="Ivan Brennan">
 
   
-  <meta name="description" content="I&rsquo;m messing around with yield to get a handle on the various closures in Ruby, and I built a method that returns a rotated-mapped array. You &hellip;">
+  <meta name="description" content="sandboxing chef-solo I&rsquo;m in the early stages of a team project. Our goal is to build a rails app that uses chef-solo to automate the creation &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://ivanbrennan.github.io/blog/2013/10/23/yield-the-weird">
+  <link rel="canonical" href="http://ivanbrennan.github.io/blog/2013/11/19/sandboxing-chef-solo">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="detached head" type="application/atom+xml">
@@ -68,7 +68,7 @@
   
   <header>
     
-      <h1 class="entry-title">Yield the Weird</h1>
+      <h1 class="entry-title">Sandboxing Chef-solo</h1>
     
     
       <p class="meta">
@@ -84,35 +84,52 @@
   
 
 
-<time datetime="2013-10-23T22:32:00-04:00" pubdate data-updated="true">Oct 23<span>rd</span>, 2013</time>
+<time datetime="2013-11-19T22:31:00-05:00" pubdate data-updated="true">Nov 19<span>th</span>, 2013</time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><p>I&rsquo;m messing around with <code>yield</code> to get a handle on the various closures in Ruby, and I built a method that returns a rotated-mapped array. You could of course do this with the built-in <code>#rotate</code> and <code>#map</code> methods, but what fun is that?</p>
+<div class="entry-content"><h1>sandboxing chef-solo</h1>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">rotomap</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
-</span><span class='line'>  <span class="n">arr</span><span class="o">.</span><span class="n">each_index</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="o">[]</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">roto</span><span class="p">,</span> <span class="n">i</span><span class="o">|</span>
-</span><span class='line'>    <span class="n">roto</span> <span class="o">&lt;&lt;</span> <span class="k">yield</span><span class="p">(</span> <span class="n">arr</span><span class="o">[</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">n</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">count</span><span class="p">)</span> <span class="o">]</span> <span class="p">)</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">rotomap</span><span class="p">(</span><span class="o">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="o">]</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">x</span> <span class="o">*</span> <span class="mi">5</span><span class="si">}</span><span class="s2"> merge requests&quot;</span> <span class="p">}</span>
-</span><span class='line'><span class="c1"># =&gt; [&quot;20 merge requests&quot;, &quot;25 merge requests&quot;, &quot;5 merge requests&quot;, &quot;10 merge requests&quot;, &quot;15 merge requests&quot;]</span>
-</span></code></pre></td></tr></table></div></figure>
+<p>I&rsquo;m in the early stages of a team project. Our goal is to build a rails app that uses <a href="http://docs.opscode.com/chef_solo.html">chef-solo</a> to automate the creation and provisioning of a DigitalOcean droplet, and deploys to it using <a href="https://github.com/capistrano/capistrano">Capistrano</a>. The idea is to enable a user to deploy there own app up to a <a href="http://digitalocean.com/">DO</a> server using our app to do the heavy lifting.</p>
+
+<p>We&rsquo;re new to chef-solo, and initially I tried plowing through documentation, hoping to build a comprehensive understanding before diving into the project. But we really needed to get our hands dirty to get a feel for it, so we started sandboxing tiny prototypes, and though we were flying blind at times, the small successes kept us moving forward through the project.</p>
+
+<p>The zeroth step was to install some necessary tools, knife-solo and berkshelf. knife-solo is the command line tool for using chef-solo, and berkshelf fulfills a role similar to Bundler, but in the realm of chef.</p>
+
+<p>For our first sandbox venture, we took an existing, chef-ready <a href="https://github.com/TalkingQuickly/rails-server-template">rails server template</a> and used it to provision an existing server.</p>
+
+<p>Next we created a project directory from scratch, initialized a chef repo within it, and cloned an existing cookbook into its cookbooks directory.</p>
+
+<p><img class="production" src="http://i.imgur.com/gEGr6LJ.jpg" title="production" alt="production"></p>
+
+<p>These little exercises were helpful, but we were still bogged down trying to map out the components and configurations encompassed by Chef. We backed up, got some helpful input from the TA&rsquo;s here at Flatiron School, and started mapping out the components necessary to <em>our</em> project, pinpointing which milestones we needed to focus on.</p>
+
+<p><img class="sketch" src="http://i.imgur.com/oih6feU.jpg" title="sketch" alt="sketch"></p>
+
+<h3>step 1: get a project on our local machine communicating with DigitalOcean</h3>
+
+<p>Turns out there&rsquo;s a plugin just for that: <a href="https://github.com/rmoriz/knife-digital_ocean">knife-digital_ocean</a>. We had to put our API-credentials from DigitalOcean into <code>knife.rb</code>, a configuration file for chef-solo. Then, once we&rsquo;d added a public SSH key to our DO account, we were able to create a new DO droplet with the desired OS and our SSH key, all with a command at teh console. Thank you knife-digital_ocean!</p>
+
+<p>There&rsquo;s plenty more work ahead. We need to build the rails app to:</p>
+
+<ul>
+<li>automate knife-digital_ocean commands</li>
+<li>take user input
+
+<ul>
+<li>Github url for the app they want to deploy</li>
+<li>necessary credentials (handle the SSH keys)</li>
+</ul>
+</li>
+<li>run provisioning as a background process (it takes a while)</li>
+<li>deploy with Capistrano</li>
+</ul>
 
 
-<p>I don&rsquo;t imagine there&rsquo;s a lot of rotomapping going on out there, but it was fun to slap this together.</p>
+<p>It feels much more manageable with step 1 behind us, and I&rsquo;m sure I&rsquo;ll be spending some more quality time in the Chef documentation.</p>
 </div>
 
 
@@ -135,12 +152,12 @@
   
 
 
-<time datetime="2013-10-23T22:32:00-04:00" pubdate data-updated="true">Oct 23<span>rd</span>, 2013</time>
+<time datetime="2013-11-19T22:31:00-05:00" pubdate data-updated="true">Nov 19<span>th</span>, 2013</time>
       
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/ruby/'>ruby</a>, <a class='category' href='/blog/categories/yield/'>yield</a>
+    <a class='category' href='/blog/categories/chef/'>chef,</a>, <a class='category' href='/blog/categories/devops/'>devOps</a>, <a class='category' href='/blog/categories/rails/'>rails,</a>
   
 </span>
 
@@ -149,7 +166,7 @@
     
       <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ivanbrennan.github.io/blog/2013/10/23/yield-the-weird/" data-via="" data-counturl="http://ivanbrennan.github.io/blog/2013/10/23/yield-the-weird/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ivanbrennan.github.io/blog/2013/11/19/sandboxing-chef-solo/" data-via="" data-counturl="http://ivanbrennan.github.io/blog/2013/11/19/sandboxing-chef-solo/" >Tweet</a>
   
   
   
@@ -158,10 +175,8 @@
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2013/10/17/modules/" title="Previous Post: modules, classes, pterosaurs">&laquo; modules, classes, pterosaurs</a>
+        <a class="basic-alignment left" href="/blog/2013/11/01/other-peoples-dotfiles/" title="Previous Post: Other People's Dotfiles (OPD)">&laquo; Other People's Dotfiles (OPD)</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2013/11/01/other-peoples-dotfiles/" title="Next Post: Other People's Dotfiles (OPD)">Other People's Dotfiles (OPD) &raquo;</a>
       
     </p>
   </footer>
