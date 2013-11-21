@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Category: yield - detached head</title>
+  <title>Chef roles - detached head</title>
   <meta name="author" content="Ivan Brennan">
 
   
-  <meta name="description" content="Category: yield">
+  <meta name="description" content="It took me a while to wrap my head around a Chef role. It sounds simple enough at first &mdash; a collection of recipes that allows a node to act in &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://ivanbrennan.github.ioblog/categories/yield">
+  <link rel="canonical" href="http://ivanbrennan.github.io/blog/2013/11/21/chef-roles">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="detached head" type="application/atom+xml">
@@ -64,35 +64,92 @@
   <div id="main">
     <div id="content">
       <div>
-<article role="article">
+<article class="hentry" role="article">
   
   <header>
-    <h1 class="entry-title">Category: Yield</h1>
+    
+      <h1 class="entry-title">Chef Roles</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-21T09:11:00-05:00" pubdate data-updated="true">Nov 21<span>st</span>, 2013</time>
+        
+      </p>
     
   </header>
-  
-  <div id="blog-archives" class="category">
 
 
+<div class="entry-content"><p>It took me a while to wrap my head around a Chef role. It sounds simple enough at first &mdash; a collection of recipes that allows a node to act in a certain capacity, as say, a Redis server &mdash; but Chef also deals in cookbooks, which are also collections of recipes. So then what&rsquo;s the difference between a cookbook and a role?</p>
 
-  
-  <h2>2013</h2>
+<p>A cookbook is a collection of recipes relating to a particular piece of technology. The nginx cookbook, for example, contains several recipes related to building and configuring nginx: <code>nginx::source</code> builds nginx from source, <code>nginx::ohai_plugin</code> provides the Ohai plugin as a template, <code>nginx::passenger</code> builds the passenger gem, etc.</p>
 
-<article>
-  
-<h1><a href="/blog/2013/10/23/yield-the-weird/">yield the weird</a></h1>
-<time datetime="2013-10-23T22:32:00-04:00" pubdate><span class='month'>Oct</span> <span class='day'>23</span> <span class='year'>2013</span></time>
+<p>A node is a single server, and Chef can apply a variety of recipes to the node to set it up as needed. Those recipes can be selected from a variety of cookbooks, and we don&rsquo;t have to use every recipe in a given cookbook. So how do we package the particular mix of recipes we need for a certain type of node? In a role.</p>
 
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/ruby/'>ruby</a>, <a class='category' href='/blog/categories/yield/'>yield</a></span>
-</footer>
+<p>For lack of a better analogy, you could think of a role as a multi-course meal made from several recipes pulled from a variety of cookbooks. A couple from a Pasta cookbook, one from a French Cuisine cookbook, one from a Pastries cookbook. The meal won&rsquo;t be made from every single recipe in those books, just the desired ones.</p>
 
-
-</article>
-
+<p>Recipes can include each other too, like mixins in Ruby (the <code>nginx::source</code> recipe, for example, includes the <code>nginx::ohai_plugin</code> recipe as part of it) but let&rsquo;s not add to the confusion just yet.</p>
 </div>
 
+
+  <footer>
+    <p class="meta">
+      
   
+
+<span class="byline author vcard">Posted by <span class="fn">Ivan Brennan</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-21T09:11:00-05:00" pubdate data-updated="true">Nov 21<span>st</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chef/'>Chef,</a>, <a class='category' href='/blog/categories/devops/'>devOps</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ivanbrennan.github.io/blog/2013/11/21/chef-roles/" data-via="" data-counturl="http://ivanbrennan.github.io/blog/2013/11/21/chef-roles/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/11/19/sandboxing-chef-solo/" title="Previous Post: sandboxing chef-solo">&laquo; sandboxing chef-solo</a>
+      
+      
+    </p>
+  </footer>
 </article>
 
 </div>
