@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: associations | detached head]]></title>
+  <link href="http://ivanbrennan.github.io/blog/categories/associations/atom.xml" rel="self"/>
+  <link href="http://ivanbrennan.github.io/"/>
+  <updated>2014-01-14T17:38:31-05:00</updated>
+  <id>http://ivanbrennan.github.io/</id>
+  <author>
+    <name><![CDATA[Ivan Brennan]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Polymorphic Associations: A Mythological Example]]></title>
+    <link href="http://ivanbrennan.github.io/blog/2014/01/14/polymorphic-associations-a-mythological-example/"/>
+    <updated>2014-01-14T17:33:00-05:00</updated>
+    <id>http://ivanbrennan.github.io/blog/2014/01/14/polymorphic-associations-a-mythological-example</id>
+    <content type="html"><![CDATA[<p>I was recently introduced to polymorphic associations in Active Record. They give you more flexibility in how you choose to wire up your models, and can provide an elegant solution to some otherwise awkward problems. To demonstrate one of their uses, I&rsquo;ll show how they could aid in cataloging a collection of mythology.</p>
+
+<p>Initially, let&rsquo;s confine ourselves to a tiny collection of tales: The Reign of the Hydra, The Golden Voyage, and The Life of King Adrastus. In addition to needing a myth model, we&rsquo;ll need models for beasts, voyages, and heros. Let&rsquo;s set it up so that a character/event/etc. can be the central figure in any number of myths, and a myth is centered around a single such figure. Our beast model, for instance, could simply be,</p>
+
+<p><code>ruby
+class Beast &lt; ActiveRecord::Base
+  has_many :myths
+end
+</code></p>
+
+<p>backed by a straightforward migration,</p>
+
+<p>```ruby
+class CreateBeasts &lt; ActiveRecord::Migration
+  def change</p>
+
+<pre><code>create_table :beasts do |t|
+  t.string :name
+end
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p>But wiring up our myth model isn&rsquo;t so simple. We could write three <code>belongs_to</code> statements into <code>myth.rb</code>, create three columns &mdash; beast_id, voyage_id, and hero_id &mdash; in the myths table, and find a way to enforce that two of the three always hold null values, but that&rsquo;s pretty cumbersome. Plus, as our catalog expands and we discover new types of central-figures (fools, floods, fires), we&rsquo;ll have to add more columns to accommodate any new classes we create. That&rsquo;s a lot of work to store a whole lot of nils.</p>
+
+<p>Polymorphic associations allow you to handle this more elegantly. We start by describing the role that our central-figure plays in the context of a myth. For lack of a better term, I&rsquo;ll use the word &ldquo;memorable&rdquo;. A dragon ravishing the countryside, an epic voyage, a tragic hero, these are all &ldquo;memorable&rdquo; things that could take center-stage in a myth. We&rsquo;ll build a polymorphic association that can relate a myth to any such &ldquo;memorable&rdquo; object.</p>
+
+<p><code>ruby
+class Myth &lt; ActiveRecord::Base
+  belongs_to :memorable, :polymorphic =&gt; true
+end
+</code></p>
+
+<p>At the other end of the association, we&rsquo;ll tweak the <code>has_many</code> statements in each of our &ldquo;memorable&rdquo; models. The beast model, for example, becomes</p>
+
+<p><code>ruby
+class Beast &lt; ActiveRecord::Base
+  has_many :myths, :as =&gt; :memorable
+end
+</code></p>
+
+<p>Now we can back the myth model with a much simpler table, using a pair of columns to store the &ldquo;memorable&rdquo; central-figure&rsquo;s id, and their type. By storing the foreign key and the table that key applies to, we have all we need to retrieve the central-figure associated with a particular myth.</p>
+
+<p>```ruby
+class CreateMyths &lt; ActiveRecord::Migration
+  def change</p>
+
+<pre><code>create_table :myths do |t|
+  t.string  :name
+
+  t.integer :memorable_id
+  t.string  :memorable_type
+end
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p>Active Record also provides a shorthand for creating such a pair of columns: <code>t.references :memorable, :polymorphic =&gt; true</code>, which we could use in place of lines 6 and 7 above.</p>
+
+<p>The polymorphic association allows us to create associations between existing objects,</p>
+
+<p>```ruby
+adrastus = Hero.create(:name => &ldquo;Adrastus&rdquo;)
+life = Myth.create(:name => &ldquo;The Life of King Adrastus&rdquo;)
+life.memorable = adrastus</p>
+
+<p>afterlife = Myth.create(:name => &ldquo;The Afterlife of King Adrastus&rdquo;)
+adrastus.myths &lt;&lt; afterlife
+```</p>
+
+<p>and to build associated myths off of a given &ldquo;memorable&rdquo; object,</p>
+
+<p>```ruby
+adrastus.myths.build(:name => &ldquo;Adrastus &ndash; The Prequel&rdquo;)
+adrastus.save</p>
+
+<p>adrastus.myths.create(:name => &ldquo;Adrastus IV &ndash; The Return&rdquo;)
+```</p>
+
+<p>Note, however, that we can&rsquo;t build a &ldquo;memorable&rdquo; object off of a given myth, since the type of object (hero, voyage, etc.) is ambiguous.</p>
+]]></content>
+  </entry>
+  
+</feed>

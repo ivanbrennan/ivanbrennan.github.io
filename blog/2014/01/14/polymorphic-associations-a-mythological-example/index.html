@@ -1,0 +1,359 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Polymorphic Associations: A Mythological Example - detached head</title>
+  <meta name="author" content="Ivan Brennan">
+
+  
+  <meta name="description" content="I was recently introduced to polymorphic associations in Active Record. They give you more flexibility in how you choose to wire up your models, and &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://ivanbrennan.github.io/blog/2014/01/14/polymorphic-associations-a-mythological-example">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="detached head" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">detached head</a></h1>
+  
+    <h2>machinecodemachine</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:ivanbrennan.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Polymorphic Associations: A Mythological Example</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-01-14T17:33:00-05:00" pubdate data-updated="true">Jan 14<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>I was recently introduced to polymorphic associations in Active Record. They give you more flexibility in how you choose to wire up your models, and can provide an elegant solution to some otherwise awkward problems. To demonstrate one of their uses, I&rsquo;ll show how they could aid in cataloging a collection of mythology.</p>
+
+<p>Initially, let&rsquo;s confine ourselves to a tiny collection of tales: The Reign of the Hydra, The Golden Voyage, and The Life of King Adrastus. In addition to needing a myth model, we&rsquo;ll need models for beasts, voyages, and heros. Let&rsquo;s set it up so that a character/event/etc. can be the central figure in any number of myths, and a myth is centered around a single such figure. Our beast model, for instance, could simply be,</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Beast</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+</span><span class='line'>  <span class="n">has_many</span> <span class="ss">:myths</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>backed by a straightforward migration,</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">CreateBeasts</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Migration</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">change</span>
+</span><span class='line'>    <span class="n">create_table</span> <span class="ss">:beasts</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">t</span><span class="o">.</span><span class="n">string</span> <span class="ss">:name</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>But wiring up our myth model isn&rsquo;t so simple. We could write three <code>belongs_to</code> statements into <code>myth.rb</code>, create three columns &mdash; beast_id, voyage_id, and hero_id &mdash; in the myths table, and find a way to enforce that two of the three always hold null values, but that&rsquo;s pretty cumbersome. Plus, as our catalog expands and we discover new types of central-figures (fools, floods, fires), we&rsquo;ll have to add more columns to accommodate any new classes we create. That&rsquo;s a lot of work to store a whole lot of nils.</p>
+
+<p>Polymorphic associations allow you to handle this more elegantly. We start by describing the role that our central-figure plays in the context of a myth. For lack of a better term, I&rsquo;ll use the word &ldquo;memorable&rdquo;. A dragon ravishing the countryside, an epic voyage, a tragic hero, these are all &ldquo;memorable&rdquo; things that could take center-stage in a myth. We&rsquo;ll build a polymorphic association that can relate a myth to any such &ldquo;memorable&rdquo; object.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Myth</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+</span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:memorable</span><span class="p">,</span> <span class="ss">:polymorphic</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>At the other end of the association, we&rsquo;ll tweak the <code>has_many</code> statements in each of our &ldquo;memorable&rdquo; models. The beast model, for example, becomes</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Beast</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+</span><span class='line'>  <span class="n">has_many</span> <span class="ss">:myths</span><span class="p">,</span> <span class="ss">:as</span> <span class="o">=&gt;</span> <span class="ss">:memorable</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now we can back the myth model with a much simpler table, using a pair of columns to store the &ldquo;memorable&rdquo; central-figure&rsquo;s id, and their type. By storing the foreign key and the table that key applies to, we have all we need to retrieve the central-figure associated with a particular myth.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">CreateMyths</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Migration</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">change</span>
+</span><span class='line'>    <span class="n">create_table</span> <span class="ss">:myths</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+</span><span class='line'>      <span class="n">t</span><span class="o">.</span><span class="n">string</span>  <span class="ss">:name</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="n">t</span><span class="o">.</span><span class="n">integer</span> <span class="ss">:memorable_id</span>
+</span><span class='line'>      <span class="n">t</span><span class="o">.</span><span class="n">string</span>  <span class="ss">:memorable_type</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Active Record also provides a shorthand for creating such a pair of columns: <code>t.references :memorable, :polymorphic =&gt; true</code>, which we could use in place of lines 6 and 7 above.</p>
+
+<p>The polymorphic association allows us to create associations between existing objects,</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">adrastus</span> <span class="o">=</span> <span class="no">Hero</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;Adrastus&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">life</span> <span class="o">=</span> <span class="no">Myth</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;The Life of King Adrastus&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">life</span><span class="o">.</span><span class="n">memorable</span> <span class="o">=</span> <span class="n">adrastus</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">afterlife</span> <span class="o">=</span> <span class="no">Myth</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;The Afterlife of King Adrastus&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">adrastus</span><span class="o">.</span><span class="n">myths</span> <span class="o">&lt;&lt;</span> <span class="n">afterlife</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>and to build associated myths off of a given &ldquo;memorable&rdquo; object,</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">adrastus</span><span class="o">.</span><span class="n">myths</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;Adrastus - The Prequel&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="n">adrastus</span><span class="o">.</span><span class="n">save</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">adrastus</span><span class="o">.</span><span class="n">myths</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;Adrastus IV - The Return&quot;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Note, however, that we can&rsquo;t build a &ldquo;memorable&rdquo; object off of a given myth, since the type of object (hero, voyage, etc.) is ambiguous.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Ivan Brennan</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-01-14T17:33:00-05:00" pubdate data-updated="true">Jan 14<span>th</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/associations/'>associations</a>, <a class='category' href='/blog/categories/polymorphic/'>polymorphic</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ivanbrennan.github.io/blog/2014/01/14/polymorphic-associations-a-mythological-example/" data-via="" data-counturl="http://ivanbrennan.github.io/blog/2014/01/14/polymorphic-associations-a-mythological-example/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/11/21/chef-roles/" title="Previous Post: Chef roles">&laquo; Chef roles</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/01/14/polymorphic-associations-a-mythological-example/">Polymorphic Associations: A Mythological Example</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/21/chef-roles/">Chef Roles</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/19/sandboxing-chef-solo/">Sandboxing Chef-solo</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/01/other-peoples-dotfiles/">Other People's Dotfiles (OPD)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/10/23/yield-the-weird/">Yield the Weird</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/ivanbrennan">@ivanbrennan</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'ivanbrennan',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Ivan Brennan -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
