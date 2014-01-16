@@ -27,7 +27,6 @@ I'm using `t:vex_buf_nr` to track whether the sidebar is currently open. The `t:
 
 ```
 fun! VexOpen(dir)
-  let g:netrw_banner=0          " no banner
   let g:netrw_browse_split=4    " open files in previous window
   let vex_width = 25
 
@@ -39,7 +38,7 @@ fun! VexOpen(dir)
 endf
 ```
 
-`VexOpen()` starts by setting some options. The Netrw banner provides helpful information, but it just gets cut off in a vertical split, so no banner here. "Open files in previous window" ensures that when we select a file to open, it opens in the window (split) we were in before entering the browser. We're also setting the desired window width for later use.
+`VexOpen()` starts by setting some options. "Open files in previous window" ensures that when we select a file to open, it opens in the window (split) we were in before entering the browser. We're also setting the desired window width for later use.
 
 Next, we use vimscript's string concatenation operator (`.`) to compose the `Vexplore` call. It's a little ugly, but sometimes vimscript paints you into a corner like that. Now that we have an explorer open, let's remember it (the next line). The `"%"` expands to the current file name, and we store the associated buffer number for later reference.
 
@@ -105,6 +104,7 @@ I find myself mostly using Netrw's "thin" liststyle rather than the "tree" style
 
 ```
 let g:netrw_liststyle=0         " thin (change to 3 for tree)
+let g:netrw_banner=0            " no banner
 let g:netrw_altv=1              " open files on right
 let g:netrw_preview=1           " open previews vertically
 ```
