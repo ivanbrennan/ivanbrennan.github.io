@@ -86,10 +86,6 @@ fun! NormalizeWidths()
   set equalalways! equalalways!
   let &eadirection = eadir_pref
 endf
-
-  set eadirection=hor
-  set equalalways! equalalways!
-endf
 ```
 
 Netrw lets you open a selected file in a vertical split with the `v` key, and I wanted to normalize window widths when such a split was added so things would remain evenly sized. The following autocommand makes it so.
