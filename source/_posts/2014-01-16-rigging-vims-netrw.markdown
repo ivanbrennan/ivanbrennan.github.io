@@ -71,7 +71,7 @@ endf
 
 {% img screenshot /images/vextoggle/10.png 'vim' 'vim screenshot' %}
 
-All that's left are the final touches to window sizing, which occur in `VexSize()` and `NormalizeWidths()`. The first function sets and locks the sidebar width, then calls the second to normalize the widths off all other windows. `NormalizeWidths()` is a little hacky, but as far as I can tell it's the only native vimscript way to normalize window widths without affecting their heights. `'eadirection'` controls which dimensions are affected when `'equal always'` is set. We set it to `hor` (horizontal), toggle `'equal always'` off and back on (it's on by default), triggering the width normalization, and finally restore the `'eadirection'` setting to it's original value.
+All that's left are the final touches to window sizing, which occur in `VexSize()` and `NormalizeWidths()`. The first function sets and locks the sidebar width, then calls the second to normalize the widths off all other windows. `NormalizeWidths()` is a little hacky, but as far as I can tell it's the only native vimscript way to normalize window widths without affecting their heights. `'eadirection'` controls which dimensions are affected when `'equal always'` is set. We set it to `hor` (horizontal), toggle `'equal always'` off and back on (it's on by default), triggering the width normalization, and finally restore `'eadirection'` to it's original value.
 
 ```
 fun! VexSize(vex_width)
