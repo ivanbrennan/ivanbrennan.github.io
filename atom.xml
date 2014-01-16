@@ -4,7 +4,7 @@
   <title><![CDATA[detached head]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2014-01-16T01:23:00-05:00</updated>
+  <updated>2014-01-16T12:29:44-05:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -54,9 +54,7 @@
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
 <span class='line-number'>10</span>
-<span class='line-number'>11</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>fun! VexOpen(dir)
-</span><span class='line'>  let g:netrw_banner=0          " no banner
 </span><span class='line'>  let g:netrw_browse_split=4    " open files in previous window
 </span><span class='line'>  let vex_width = 25
 </span><span class='line'>
@@ -68,7 +66,7 @@
 </span><span class='line'>endf</span></code></pre></td></tr></table></div></figure>
 
 
-<p><code>VexOpen()</code> starts by setting some options. The Netrw banner provides helpful information, but it just gets cut off in a vertical split, so no banner here. &ldquo;Open files in previous window&rdquo; ensures that when we select a file to open, it opens in the window (split) we were in before entering the browser. We&rsquo;re also setting the desired window width for later use.</p>
+<p><code>VexOpen()</code> starts by setting some options. &ldquo;Open files in previous window&rdquo; ensures that when we select a file to open, it opens in the window (split) we were in before entering the browser. We&rsquo;re also setting the desired window width for later use.</p>
 
 <p>Next, we use vimscript&rsquo;s string concatenation operator (<code>.</code>) to compose the <code>Vexplore</code> call. It&rsquo;s a little ugly, but sometimes vimscript paints you into a corner like that. Now that we have an explorer open, let&rsquo;s remember it (the next line). The <code>"%"</code> expands to the current file name, and we store the associated buffer number for later reference.</p>
 
@@ -157,7 +155,9 @@
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
+<span class='line-number'>4</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>let g:netrw_liststyle=0         " thin (change to 3 for tree)
+</span><span class='line'>let g:netrw_banner=0            " no banner
 </span><span class='line'>let g:netrw_altv=1              " open files on right
 </span><span class='line'>let g:netrw_preview=1           " open previews vertically</span></code></pre></td></tr></table></div></figure>
 

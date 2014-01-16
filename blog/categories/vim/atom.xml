@@ -4,7 +4,7 @@
   <title><![CDATA[Category: vim | detached head]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/vim/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2014-01-16T01:23:00-05:00</updated>
+  <updated>2014-01-16T12:29:44-05:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -46,8 +46,7 @@ endf
 
 <p>```
 fun! VexOpen(dir)
-  let g:netrw_banner=0          &ldquo; no banner
-  let g:netrw_browse_split=4    &rdquo; open files in previous window
+  let g:netrw_browse_split=4    &ldquo; open files in previous window
   let vex_width = 25</p>
 
 <p>  execute &ldquo;Vexplore &rdquo; . a:dir
@@ -58,7 +57,7 @@ fun! VexOpen(dir)
 endf
 ```</p>
 
-<p><code>VexOpen()</code> starts by setting some options. The Netrw banner provides helpful information, but it just gets cut off in a vertical split, so no banner here. &ldquo;Open files in previous window&rdquo; ensures that when we select a file to open, it opens in the window (split) we were in before entering the browser. We&rsquo;re also setting the desired window width for later use.</p>
+<p><code>VexOpen()</code> starts by setting some options. &ldquo;Open files in previous window&rdquo; ensures that when we select a file to open, it opens in the window (split) we were in before entering the browser. We&rsquo;re also setting the desired window width for later use.</p>
 
 <p>Next, we use vimscript&rsquo;s string concatenation operator (<code>.</code>) to compose the <code>Vexplore</code> call. It&rsquo;s a little ugly, but sometimes vimscript paints you into a corner like that. Now that we have an explorer open, let&rsquo;s remember it (the next line). The <code>"%"</code> expands to the current file name, and we store the associated buffer number for later reference.</p>
 
@@ -124,6 +123,7 @@ augroup END
 
 <p><code>
 let g:netrw_liststyle=0         " thin (change to 3 for tree)
+let g:netrw_banner=0            " no banner
 let g:netrw_altv=1              " open files on right
 let g:netrw_preview=1           " open previews vertically
 </code></p>
