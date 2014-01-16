@@ -4,7 +4,7 @@
   <title><![CDATA[detached head]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2014-01-16T12:29:44-05:00</updated>
+  <updated>2014-01-16T14:22:55-05:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -110,7 +110,7 @@
 
 <p><img class="screenshot" src="http://ivanbrennan.github.io/images/vextoggle/10.png" title="vim" alt="vim screenshot"></p>
 
-<p>All that&rsquo;s left are the final touches to window sizing, which occur in <code>VexSize()</code> and <code>NormalizeWidths()</code>. The first function sets and locks the sidebar width, then calls the second to normalize the widths off all other windows. <code>NormalizeWidths()</code> is a little hacky, but as far as I can tell it&rsquo;s the only native vimscript way to normalize window widths without affecting their heights. <code>'eadirection'</code> controls which dimensions are affected when <code>'equal always'</code> is set. We set it to <code>hor</code> (horizontal), then toggle <code>'equal always'</code> off and back on (it&rsquo;s on by default), triggering the width normalization.</p>
+<p>All that&rsquo;s left are the final touches to window sizing, which occur in <code>VexSize()</code> and <code>NormalizeWidths()</code>. The first function sets and locks the sidebar width, then calls the second to normalize the widths off all other windows. <code>NormalizeWidths()</code> is a little hacky, but as far as I can tell it&rsquo;s the only native vimscript way to normalize window widths without affecting their heights. <code>'eadirection'</code> controls which dimensions are affected when <code>'equal always'</code> is set. We set it to <code>hor</code> (horizontal), toggle <code>'equal always'</code> off and back on (it&rsquo;s on by default), triggering the width normalization, and finally restore the <code>'eadirection'</code> setting to it&rsquo;s original value.</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -122,6 +122,12 @@
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
 <span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>fun! VexSize(vex_width)
 </span><span class='line'>  execute "vertical resize" . a:vex_width
 </span><span class='line'>  set winfixwidth
@@ -129,6 +135,12 @@
 </span><span class='line'>endf
 </span><span class='line'>
 </span><span class='line'>fun! NormalizeWidths()
+</span><span class='line'>  let eadir_pref = &eadirection
+</span><span class='line'>  set eadirection=hor
+</span><span class='line'>  set equalalways! equalalways!
+</span><span class='line'>  let &eadirection = eadir_pref
+</span><span class='line'>endf
+</span><span class='line'>
 </span><span class='line'>  set eadirection=hor
 </span><span class='line'>  set equalalways! equalalways!
 </span><span class='line'>endf</span></code></pre></td></tr></table></div></figure>

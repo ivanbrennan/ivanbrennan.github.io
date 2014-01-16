@@ -4,7 +4,7 @@
   <title><![CDATA[Category: vim | detached head]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/vim/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2014-01-16T12:29:44-05:00</updated>
+  <updated>2014-01-16T14:22:55-05:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -90,7 +90,7 @@ endf
 
 <p><img class="screenshot" src="/images/vextoggle/10.png" title="&lsquo;vim&rsquo; &lsquo;vim screenshot&rsquo;" ></p>
 
-<p>All that&rsquo;s left are the final touches to window sizing, which occur in <code>VexSize()</code> and <code>NormalizeWidths()</code>. The first function sets and locks the sidebar width, then calls the second to normalize the widths off all other windows. <code>NormalizeWidths()</code> is a little hacky, but as far as I can tell it&rsquo;s the only native vimscript way to normalize window widths without affecting their heights. <code>'eadirection'</code> controls which dimensions are affected when <code>'equal always'</code> is set. We set it to <code>hor</code> (horizontal), then toggle <code>'equal always'</code> off and back on (it&rsquo;s on by default), triggering the width normalization.</p>
+<p>All that&rsquo;s left are the final touches to window sizing, which occur in <code>VexSize()</code> and <code>NormalizeWidths()</code>. The first function sets and locks the sidebar width, then calls the second to normalize the widths off all other windows. <code>NormalizeWidths()</code> is a little hacky, but as far as I can tell it&rsquo;s the only native vimscript way to normalize window widths without affecting their heights. <code>'eadirection'</code> controls which dimensions are affected when <code>'equal always'</code> is set. We set it to <code>hor</code> (horizontal), toggle <code>'equal always'</code> off and back on (it&rsquo;s on by default), triggering the width normalization, and finally restore the <code>'eadirection'</code> setting to it&rsquo;s original value.</p>
 
 <p>```
 fun! VexSize(vex_width)
@@ -100,7 +100,13 @@ fun! VexSize(vex_width)
 endf</p>
 
 <p>fun! NormalizeWidths()
+  let eadir_pref = &amp;eadirection
   set eadirection=hor
+  set equalalways! equalalways!
+  let &amp;eadirection = eadir_pref
+endf</p>
+
+<p>  set eadirection=hor
   set equalalways! equalalways!
 endf
 ```</p>
