@@ -276,7 +276,7 @@
   </header>
 
 
-  <div class="entry-content"><p>I was recently introduced to polymorphic associations in Active Record. They provide some extra flexibility in how you choose to wire up your models, and can be an elegant solution to some otherwise awkward problems. To demonstrate one of their uses, I&rsquo;ll show how they could aid in cataloging a collection of mythology.</p>
+  <div class="entry-content"><p>I was recently introduced to polymorphic associations in Active Record. They provide some extra flexibility in how you choose to wire up your models, and can be an elegant solution to some otherwise awkward problems. To demonstrate, I&rsquo;ll show how you could use them to catalog a collection of mythology.</p>
 
 <p>We&rsquo;ll start with a tiny collection of tales: The Reign of the Hydra, The Golden Voyage, and The Life of King Adrastus. In addition to needing a myth model, we&rsquo;ll need models for beasts, voyages, and heros. Let&rsquo;s set things up so that a character/event/etc. can be the central figure in any number of myths, with each myth centered around a single such figure. Our beast model, then, could simply be,</p>
 

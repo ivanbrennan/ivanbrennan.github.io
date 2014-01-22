@@ -4,7 +4,7 @@
   <title><![CDATA[detached head]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2014-01-21T20:52:32-05:00</updated>
+  <updated>2014-01-21T20:55:56-05:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -173,7 +173,7 @@
     <link href="http://ivanbrennan.github.io/blog/2014/01/14/polymorphic-mythology/"/>
     <updated>2014-01-14T17:33:00-05:00</updated>
     <id>http://ivanbrennan.github.io/blog/2014/01/14/polymorphic-mythology</id>
-    <content type="html"><![CDATA[<p>I was recently introduced to polymorphic associations in Active Record. They provide some extra flexibility in how you choose to wire up your models, and can be an elegant solution to some otherwise awkward problems. To demonstrate one of their uses, I&rsquo;ll show how they could aid in cataloging a collection of mythology.</p>
+    <content type="html"><![CDATA[<p>I was recently introduced to polymorphic associations in Active Record. They provide some extra flexibility in how you choose to wire up your models, and can be an elegant solution to some otherwise awkward problems. To demonstrate, I&rsquo;ll show how you could use them to catalog a collection of mythology.</p>
 
 <p>We&rsquo;ll start with a tiny collection of tales: The Reign of the Hydra, The Golden Voyage, and The Life of King Adrastus. In addition to needing a myth model, we&rsquo;ll need models for beasts, voyages, and heros. Let&rsquo;s set things up so that a character/event/etc. can be the central figure in any number of myths, with each myth centered around a single such figure. Our beast model, then, could simply be,</p>
 
