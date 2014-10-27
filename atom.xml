@@ -4,7 +4,7 @@
   <title><![CDATA[detached head]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2014-01-21T20:58:15-05:00</updated>
+  <updated>2014-10-26T21:05:23-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -12,6 +12,263 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[vim key-mappings]]></title>
+    <link href="http://ivanbrennan.github.io/blog/2014/10/26/vim-key-mappings/"/>
+    <updated>2014-10-26T12:04:00-04:00</updated>
+    <id>http://ivanbrennan.github.io/blog/2014/10/26/vim-key-mappings</id>
+    <content type="html"><![CDATA[<h2>:map</h2>
+
+<p>In the land of Vim, most key sequences can easily be mapped to others. The basic syntax is <code>map a b</code>, which tells Vim that when you type <code>a</code>, it should act like <code>b</code>. Similarly, <code>map abc wxyz</code> would process <code>wxyz</code> when you typed <code>abc</code>, but let&rsquo;s look at a more useful example.</p>
+
+<p>You can use <code>m</code> to set a mark at the current cursor position, then jump to it later using the backtick (<code>`</code>) key. Take this buffer for example:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">penguify</span><span class="p">(</span><span class="n">being</span><span class="p">)</span>
+</span><span class='line'>  <span class="no">Penguin</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">being</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span>
+</span><span class='line'><span class="k">rescue</span> <span class="no">NameError</span>
+</span><span class='line'>  <span class="nb">puts</span> <span class="s2">&quot;Can&#39;t penguify massless being.&quot;</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I&rsquo;ll put my cursor on the <em>N</em> in <code>NameError</code> and type (in normal mode) <code>mx</code>. This sets a mark we can jump to by typing <code>`x</code>. This is nice, but the backtick isn&rsquo;t the most comfortable key to reach for.</p>
+
+<p>There&rsquo;s a similar command using the single-quote. Typing <code>'x</code> jumps to the first non-whitespace character on the marked line. Probably not as useful. Let&rsquo;s map the more reachable <code>'</code> to the more useful <code>`</code>.</p>
+
+<p>On Vim&rsquo;s command-line, enter: <code>map ' `</code>. Now both <code>`</code> and <code>'</code> will take us directly to our mark. Instead of ditching the single-quote&rsquo;s original command entirely, let&rsquo;s map the backtick to it with <code>map ` '</code>. But this causes a problem. Hit either <code>`</code> or <code>'</code> and you&rsquo;ll get an error (<code>E223: recursive mapping</code>). We&rsquo;ve mapped <code>`</code> to <code>'</code>, which triggers <code>`</code>, which triggers <code>'</code>, and on and on.</p>
+
+<h2>:noremap</h2>
+
+<p>To recover, let&rsquo;s remove both mappings with <code>unmap `</code> and <code>unmap '</code>, to start fresh. Now instead of using <code>map</code> we&rsquo;ll use <code>noremap</code>. Running <code>noremap a b</code> will map <code>a</code> to <code>b</code> but avoid triggering anything <code>b</code> is mapped to. So we can enter <code>noremap ' `</code> and <code>noremap ` '</code> to swap our keys without falling into a recursive pit.</p>
+
+<h2>map-modes</h2>
+
+<p>Depending on how you define them, your key-mappings will only apply in certain modes. The mappings we created with <code>map</code> and <code>noremap</code> apply in Normal, Visual, Select, and Operator-pending modes. Note the absence of Insert mode in that list &mdash; we&rsquo;re not in danger of inserting <code>doesn`t</code> when we wanted <code>doesn't</code>.</p>
+
+<p>The <code>map</code>, <code>noremap</code>, and <code>unmap</code> commands each have mode-specific variations. My .vimrc, for instance, has a mapping for line-completion in Insert mode:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='vim'><span class='line'><span class="nb">inoremap</span> <span class="p">&lt;</span>C<span class="p">-</span>L<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span><span class="k">X</span><span class="p">&gt;&lt;</span>C<span class="p">-</span>L<span class="p">&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The <code>&lt;C-L&gt;</code> represents Control-L, and is case-insensitive (same as <code>&lt;c-l&gt;</code>). This makes line-completion less cumbersome without polluting modes other than Insert with the mapping. For more on map-modes, check out <code>:help :map-modes</code>. The map-overview (<code>:help map-overview</code>) is a good place to start.</p>
+
+<h2>key-notation</h2>
+
+<p>Vim uses a special notation for some keys. We saw <code>&lt;C-L&gt;</code> already. There&rsquo;s also <code>&lt;Left&gt;</code>, <code>&lt;S-Left&gt;</code> (shift-left), <code>&lt;Space&gt;</code>, <code>&lt;CR&gt;</code> (carriage return / enter), and many more (see <code>:help key-notation</code>). We can use these to expand our key-mapping vocabulary.</p>
+
+<h2>editor-envy</h2>
+
+<p>I noticed a feature in Sublime Text that I wanted to simulate in Vim: <code>⌘Enter</code> adds a newline to the <em>end</em> of the current line rather than inserting it at the cursor position. This is handy if you&rsquo;re in the middle of a line and want to open a new line beneath it without breaking the text the cursor&rsquo;s on.</p>
+
+<p>To similate this, I needed to <code>inoremap</code> something to <code>&lt;C-O&gt;o</code>. From Insert mode, <code>&lt;C-O&gt;</code> pops you into Normal mode for a single command. Once there, <code>o</code> opens a new line beneath the current one and drops you onto it in Insert mode. In the interest of portability, I decided against using the <code>⌘</code> key, since it&rsquo;s Mac-specific, and went with Control instead:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='vim'><span class='line'><span class="nb">inoremap</span> <span class="p">&lt;</span>C<span class="p">-</span>CR<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>O<span class="p">&gt;</span><span class="k">o</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now I can hit Control-Enter from Insert mode to drop down to a new line without disrupting the one I&rsquo;m on. Actually no, I can&rsquo;t. I can if I&rsquo;m using MacVim, but terminal Vim doesn&rsquo;t recognize the <code>&lt;C-CR&gt;</code> key-combo. This is where things get interesting.</p>
+
+<h2>terminal keycodes</h2>
+
+<p>To get the <code>&lt;C-CR&gt;</code> key-mapping to work in terminal Vim, I needed to first tell iTerm what to send when I hit Control-Enter, then tell Vim what to listen for and how to interpret it. Let&rsquo;s start with iTerm. The steps for Terminal.app are similar, though the menus and appearance will differ.</p>
+
+<p>In iTerm&rsquo;s <em>Preferences</em> (<code>⌘,</code>), the <em>Profiles</em> tab has a <em>Keys</em> subtab. From there, you can define custom actions to trigger with any number of key-combinations. Clicking the &lsquo;<strong>+</strong>&rsquo; at the bottom of the list reveals a dialog to add a new combination.</p>
+
+<p><img class="screenshot" src="http://ivanbrennan.github.io/images/iterm/keys.png" title="keys" alt="iterm keys screenshot"></p>
+
+<p>I hit Control-Enter to enter <code>^↩</code> in the <em>Keyboard Shortcut</em> field and selected <em>Send Escape Sequence</em> from the <em>Action</em> drop-down, revealing a field labeled &ldquo;Esc+&rdquo;. Here I entered <code>[25~</code>, telling iTerm to send Esc + <code>[25~</code> when Control-Enter is typed.</p>
+
+<p>&ldquo;Why <code>[25~</code>? Where did that come from?&rdquo; I was hoping you wouldn&rsquo;t ask. Figuring out what codes to use, what wouldn&rsquo;t conflict with anything, and what would be interpretted consistently across xterm, GNU screen, and tmux was not a straightforward process. Lots of googling and trial and error, and recounting it is probably best saved for another post. For now, I&rsquo;ll stay focused on getting it wired up with Vim.</p>
+
+<p>Next, I needed to tell Vim how to interpret the <code>^[[25~</code> escape sequence that iTerm would be sending its way. (Note that the initial <code>^[</code> is the Escape character itself.) I set an unused Function key to the escape sequence:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='vim'><span class='line'><span class="k">set</span> <span class="p">&lt;</span>F13<span class="p">&gt;=</span>^[[<span class="m">25</span><span class="p">~</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>To enter that command correctly, you need to type <code>set &lt;F13&gt;=</code>, hit Control-V, hit Escape, then finish with <code>[25~</code>. Control-V followed by Escape enters the actual terminal code for the Escape key (which <em>appears</em> as the single character <code>^[</code>). The same is true whether you&rsquo;re entering it on Vim&rsquo;s command-line or inserting it in your .vimrc.</p>
+
+<p>With Vim listening for the escape sequence and associating it with a key, I mapped that key to <code>&lt;C-CR&gt;</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='vim'><span class='line'>map  <span class="p">&lt;</span>F13<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>Cr<span class="p">&gt;</span>
+</span><span class='line'>map<span class="p">!</span> <span class="p">&lt;</span>F13<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>Cr<span class="p">&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The call to <code>map</code> applies the mapping in Normal, Visual, Select, and Operator-pending mappings, while <code>map!</code> applies to Insert and Command-line mappings. With all this in place, terminal Vim can recognize Control-Enter and the <code>&lt;C-CR&gt;</code> key-notation.</p>
+
+<p>You can apply this approach to a lot of other key&rsquo;s that would otherwise be off-limits. A section of my <a href="https://github.com/ivanbrennan/vim/blob/master/vimrc">vimrc</a> wires up a bunch of them. I&rsquo;m cutting down on the mappings these days, but it&rsquo;s nice to know you can do this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+</pre></td><td class='code'><pre><code class='vim'><span class='line'><span class="c">&quot; enable special key combos</span>
+</span><span class='line'><span class="k">if</span> &amp;<span class="nb">term</span> <span class="p">=~</span> <span class="s2">&quot;xterm&quot;</span> <span class="p">||</span> &amp;<span class="nb">term</span> <span class="p">=~</span> <span class="s2">&quot;screen&quot;</span> <span class="p">||</span> &amp;<span class="nb">term</span> <span class="p">=~</span> <span class="s2">&quot;builtin_gui&quot;</span>
+</span><span class='line'><span class="c">  &quot; Ctrl-Enter</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F13<span class="p">&gt;=</span>[<span class="m">25</span><span class="p">~</span>
+</span><span class='line'>  map  <span class="p">&lt;</span>F13<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>CR<span class="p">&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F13<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>CR<span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">  &quot; Shift-Enter</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F14<span class="p">&gt;=</span>[<span class="m">27</span><span class="p">~</span>
+</span><span class='line'>  map  <span class="p">&lt;</span>F14<span class="p">&gt;</span> <span class="p">&lt;</span>S<span class="p">-</span>CR<span class="p">&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F14<span class="p">&gt;</span> <span class="p">&lt;</span>S<span class="p">-</span>CR<span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">  &quot; Ctrl-Space</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F15<span class="p">&gt;=</span>[<span class="m">29</span><span class="p">~</span>
+</span><span class='line'>  map  <span class="p">&lt;</span>F15<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>Space<span class="p">&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F15<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>Space<span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">  &quot; Shift-Space</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F16<span class="p">&gt;=</span>[<span class="m">30</span><span class="p">~</span>
+</span><span class='line'>  map  <span class="p">&lt;</span>F16<span class="p">&gt;</span> <span class="p">&lt;</span>S<span class="p">-</span>Space<span class="p">&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F16<span class="p">&gt;</span> <span class="p">&lt;</span>S<span class="p">-</span>Space<span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">  &quot; Ctrl-Backspace</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F17<span class="p">&gt;=</span>[<span class="m">1</span>;<span class="m">5</span>P
+</span><span class='line'>  map  <span class="p">&lt;</span>F17<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>BS<span class="p">&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F17<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>BS<span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">  &quot; Alt-Tab</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F18<span class="p">&gt;=</span>[<span class="m">1</span>;<span class="m">5</span>Q
+</span><span class='line'>  map  <span class="p">&lt;</span>F18<span class="p">&gt;</span> <span class="p">&lt;</span>M<span class="p">-</span>Tab<span class="p">&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F18<span class="p">&gt;</span> <span class="p">&lt;</span>M<span class="p">-</span>Tab<span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">  &quot; Alt-Shift-Tab</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F19<span class="p">&gt;=</span>[<span class="m">1</span>;<span class="m">5</span>R
+</span><span class='line'>  map  <span class="p">&lt;</span>F19<span class="p">&gt;</span> <span class="p">&lt;</span>M<span class="p">-</span>S<span class="p">-</span>Tab<span class="p">&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F19<span class="p">&gt;</span> <span class="p">&lt;</span>M<span class="p">-</span>S<span class="p">-</span>Tab<span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">  &quot; Ctrl-Up</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F20<span class="p">&gt;=</span>[<span class="m">1</span>;<span class="m">5</span>A
+</span><span class='line'>  map  <span class="p">&lt;</span>F20<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>Up<span class="p">&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F20<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>Up<span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">  &quot; Ctrl-Down</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F21<span class="p">&gt;=</span>[<span class="m">1</span>;<span class="m">5</span>B
+</span><span class='line'>  map  <span class="p">&lt;</span>F21<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>Down<span class="p">&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F21<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>Down<span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">  &quot; Ctrl-Right</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F22<span class="p">&gt;=</span>[<span class="m">1</span>;<span class="m">5</span>C
+</span><span class='line'>  map  <span class="p">&lt;</span>F22<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>Right<span class="p">&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F22<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>Right<span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">  &quot; Ctrl-Left</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F23<span class="p">&gt;=</span>[<span class="m">1</span>;<span class="m">5</span>D
+</span><span class='line'>  map  <span class="p">&lt;</span>F23<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>Left<span class="p">&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F23<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>Left<span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">  &quot; Ctrl-Tab</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F24<span class="p">&gt;=</span>[<span class="m">31</span><span class="p">~</span>
+</span><span class='line'>  map  <span class="p">&lt;</span>F24<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>Tab<span class="p">&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F24<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>Tab<span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">  &quot; Ctrl-Shift-Tab</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F25<span class="p">&gt;=</span>[<span class="m">32</span><span class="p">~</span>
+</span><span class='line'>  map  <span class="p">&lt;</span>F25<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>S<span class="p">-</span>Tab<span class="p">&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F25<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>S<span class="p">-</span>Tab<span class="p">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">  &quot; Ctrl-Comma</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F26<span class="p">&gt;=</span>[<span class="m">33</span><span class="p">~</span>
+</span><span class='line'>  map  <span class="p">&lt;</span>F26<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-,&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F26<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-,&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">  &quot; Ctrl-Shift-Space</span>
+</span><span class='line'>  <span class="k">set</span>  <span class="p">&lt;</span>F27<span class="p">&gt;=</span>[<span class="m">34</span><span class="p">~</span>
+</span><span class='line'>  map  <span class="p">&lt;</span>F27<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>S<span class="p">-</span>Space<span class="p">&gt;</span>
+</span><span class='line'>  map<span class="p">!</span> <span class="p">&lt;</span>F27<span class="p">&gt;</span> <span class="p">&lt;</span>C<span class="p">-</span>S<span class="p">-</span>Space<span class="p">&gt;</span>
+</span><span class='line'><span class="k">endif</span>
+</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Rigging Vim's Netrw]]></title>
