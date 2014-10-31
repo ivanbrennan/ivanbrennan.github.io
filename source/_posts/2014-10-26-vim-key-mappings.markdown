@@ -6,7 +6,7 @@ comments: true
 categories: vim
 ---
 
-## :map
+### :map
 In the land of Vim, most key sequences can easily be mapped to others. The basic syntax is `map a b`, which tells Vim that when you type `a`, it should act like `b`. Similarly, `map abc wxyz` would process `wxyz` when you typed `abc`, but let's look at a more useful example.
 
 You can use `m` to set a mark at the current cursor position, then jump to it later using the backtick (`` ` ``) key. Take this buffer for example:
@@ -23,10 +23,10 @@ There's a similar command using the single-quote. Typing `'x` jumps to the first
 
 On Vim's command-line, enter: ``map ' ` ``. Now both `` ` `` and `'` will take us directly to our mark. Instead of ditching the single-quote's original command entirely, let's map the backtick to it with ``map ` '``. But this causes a problem. Hit either `` ` `` or `'` and you'll get an error (`E223: recursive mapping`). We've mapped `` ` `` to `'`, which triggers `` ` ``, which triggers `'`, and on and on.
 
-## :noremap
+### :noremap
 To recover, let's remove both mappings with ``unmap ` `` and `unmap '`, to start fresh. Now instead of using `map` we'll use `noremap`. Running `noremap a b` will map `a` to `b` but avoid triggering anything `b` is mapped to. So we can enter ``noremap ' ` `` and ``noremap ` '`` to swap our keys without falling into a recursive pit.
 
-## map-modes
+### map-modes
 Depending on how you define them, your key-mappings will only apply in certain modes. The mappings we created with `map` and `noremap` apply in Normal, Visual, Select, and Operator-pending modes. Note the absence of Insert mode in that list -- we're not in danger of inserting ``doesn`t`` when we wanted `doesn't`.
 
 The `map`, `noremap`, and `unmap` commands each have mode-specific variations. My .vimrc, for instance, has a mapping for line-completion in Insert mode:
@@ -35,10 +35,10 @@ inoremap <C-L> <C-X><C-L>
 ```
 The `<C-L>` represents Control-L, and is case-insensitive (same as `<c-l>`). This makes line-completion less cumbersome without polluting modes other than Insert with the mapping. For more on map-modes, check out `:help :map-modes`. The map-overview (`:help map-overview`) is a good place to start.
 
-## key-notation
+### key-notation
 Vim uses a special notation for some keys. We saw `<C-L>` already. There's also `<Left>`, `<S-Left>` (shift-left), `<Space>`, `<CR>` (carriage return / enter), and many more (see `:help key-notation`). We can use these to expand our key-mapping vocabulary.
 
-## editor-envy
+### editor-envy
 I noticed a feature in Sublime Text that I wanted to simulate in Vim: `⌘Enter` adds a newline to the *end* of the current line rather than inserting it at the cursor position. This is handy if you're in the middle of a line and want to open a new line beneath it without breaking the text the cursor's on.
 
 To similate this, I needed to `inoremap` something to `<C-O>o`. From Insert mode, `<C-O>` pops you into Normal mode for a single command. Once there, `o` opens a new line beneath the current one and drops you onto it in Insert mode. In the interest of portability, I decided against using the `⌘` key, since it's Mac-specific, and went with Control instead:
@@ -47,7 +47,7 @@ inoremap <C-CR> <C-O>o
 ```
 Now I can hit Control-Enter from Insert mode to drop down to a new line without disrupting the one I'm on. Actually no, I can't. I can if I'm using MacVim, but terminal Vim doesn't recognize the `<C-CR>` key-combo. This is where things get interesting.
 
-## terminal keycodes
+### terminal keycodes
 To get the `<C-CR>` key-mapping to work in terminal Vim, I needed to first tell iTerm what to send when I hit Control-Enter, then tell Vim what to listen for and how to interpret it. Let's start with iTerm. The steps for Terminal.app are similar, though the menus and appearance will differ.
 
 In iTerm's *Preferences* (`⌘,`), the *Profiles* tab has a *Keys* subtab. From there, you can define custom actions to trigger with any number of key-combinations. Clicking the '**+**' at the bottom of the list reveals a dialog to add a new combination.
