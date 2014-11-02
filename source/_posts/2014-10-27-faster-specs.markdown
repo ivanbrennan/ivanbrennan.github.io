@@ -214,4 +214,4 @@ context 'within 1 week of arrival date' do
 end
 ```
 
-I initially wanted faster specs to enable a better TDD flow. A nice side benefit of writing these stubbed tests is that it illuminates the dependencies and coupling in the production code you're working with and encourages better composition overall. FactoryGirl is still a wonderful tool, but it shouldn't be your only tool!
+I initially wanted faster specs to enable a better TDD flow. A nice side benefit of writing these stubbed tests is that it illuminates the dependencies and coupling in the production code you're working with and encourages better composition overall. FactoryGirl is still a wonderful tool, but it shouldn't be the only one in your belt.
