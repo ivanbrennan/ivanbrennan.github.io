@@ -4,7 +4,7 @@
   <title><![CDATA[detached head]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2014-11-02T12:44:29-05:00</updated>
+  <updated>2014-11-02T12:46:12-05:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -378,7 +378,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>I initially wanted faster specs to enable a better TDD flow. A nice side benefit of writing these stubbed tests is that it illuminates the dependencies and coupling in the production code you&rsquo;re working with and encourages better composition overall. FactoryGirl is still a wonderful tool, but it shouldn&rsquo;t be your only tool!</p>
+<p>I initially wanted faster specs to enable a better TDD flow. A nice side benefit of writing these stubbed tests is that it illuminates the dependencies and coupling in the production code you&rsquo;re working with and encourages better composition overall. FactoryGirl is still a wonderful tool, but it shouldn&rsquo;t be the only one in your belt.</p>
 ]]></content>
   </entry>
   
