@@ -9,7 +9,7 @@
   <meta name="author" content="Ivan Brennan">
 
   
-  <meta name="description" content="Getting the full benefits of TDD requires fast-running specs. The feedback cycle is what makes the difference between a pleasurable &ldquo;red-green- &hellip;">
+  <meta name="description" content="Performing a project-wide search-and-replace is a common task, and yet I still forget how to do it in Vim. While there&rsquo;s not that much to it ( &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +65,137 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/11/04/search-and-replace/">Search &amp; Replace</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-11-04T08:05:00-05:00" pubdate data-updated="true">Nov 4<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Performing a project-wide search-and-replace is a common task, and yet I still forget how to do it in Vim. While there&rsquo;s not that much to it (build an argument list of relevant files and run a global substitution across them), I&rsquo;ve had to look it up enough times to start wondering if there&rsquo;s a better way. I ended up writing a shell function, as well as a Ruby-specific wrapper for it.</p>
+
+<p>Now if I want to rename a function across my project&rsquo;s javascript files, I can drop onto the command-line and run:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>greplace **.js uglyFunctionName nicerFunctionName</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Or, if I&rsquo;m renaming a Ruby method:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>rupl bad_method_name good_method_name</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>The Sauce</h2>
+
+<p>Using <code>find</code>, <code>grep</code>, and <code>sed</code> in concert, we declare which files to search, what to search for, and what to do with those files that contain a match.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>greplace<span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$#&quot;</span> !<span class="o">=</span> 3 <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">    </span><span class="nb">echo</span> <span class="s2">&quot;Usage: greplace file_pattern search_pattern replacement&quot;</span>
+</span><span class='line'>    <span class="k">return </span>1
+</span><span class='line'>  <span class="k">else</span>
+</span><span class='line'><span class="k">    </span><span class="nv">file_pattern</span><span class="o">=</span><span class="nv">$1</span>
+</span><span class='line'>    <span class="nv">search_pattern</span><span class="o">=</span><span class="nv">$2</span>
+</span><span class='line'>    <span class="nv">replacement</span><span class="o">=</span><span class="nv">$3</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c"># This is built for BSD grep and the sed bundled with OS X.</span>
+</span><span class='line'>    <span class="c"># GNU grep takes -Z instead of --null, and other versions of sed may not support the -i &#39;&#39; syntax.</span>
+</span><span class='line'>
+</span><span class='line'>    find . -name <span class="s2">&quot;$file_pattern&quot;</span> -exec grep -lw --null <span class="s2">&quot;$search_pattern&quot;</span> <span class="o">{}</span> + |
+</span><span class='line'>    xargs -0 sed -i <span class="s1">&#39;&#39;</span> <span class="s2">&quot;s/[[:&lt;:]]$search_pattern[[:&gt;:]]/$replacement/g&quot;</span>
+</span><span class='line'>  <span class="k">fi</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>rupl<span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$#&quot;</span> !<span class="o">=</span> 2 <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">    </span><span class="nb">echo</span> <span class="s2">&quot;Usage: rupl search_pattern replacement&quot;</span>
+</span><span class='line'>    <span class="k">return </span>1
+</span><span class='line'>  <span class="k">else</span>
+</span><span class='line'><span class="k">    </span><span class="nv">search_pattern</span><span class="o">=</span><span class="nv">$1</span>
+</span><span class='line'>    <span class="nv">replacement</span><span class="o">=</span><span class="nv">$2</span>
+</span><span class='line'>
+</span><span class='line'>    greplace <span class="s1">&#39;**.rb&#39;</span> <span class="s2">&quot;$search_pattern&quot;</span> <span class="s2">&quot;$replacement&quot;</span>
+</span><span class='line'>  <span class="k">fi</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Ingredients</h2>
+
+<p>The first thing <code>greplace</code> does is test whether it received the wrong number of arguments: <code>[ "$#" != 3 ]</code>. If so, it prints a usage message and returns an error code. Otherwise, it sets some local variables with more memorable names than <code>1</code>, <code>2</code>, and <code>3</code>.</p>
+
+<p>Next, we <code>find</code> pathnames in the current directory (and subdirectories) that match <code>file_pattern</code>. Using <code>find ... --exec &lt;command&gt; {};</code> runs a command on each found path, expanding <code>{}</code> to the pathname. Replacing <code>;</code> with <code>+</code> will instead expand <code>{}</code> to as many of the found pathnames as possible. This allows us to feed all the found files as arguments to a single <code>grep</code>.</p>
+
+<p>We <code>grep</code> the relevant files for <code>search_pattern</code>, restricting results to the names of files (<code>-l</code>) that contain a whole-word (<code>-w</code>) match. We also print a <a href="http://en.wikipedia.org/wiki/Null_character">null-character</a> after each filename in the results (<code>--null</code>), which will be useful as a delimiter in the next step.</p>
+
+<p>The results of <code>grep</code> are piped into <code>xargs -0</code>, which constructs an argument list (recognizing the null-character delimiter) and feeds this list to <code>sed</code> for further processing.</p>
+
+<p>We then use <code>sed -i</code> to edit each file &ldquo;in place&rdquo; (rather than writing results to stdout) without creating any backup files (<code>''</code>), which could be risky, but since I&rsquo;m working with Git this seems reasonable.</p>
+
+<p>The actual search-and-replace is simply a pattern substitution. The <code>[[:&lt;:]]</code> and <code>[[:&gt;:]]</code> delimiters restrict it to whole-word matches.</p>
+
+<h2>Caveats</h2>
+
+<p>A few things limit this function&rsquo;s portability. For one, not all versions of <code>grep</code> recognize <code>--null</code>. GNU grep uses <code>-Z</code> instead. Also, the <code>-i ''</code> syntax may not be recognized by all versions of <code>sed</code> (actually, from what I was able to gather, that syntax might be unique to the version bundled with OSX).</p>
+
+<p>That being said, it would only take a few minor tweaks to get this working on a different system.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1494,159 +1625,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/10/08/enumerables/">Enumerables</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-10-08T08:38:00-04:00" pubdate data-updated="true">Oct 8<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Ruby provides lots of built-in methods for working with arrays, but at first glance, some seem to be missing from the <a href="http://ruby-doc.org/core-2.0.0/Array.html">Array documentation</a>. A good example is the <code>#find</code> method, which returns the first element satisfying the criteria you provide in a block.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="o">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="o">].</span><span class="n">find</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="p">}</span>  <span class="c1"># =&gt; 3</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>The fact is, these methods are mixed in from the <a href="http://ruby-doc.org/core-2.0.0/Enumerable.html">Enumerable module</a>, a collection of useful methods that can be applied to Arrays, Ranges, and Sets, among other Ruby classes. A simple check <code>whatever_object.is_a? Enumerable</code> will confirm whether whatever object your dealing with includes the Enumerable module.</p>
-
-<p>One of these methods, <code>#zip</code>, has been calling out to me since I started learning Ruby. It seemed like an alchemical process that merged arrays in a mysterious way. In practice, it simply merges the corresponding elements of each array, returning an array of arrays.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">i_got</span>   <span class="o">=</span> <span class="o">[</span><span class="s2">&quot;I got the style&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;I got the clothes&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;I got the bread&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;I got the winda&quot;</span><span class="o">]</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">but_not</span> <span class="o">=</span> <span class="o">[</span><span class="s2">&quot;but not the grace&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;but not the face&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;but not the butter&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;but not the shutter&quot;</span><span class="o">]</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">i_got</span><span class="o">.</span><span class="n">zip</span><span class="p">(</span><span class="n">but_not</span><span class="p">)</span>
-</span><span class='line'><span class="c1"># =&gt; [[&quot;I got the style&quot;, &quot;but not the grace&quot;],</span>
-</span><span class='line'><span class="c1">#     [&quot;I got the clothes&quot;, &quot;but not the face&quot;],</span>
-</span><span class='line'><span class="c1">#     [&quot;I got the bread&quot;, &quot;but not the butter&quot;],</span>
-</span><span class='line'><span class="c1">#     [&quot;I got the winda&quot;, &quot;but not the shutter&quot;]]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Pretty nice, but why don&rsquo;t we do <a href="http://www.youtube.com/watch?v=ByomIJf5n9w">Tom Waits</a> proud and join those phrases?</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">i_got</span><span class="o">.</span><span class="n">zip</span><span class="p">(</span><span class="n">but_not</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">got_not</span><span class="o">|</span> <span class="n">got_not</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="p">)}</span>
-</span><span class='line'><span class="c1"># =&gt; nil</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Whoops! Passing <code>#zip</code> a block will invoke the block for each output array, but return <code>nil</code> at the end of the day. A call <code>#map</code> to will do the trick.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">i_got</span><span class="o">.</span><span class="n">zip</span><span class="p">(</span><span class="n">but_not</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="o">|</span><span class="n">got_not</span><span class="o">|</span> <span class="n">got_not</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="p">)}</span>
-</span><span class='line'><span class="c1"># =&gt; [&quot;I got the style, but not the grace&quot;,</span>
-</span><span class='line'><span class="c1">#     &quot;I got the clothes, but not the face&quot;,</span>
-</span><span class='line'><span class="c1">#     &quot;I got the bread, but not the butter&quot;,</span>
-</span><span class='line'><span class="c1">#     &quot;I got the winda, but not the shutter&quot;]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>In fact, <code>#zip</code> can merge any number of arrays&hellip;</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">bagels</span>  <span class="o">=</span> <span class="o">[</span><span class="s2">&quot;sesame bagel&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;plain bagel&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;poppy bagel&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;pumpernickel bagel&quot;</span><span class="o">]</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">spreads</span> <span class="o">=</span> <span class="o">[</span><span class="s2">&quot;cream cheese&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;butter&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;peanut-butter&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;jam&quot;</span><span class="o">]</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">extras</span>  <span class="o">=</span> <span class="o">[</span><span class="s2">&quot;lox&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;tomato&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;chives&quot;</span><span class="p">,</span>
-</span><span class='line'>           <span class="s2">&quot;lettuce&quot;</span><span class="o">]</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">bagels</span><span class="o">.</span><span class="n">zip</span><span class="p">(</span><span class="n">spreads</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">bgl</span><span class="p">,</span> <span class="n">spd</span><span class="p">,</span> <span class="n">xtr</span><span class="o">|</span>
-</span><span class='line'>  <span class="s2">&quot;</span><span class="si">#{</span><span class="n">bgl</span><span class="si">}</span><span class="s2"> with </span><span class="si">#{</span><span class="n">spd</span><span class="si">}</span><span class="s2"> and </span><span class="si">#{</span><span class="n">xtr</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'><span class="c1"># =&gt; [&quot;sesame bagel with cream cheese and lox&quot;,</span>
-</span><span class='line'><span class="c1">#     &quot;plain bagel with butter and tomato&quot;,</span>
-</span><span class='line'><span class="c1">#     &quot;poppy bagel with peanut-butter and chives&quot;,</span>
-</span><span class='line'><span class="c1">#     &quot;pumpernickel bagel with jam and lettuce&quot;]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Not all the tastiest combinations, but that&rsquo;s how <code>#zip</code> works, it just matches up the elements in whatever order they appeared in the original arrays.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -1662,6 +1640,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2014/11/04/search-and-replace/">Search &amp; Replace</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2014/10/27/faster-specs/">Faster Specs</a>
       </li>
     
@@ -1675,10 +1657,6 @@
     
       <li class="post">
         <a href="/blog/2014/01/14/polymorphic-mythology/">Polymorphic Mythology</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/11/21/chef-roles/">Chef Roles</a>
       </li>
     
   </ul>
