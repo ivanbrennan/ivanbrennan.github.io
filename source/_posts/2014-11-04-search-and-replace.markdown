@@ -17,7 +17,8 @@ Or, if I'm renaming a Ruby method:
 rupl bad_method_name good_method_name
 ```
 
-## Sauce
+## The Sauce
+Using `find`, `grep`, and `sed` in concert, we declare which files to search, what to search for, and what to do with those files that contain a match.
 ```bash
 greplace() {
   if [ "$#" != 3 ]; then
@@ -50,11 +51,20 @@ rupl() {
 ```
 
 ## Ingredients
-The function first tests whether it's been passed the wrong number of arguments, `[ "$#" != 3 ]`, in which case it displays a usage message and returns an error code. Otherwise it sets some local variables based on the arguments received.
+The first thing `greplace` does is test whether it received the wrong number of arguments: `[ "$#" != 3 ]`. If so, it prints a usage message and returns an error code. Otherwise, it sets some local variables with more memorable names than `1`, `2`, and `3`.
 
-It performs a `find` in the current directory, looking for files whose name matches the filename-pattern, and greps through the found files looking for the search-pattern.
+Next, we `find` pathnames in the current directory (and subdirectories) that match `file_pattern`. Using `find ... --exec <command> {};` runs a command on each found path, expanding `{}` to the pathname. Replacing `;` with `+` will instead expand `{}` to as many of the found pathnames as possible. This allows us to feed all the found files as arguments to a single `grep`.
 
-Next, the results of `grep` are piped to `xargs`, which constructs an argument list for the following `sed` command. Finally, `sed` performs the search and replace on each file in that list.
+We `grep` the relevant files for `search_pattern`, restricting results to the names of files (`-l`) that contain a whole-word (`-w`) match. We also print a [null-character](http://en.wikipedia.org/wiki/Null_character) after each filename in the results (`--null`), which will be useful as a delimiter in the next step.
 
-## Details
+The results of `grep` are piped into `xargs -0`, which constructs an argument list (recognizing the null-character delimiter) and feeds this list to `sed` for further processing.
+
+We then use `sed -i` to edit each file "in place" (rather than writing results to stdout) without creating any backup files (`''`), which could be risky, but since I'm working with Git this seems reasonable.
+
+The actual search-and-replace is simply a pattern substitution. The `[[:<:]]` and `[[:>:]]` delimiters restrict it to whole-word matches.
+
+## Caveats
+A few things limit this function's portability. For one, not all versions of `grep` recognize `--null`. GNU grep uses `-Z` instead. Also, the `-i ''` syntax may not be recognized by all versions of `sed` (actually, from what I was able to gather, that syntax might be unique to the version bundled with OSX).
+
+That being said, it would only take a few minor tweaks to get this working on a different system.
 
