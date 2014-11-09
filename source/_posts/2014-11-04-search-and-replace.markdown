@@ -51,9 +51,9 @@ rupl() {
 ```
 
 ## Ingredients
-The first thing `greplace` does is test whether it received the wrong number of arguments: `[ "$#" != 3 ]`. If so, it prints a usage message and returns an error code. Otherwise, it sets some local variables with more memorable names than `1`, `2`, and `3`.
+The first thing `greplace` does is test whether it received the wrong number of arguments: `[ "$#" != 3 ]`. If so, we print a usage message and return an error code. Otherwise, we set some local variables with more memorable names than `1`, `2`, and `3`.
 
-Next, we `find` pathnames in the current directory (and subdirectories) that match `file_pattern`. Using `find ... --exec <command> {};` runs a command on each found path, expanding `{}` to the pathname. Replacing `;` with `+` will instead expand `{}` to as many of the found pathnames as possible. This allows us to feed all the found files as arguments to a single `grep`.
+Next, we `find` pathnames in the current directory (and subdirectories) that match `file_pattern`. Using `find ... --exec <command> {};` lets us run a command on each found path, expanding `{}` to the pathname. Replacing `;` with `+` will instead expand `{}` to as many of the found pathnames as possible, which allows us to feed all the found files as arguments to a single `grep`.
 
 We `grep` the relevant files for `search_pattern`, restricting results to the names of files (`-l`) that contain a whole-word (`-w`) match. We also print a [null-character](http://en.wikipedia.org/wiki/Null_character) after each filename in the results (`--null`), which will be useful as a delimiter in the next step.
 
@@ -64,7 +64,7 @@ We then use `sed -i` to edit each file "in place" (rather than writing results t
 The actual search-and-replace is simply a pattern substitution. The `[[:<:]]` and `[[:>:]]` delimiters restrict it to whole-word matches.
 
 ## Caveats
-A few things limit this function's portability. For one, not all versions of `grep` recognize `--null`. GNU grep uses `-Z` instead. Also, the `-i ''` syntax may not be recognized by all versions of `sed` (actually, from what I was able to gather, that syntax might be unique to the version bundled with OSX).
+A few things limit this function's portability. For one, not all versions of `grep` recognize the `--null` flag. GNU grep uses `-Z` instead. Also, the `-i ''` syntax may not be recognized by all versions of `sed` (actually, from what I was able to gather, that syntax might be unique to the version bundled with OSX).
 
 That being said, it would only take a few minor tweaks to get this working on a different system.
 
