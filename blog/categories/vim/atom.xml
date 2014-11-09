@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: vim | detached head]]></title>
+  <title><![CDATA[Category: vim | codemachine]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/vim/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2014-11-08T19:30:40-05:00</updated>
+  <updated>2014-11-08T23:12:35-05:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -44,11 +44,12 @@ I&rsquo;ll put my cursor on the <em>N</em> in <code>NameError</code> and type (i
 
 <p>Depending on how you define them, your key-mappings will only apply in certain modes. The mappings we created with <code>map</code> and <code>noremap</code> apply in Normal, Visual, Select, and Operator-pending modes. Note the absence of Insert mode in that list &mdash; we&rsquo;re not in danger of inserting <code>doesn`t</code> when we wanted <code>doesn't</code>.</p>
 
-<p>The <code>map</code>, <code>noremap</code>, and <code>unmap</code> commands each have mode-specific variations. My .vimrc, for instance, has a mapping for line-completion in Insert mode:
-<code>vim
-inoremap &lt;C-L&gt; &lt;C-X&gt;&lt;C-L&gt;
-</code>
-The <code>&lt;C-L&gt;</code> represents Control-L, and is case-insensitive (same as <code>&lt;c-l&gt;</code>). This makes line-completion less cumbersome without polluting modes other than Insert with the mapping. For more on map-modes, check out <code>:help :map-modes</code>. The map-overview (<code>:help map-overview</code>) is a good place to start.</p>
+<p>The <code>map</code>, <code>noremap</code>, and <code>unmap</code> commands each have mode-specific variations. My .vimrc, for instance, has a mapping for line-completion in Insert mode:</p>
+
+<pre><code>inoremap &lt;C-L&gt; &lt;C-X&gt;&lt;C-L&gt;
+</code></pre>
+
+<p>The <code>&lt;C-L&gt;</code> represents Control-L, and is case-insensitive (same as <code>&lt;c-l&gt;</code>). This makes line-completion less cumbersome without polluting modes other than Insert with the mapping. For more on map-modes, check out <code>:help :map-modes</code>. The map-overview (<code>:help map-overview</code>) is a good place to start.</p>
 
 <h3>key-notation</h3>
 
@@ -58,11 +59,12 @@ The <code>&lt;C-L&gt;</code> represents Control-L, and is case-insensitive (same
 
 <p>I noticed a feature in Sublime Text that I wanted to simulate in Vim: <code>⌘Enter</code> adds a newline to the <em>end</em> of the current line rather than inserting it at the cursor position. This is handy if you&rsquo;re in the middle of a line and want to open a new line beneath it without breaking the text the cursor&rsquo;s on.</p>
 
-<p>To similate this, I needed to <code>inoremap</code> something to <code>&lt;C-O&gt;o</code>. From Insert mode, <code>&lt;C-O&gt;</code> pops you into Normal mode for a single command. Once there, <code>o</code> opens a new line beneath the current one and drops you onto it in Insert mode. In the interest of portability, I decided against using the <code>⌘</code> key, since it&rsquo;s Mac-specific, and went with Control instead:
-<code>
-inoremap &lt;C-CR&gt; &lt;C-O&gt;o
-</code>
-Now I can hit Control-Enter from Insert mode to drop down to a new line without disrupting the one I&rsquo;m on. Actually no, I can&rsquo;t. I can if I&rsquo;m using MacVim, but terminal Vim doesn&rsquo;t recognize the <code>&lt;C-CR&gt;</code> key-combo. This is where things get interesting.</p>
+<p>To similate this, I needed to <code>inoremap</code> something to <code>&lt;C-O&gt;o</code>. From Insert mode, <code>&lt;C-O&gt;</code> pops you into Normal mode for a single command. Once there, <code>o</code> opens a new line beneath the current one and drops you onto it in Insert mode. In the interest of portability, I decided against using the <code>⌘</code> key, since it&rsquo;s Mac-specific, and went with Control instead:</p>
+
+<pre><code>inoremap &lt;C-CR&gt; &lt;C-O&gt;o
+</code></pre>
+
+<p>Now I can hit Control-Enter from Insert mode to drop down to a new line without disrupting the one I&rsquo;m on. Actually no, I can&rsquo;t. I can if I&rsquo;m using MacVim, but terminal Vim doesn&rsquo;t recognize the <code>&lt;C-CR&gt;</code> key-combo. This is where things get interesting.</p>
 
 <h3>terminal keycodes</h3>
 
@@ -76,99 +78,100 @@ Now I can hit Control-Enter from Insert mode to drop down to a new line without 
 
 <p>&ldquo;Why <code>[25~</code>? Where did that come from?&rdquo; I was hoping you wouldn&rsquo;t ask. Figuring out what codes to use, what wouldn&rsquo;t conflict with anything, and what would be interpretted consistently across xterm, GNU screen, and tmux was not a straightforward process. Lots of googling and trial and error, and recounting it is probably best saved for another post. For now, I&rsquo;ll stay focused on getting it wired up with Vim.</p>
 
-<p>Next, I needed to tell Vim how to interpret the <code>^[[25~</code> escape sequence that iTerm would be sending its way. (Note that the initial <code>^[</code> is the Escape character itself.) I set an unused Function key to the escape sequence:
-<code>vim
-set &lt;F13&gt;=^[[25~
-</code>
-To enter that command correctly, you need to type <code>set &lt;F13&gt;=</code>, hit Control-V, hit Escape, then finish with <code>[25~</code>. Control-V followed by Escape enters the actual terminal code for the Escape key (which <em>appears</em> as the single character <code>^[</code>). The same is true whether you&rsquo;re entering it on Vim&rsquo;s command-line or inserting it in your .vimrc.</p>
+<p>Next, I needed to tell Vim how to interpret the <code>^[[25~</code> escape sequence that iTerm would be sending its way. (Note that the initial <code>^[</code> is the Escape character itself.) I set an unused Function key to the escape sequence:</p>
 
-<p>With Vim listening for the escape sequence and associating it with a key, I mapped that key to <code>&lt;C-CR&gt;</code>:
-<code>vim
-map  &lt;F13&gt; &lt;C-Cr&gt;  
+<pre><code>set &lt;F13&gt;=^[[25~
+</code></pre>
+
+<p>To enter that command correctly, you need to type <code>set &lt;F13&gt;=</code>, hit Control-V, hit Escape, then finish with <code>[25~</code>. Control-V followed by Escape enters the actual terminal code for the Escape key (which <em>appears</em> as the single character <code>^[</code>). The same is true whether you&rsquo;re entering it on Vim&rsquo;s command-line or inserting it in your .vimrc.</p>
+
+<p>With Vim listening for the escape sequence and associating it with a key, I mapped that key to <code>&lt;C-CR&gt;</code>:</p>
+
+<pre><code>map  &lt;F13&gt; &lt;C-Cr&gt;  
 map! &lt;F13&gt; &lt;C-Cr&gt;
-</code>
-The call to <code>map</code> applies the mapping in Normal, Visual, Select, and Operator-pending mappings, while <code>map!</code> applies to Insert and Command-line mappings. With all this in place, terminal Vim can recognize Control-Enter and the <code>&lt;C-CR&gt;</code> key-notation.</p>
+</code></pre>
 
-<p>You can apply this approach to a lot of other key&rsquo;s that would otherwise be off-limits. A section of my <a href="https://github.com/ivanbrennan/vim/blob/master/vimrc">vimrc</a> wires up a bunch of them. I&rsquo;m cutting down on the mappings these days, but it&rsquo;s nice to know you can do this:
-``` vim
-&ldquo; enable special key combos
-if &amp;term =~ "xterm&rdquo; || &amp;term =~ &ldquo;screen&rdquo; || &amp;term =~ &ldquo;builtin_gui&rdquo;
-  &ldquo; Ctrl-Enter
-  set  <F13>=[25~
-  map  <F13> &lt;C-CR>
-  map! <F13> &lt;C-CR></p>
+<p>The call to <code>map</code> applies the mapping in Normal, Visual, Select, and Operator-pending mappings, while <code>map!</code> applies to Insert and Command-line mappings. With all this in place, terminal Vim can recognize Control-Enter and the <code>&lt;C-CR&gt;</code> key-notation.</p>
 
-<p>  &ldquo; Shift-Enter
-  set  <F14>=[27~
-  map  <F14> &lt;S-CR>
-  map! <F14> &lt;S-CR></p>
+<p>You can apply this approach to a lot of other key&rsquo;s that would otherwise be off-limits. A section of my <a href="https://github.com/ivanbrennan/vim/blob/master/vimrc">vimrc</a> wires up a bunch of them. I&rsquo;m cutting down on the mappings these days, but it&rsquo;s nice to know you can do this:</p>
 
-<p>  &ldquo; Ctrl-Space
-  set  <F15>=[29~
-  map  <F15> &lt;C-Space>
-  map! <F15> &lt;C-Space></p>
+<pre><code>if &amp;term =~ "xterm" || &amp;term =~ "screen" || &amp;term =~ "builtin_gui"
+  " Ctrl-Enter
+  set  &lt;F13&gt;=[25~
+  map  &lt;F13&gt; &lt;C-CR&gt;
+  map! &lt;F13&gt; &lt;C-CR&gt;
 
-<p>  &ldquo; Shift-Space
-  set  <F16>=[30~
-  map  <F16> &lt;S-Space>
-  map! <F16> &lt;S-Space></p>
+  " Shift-Enter
+  set  &lt;F14&gt;=[27~
+  map  &lt;F14&gt; &lt;S-CR&gt;
+  map! &lt;F14&gt; &lt;S-CR&gt;
 
-<p>  &ldquo; Ctrl-Backspace
-  set  <F17>=[1;5P
-  map  <F17> &lt;C-BS>
-  map! <F17> &lt;C-BS></p>
+  " Ctrl-Space
+  set  &lt;F15&gt;=[29~
+  map  &lt;F15&gt; &lt;C-Space&gt;
+  map! &lt;F15&gt; &lt;C-Space&gt;
 
-<p>  &ldquo; Alt-Tab
-  set  <F18>=[1;5Q
-  map  <F18> &lt;M-Tab>
-  map! <F18> &lt;M-Tab></p>
+  " Shift-Space
+  set  &lt;F16&gt;=[30~
+  map  &lt;F16&gt; &lt;S-Space&gt;
+  map! &lt;F16&gt; &lt;S-Space&gt;
 
-<p>  &ldquo; Alt-Shift-Tab
-  set  <F19>=[1;5R
-  map  <F19> &lt;M-S-Tab>
-  map! <F19> &lt;M-S-Tab></p>
+  " Ctrl-Backspace
+  set  &lt;F17&gt;=[1;5P
+  map  &lt;F17&gt; &lt;C-BS&gt;
+  map! &lt;F17&gt; &lt;C-BS&gt;
 
-<p>  &ldquo; Ctrl-Up
-  set  <F20>=[1;5A
-  map  <F20> &lt;C-Up>
-  map! <F20> &lt;C-Up></p>
+  " Alt-Tab
+  set  &lt;F18&gt;=[1;5Q
+  map  &lt;F18&gt; &lt;M-Tab&gt;
+  map! &lt;F18&gt; &lt;M-Tab&gt;
 
-<p>  &ldquo; Ctrl-Down
-  set  <F21>=[1;5B
-  map  <F21> &lt;C-Down>
-  map! <F21> &lt;C-Down></p>
+  " Alt-Shift-Tab
+  set  &lt;F19&gt;=[1;5R
+  map  &lt;F19&gt; &lt;M-S-Tab&gt;
+  map! &lt;F19&gt; &lt;M-S-Tab&gt;
 
-<p>  &ldquo; Ctrl-Right
-  set  <F22>=[1;5C
-  map  <F22> &lt;C-Right>
-  map! <F22> &lt;C-Right></p>
+  " Ctrl-Up
+  set  &lt;F20&gt;=[1;5A
+  map  &lt;F20&gt; &lt;C-Up&gt;
+  map! &lt;F20&gt; &lt;C-Up&gt;
 
-<p>  &ldquo; Ctrl-Left
-  set  <F23>=[1;5D
-  map  <F23> &lt;C-Left>
-  map! <F23> &lt;C-Left></p>
+  " Ctrl-Down
+  set  &lt;F21&gt;=[1;5B
+  map  &lt;F21&gt; &lt;C-Down&gt;
+  map! &lt;F21&gt; &lt;C-Down&gt;
 
-<p>  &ldquo; Ctrl-Tab
-  set  <F24>=[31~
-  map  <F24> &lt;C-Tab>
-  map! <F24> &lt;C-Tab></p>
+  " Ctrl-Right
+  set  &lt;F22&gt;=[1;5C
+  map  &lt;F22&gt; &lt;C-Right&gt;
+  map! &lt;F22&gt; &lt;C-Right&gt;
 
-<p>  &ldquo; Ctrl-Shift-Tab
-  set  <F25>=[32~
-  map  <F25> &lt;C-S-Tab>
-  map! <F25> &lt;C-S-Tab></p>
+  " Ctrl-Left
+  set  &lt;F23&gt;=[1;5D
+  map  &lt;F23&gt; &lt;C-Left&gt;
+  map! &lt;F23&gt; &lt;C-Left&gt;
 
-<p>  &ldquo; Ctrl-Comma
-  set  <F26>=[33~
-  map  <F26> &lt;C-,>
-  map! <F26> &lt;C-,></p>
+  " Ctrl-Tab
+  set  &lt;F24&gt;=[31~
+  map  &lt;F24&gt; &lt;C-Tab&gt;
+  map! &lt;F24&gt; &lt;C-Tab&gt;
 
-<p>  &ldquo; Ctrl-Shift-Space
-  set  <F27>=[34~
-  map  <F27> &lt;C-S-Space>
-  map! <F27> &lt;C-S-Space>
+  " Ctrl-Shift-Tab
+  set  &lt;F25&gt;=[32~
+  map  &lt;F25&gt; &lt;C-S-Tab&gt;
+  map! &lt;F25&gt; &lt;C-S-Tab&gt;
+
+  " Ctrl-Comma
+  set  &lt;F26&gt;=[33~
+  map  &lt;F26&gt; &lt;C-,&gt;
+  map! &lt;F26&gt; &lt;C-,&gt;
+
+  " Ctrl-Shift-Space
+  set  &lt;F27&gt;=[34~
+  map  &lt;F27&gt; &lt;C-S-Space&gt;
+  map! &lt;F27&gt; &lt;C-S-Space&gt;
 endif
-```</p>
+</code></pre>
 ]]></content>
   </entry>
   
@@ -185,7 +188,7 @@ endif
 
 <p>My first goal was to toggle a sidebar navigator open/closed with a keystroke or two. The <code>:Vexplore</code> command opens a Netrw browser in a vertical split. If you pass the command a directory, it will open into that location, otherwise it opens in the current file&rsquo;s parent directory. There&rsquo;s a distinction between the current file&rsquo;s parent directory and the &ldquo;current working directory&rdquo; that Vim keeps track of. Say you start Vim from within ~/Development. You can <code>:edit</code> files anywhere you like (~/Development/resources, ~, /usr/local, etc.), and until you explicitly tell Vim to <code>:cd</code> to a new location, the current working directory will remain where it started, at ~/Development. You can use this as a home-base to work from in the current Vim session. With this in mind, I composed a small set of functions to toggle the sidebar in either the current file&rsquo;s directory (to access neighboring files), or the &ldquo;current working directory&rdquo; (which I tend to leave at the project root), and mapped them to a couple keystrokes I find convenient.</p>
 
-<p>```
+<p>```vim
 fun! VexToggle(dir)
   if exists(&ldquo;t:vex_buf_nr&rdquo;)</p>
 
@@ -203,7 +206,7 @@ endf
 
 <p>I&rsquo;m using <code>t:vex_buf_nr</code> to track whether the sidebar is currently open. The <code>t:</code> is scoping the variable to the current tab. That&rsquo;s so each tab can have its own sidebar. If you&rsquo;re not familiar with Vim&rsquo;s tabs, don&rsquo;t worry about it. It&rsquo;s a minor detail here. In the else clause, we pass <code>a:dir</code> (the <code>dir</code> argument that was passed into <code>VexToggle()</code>) to <code>VexOpen()</code>.</p>
 
-<p>```
+<p>```vim
 fun! VexOpen(dir)
   let g:netrw_browse_split=4    &ldquo; open files in previous window
   let vex_width = 25</p>
@@ -224,16 +227,15 @@ endf
 
 <p>I made a couple mappings to call <code>VexToggle()</code>. The first passes it Vim&rsquo;s &ldquo;current working directory&rdquo; as an argument, while the second passes an empty string. That way, I can use the first mapping to toggle an explorer sidebar from the project root and the second to toggle an explorer from whichever directory houses the file I&rsquo;m currently editing.</p>
 
-<p><code>
-noremap &lt;Leader&gt;&lt;Tab&gt; :call VexToggle(getcwd())&lt;CR&gt;
+<pre><code>noremap &lt;Leader&gt;&lt;Tab&gt; :call VexToggle(getcwd())&lt;CR&gt;
 noremap &lt;Leader&gt;` :call VexToggle("")&lt;CR&gt;
-</code></p>
+</code></pre>
 
 <p><img class="screenshot" src="/images/vextoggle/8.png" title="&lsquo;vim&rsquo; &lsquo;vim screenshot&rsquo;" ></p>
 
 <p>When the sidebar is open, either mapping can be used to close it. <code>VexClose()</code> starts by noting which window it was called from, so it can return the cursor to that window after the sidebar has closed. The exception is when the cursor was <em>in</em> the sidebar when <code>VexClose()</code> was called, in which case the cursor will land in the previous window (whichever window holds the alternate file <code>"#"</code>). The middle section switches to the sidebar, closes it, and removes the internal variable that was tracking its presence. Finally, we switch to the appropriate destination window and call <code>NormalizeWidths()</code> to normalize the widths of all open windows. Note that we have to subtract 1 from the original window number that was stored, since closing the sidebar window decremented all the remaining window numbers.</p>
 
-<p>```
+<p>```vim
 fun! VexClose()
   let cur_win_nr = winnr()
   let target_nr = ( cur_win_nr == 1 ? winnr(&ldquo;#&rdquo;) : cur_win_nr )</p>
@@ -251,7 +253,7 @@ endf
 
 <p>All that&rsquo;s left are the final touches to window sizing, which occur in <code>VexSize()</code> and <code>NormalizeWidths()</code>. The first function sets and locks the sidebar width, then calls the second to normalize the widths off all other windows. <code>NormalizeWidths()</code> is a little hacky, but as far as I can tell it&rsquo;s the only native vimscript way to normalize window widths without affecting their heights. <code>'eadirection'</code> controls which dimensions are affected when <code>'equal always'</code> is set. We set it to <code>hor</code> (horizontal), toggle <code>'equal always'</code> off and back on (it&rsquo;s on by default), triggering the width normalization, and finally restore <code>'eadirection'</code> to it&rsquo;s original value.</p>
 
-<p>```
+<p>```vim
 fun! VexSize(vex_width)
   execute &ldquo;vertical resize&rdquo; . a:vex_width
   set winfixwidth
@@ -268,11 +270,10 @@ endf
 
 <p>Netrw lets you open a selected file in a vertical split with the <code>v</code> key, and I wanted to normalize window widths when such a split was added so things would remain evenly sized. The following autocommand makes it so.</p>
 
-<p><code>
-augroup NetrwGroup
+<pre><code>augroup NetrwGroup
   autocmd! BufEnter * call NormalizeWidths()
 augroup END
-</code></p>
+</code></pre>
 
 <p><img class="screenshot" src="/images/vextoggle/12.png" title="&lsquo;vim&rsquo; &lsquo;vim screenshot&rsquo;" ></p>
 
@@ -282,12 +283,11 @@ augroup END
 
 <p>I find myself mostly using Netrw&rsquo;s &ldquo;thin&rdquo; liststyle rather than the &ldquo;tree&rdquo; style I originally liked, but both work equally well in the sidebar. Finally, my <a href="https://github.com/ivanbrennan/vim/blob/master/vimrc">vimrc</a> is available for reference, though the relevant Netrw settings I&rsquo;m using are pasted below:</p>
 
-<p><code>
-let g:netrw_liststyle=0         " thin (change to 3 for tree)
+<pre><code>let g:netrw_liststyle=0         " thin (change to 3 for tree)
 let g:netrw_banner=0            " no banner
 let g:netrw_altv=1              " open files on right
 let g:netrw_preview=1           " open previews vertically
-</code></p>
+</code></pre>
 ]]></content>
   </entry>
   

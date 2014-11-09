@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Rigging Vim's Netrw - detached head</title>
+  <title>Rigging Vim's Netrw - codemachine</title>
   <meta name="author" content="Ivan Brennan">
 
   
@@ -21,7 +21,7 @@
   <link rel="canonical" href="http://ivanbrennan.github.io/blog/2014/01/16/rigging-vims-netrw">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="detached head" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="codemachine" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -36,9 +36,7 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">detached head</a></h1>
-  
-    <h2>machinecodemachine</h2>
+  <h1><a href="/">codemachine</a></h1>
   
 </hgroup>
 
@@ -99,25 +97,26 @@
 
 <p>My first goal was to toggle a sidebar navigator open/closed with a keystroke or two. The <code>:Vexplore</code> command opens a Netrw browser in a vertical split. If you pass the command a directory, it will open into that location, otherwise it opens in the current file&rsquo;s parent directory. There&rsquo;s a distinction between the current file&rsquo;s parent directory and the &ldquo;current working directory&rdquo; that Vim keeps track of. Say you start Vim from within ~/Development. You can <code>:edit</code> files anywhere you like (~/Development/resources, ~, /usr/local, etc.), and until you explicitly tell Vim to <code>:cd</code> to a new location, the current working directory will remain where it started, at ~/Development. You can use this as a home-base to work from in the current Vim session. With this in mind, I composed a small set of functions to toggle the sidebar in either the current file&rsquo;s directory (to access neighboring files), or the &ldquo;current working directory&rdquo; (which I tend to leave at the project root), and mapped them to a couple keystrokes I find convenient.</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>fun! VexToggle(dir)
-</span><span class='line'>  if exists("t:vex_buf_nr")
-</span><span class='line'>    call VexClose()
-</span><span class='line'>  else
-</span><span class='line'>    call VexOpen(a:dir)
-</span><span class='line'>  endif
-</span><span class='line'>endf</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class='vim'><span class='line'><span class="k">fun</span><span class="p">!</span> VexToggle<span class="p">(</span><span class="nb">dir</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">if</span> exists<span class="p">(</span><span class="s2">&quot;t:vex_buf_nr&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">call</span> VexClose<span class="p">()</span>
+</span><span class='line'>  <span class="k">else</span>
+</span><span class='line'>    <span class="k">call</span> VexOpen<span class="p">(</span><span class="k">a</span>:<span class="nb">dir</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">endif</span>
+</span><span class='line'><span class="k">endf</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>I&rsquo;m using <code>t:vex_buf_nr</code> to track whether the sidebar is currently open. The <code>t:</code> is scoping the variable to the current tab. That&rsquo;s so each tab can have its own sidebar. If you&rsquo;re not familiar with Vim&rsquo;s tabs, don&rsquo;t worry about it. It&rsquo;s a minor detail here. In the else clause, we pass <code>a:dir</code> (the <code>dir</code> argument that was passed into <code>VexToggle()</code>) to <code>VexOpen()</code>.</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -127,16 +126,17 @@
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
 <span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>fun! VexOpen(dir)
-</span><span class='line'>  let g:netrw_browse_split=4    " open files in previous window
-</span><span class='line'>  let vex_width = 25
+</pre></td><td class='code'><pre><code class='vim'><span class='line'><span class="k">fun</span><span class="p">!</span> VexOpen<span class="p">(</span><span class="nb">dir</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">let</span> <span class="k">g</span>:netrw_browse_split<span class="p">=</span><span class="m">4</span>    <span class="c">&quot; open files in previous window</span>
+</span><span class='line'>  <span class="k">let</span> vex_width <span class="p">=</span> <span class="m">25</span>
 </span><span class='line'>
-</span><span class='line'>  execute "Vexplore " . a:dir
-</span><span class='line'>  let t:vex_buf_nr = bufnr("%")
-</span><span class='line'>  wincmd H
+</span><span class='line'>  execute <span class="s2">&quot;Vexplore &quot;</span> . <span class="k">a</span>:<span class="nb">dir</span>
+</span><span class='line'>  <span class="k">let</span> <span class="k">t</span>:vex_buf_nr <span class="p">=</span> bufnr<span class="p">(</span><span class="s2">&quot;%&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">wincmd</span> H
 </span><span class='line'>
-</span><span class='line'>  call VexSize(vex_width)
-</span><span class='line'>endf</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>  <span class="k">call</span> VexSize<span class="p">(</span>vex_width<span class="p">)</span>
+</span><span class='line'><span class="k">endf</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p><code>VexOpen()</code> starts by setting some options. &ldquo;Open files in previous window&rdquo; ensures that when we select a file to open, it opens in the window (split) we were in before entering the browser. We&rsquo;re also setting the desired window width for later use.</p>
@@ -147,17 +147,15 @@
 
 <p>I made a couple mappings to call <code>VexToggle()</code>. The first passes it Vim&rsquo;s &ldquo;current working directory&rdquo; as an argument, while the second passes an empty string. That way, I can use the first mapping to toggle an explorer sidebar from the project root and the second to toggle an explorer from whichever directory houses the file I&rsquo;m currently editing.</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>noremap &lt;Leader&gt;&lt;Tab&gt; :call VexToggle(getcwd())&lt;CR&gt;
-</span><span class='line'>noremap &lt;Leader&gt;` :call VexToggle("")&lt;CR&gt;</span></code></pre></td></tr></table></div></figure>
-
+<pre><code>noremap &lt;Leader&gt;&lt;Tab&gt; :call VexToggle(getcwd())&lt;CR&gt;
+noremap &lt;Leader&gt;` :call VexToggle("")&lt;CR&gt;
+</code></pre>
 
 <p><img class="screenshot" src="/images/vextoggle/8.png" title="vim" alt="vim screenshot"></p>
 
 <p>When the sidebar is open, either mapping can be used to close it. <code>VexClose()</code> starts by noting which window it was called from, so it can return the cursor to that window after the sidebar has closed. The exception is when the cursor was <em>in</em> the sidebar when <code>VexClose()</code> was called, in which case the cursor will land in the previous window (whichever window holds the alternate file <code>"#"</code>). The middle section switches to the sidebar, closes it, and removes the internal variable that was tracking its presence. Finally, we switch to the appropriate destination window and call <code>NormalizeWidths()</code> to normalize the widths of all open windows. Note that we have to subtract 1 from the original window number that was stored, since closing the sidebar window decremented all the remaining window numbers.</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -168,24 +166,25 @@
 <span class='line-number'>9</span>
 <span class='line-number'>10</span>
 <span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>fun! VexClose()
-</span><span class='line'>  let cur_win_nr = winnr()
-</span><span class='line'>  let target_nr = ( cur_win_nr == 1 ? winnr("#") : cur_win_nr )
+</pre></td><td class='code'><pre><code class='vim'><span class='line'><span class="k">fun</span><span class="p">!</span> VexClose<span class="p">()</span>
+</span><span class='line'>  <span class="k">let</span> cur_win_nr <span class="p">=</span> winnr<span class="p">()</span>
+</span><span class='line'>  <span class="k">let</span> target_nr <span class="p">=</span> <span class="p">(</span> cur_win_nr <span class="p">==</span> <span class="m">1</span> ? winnr<span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)</span> : cur_win_nr <span class="p">)</span>
 </span><span class='line'>
-</span><span class='line'>  1wincmd w
-</span><span class='line'>  close
-</span><span class='line'>  unlet t:vex_buf_nr
+</span><span class='line'>  <span class="m">1</span>wincmd <span class="k">w</span>
+</span><span class='line'>  <span class="k">close</span>
+</span><span class='line'>  unlet <span class="k">t</span>:vex_buf_nr
 </span><span class='line'>
-</span><span class='line'>  execute (target_nr - 1) . "wincmd w"
-</span><span class='line'>  call NormalizeWidths()
-</span><span class='line'>endf</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>  execute <span class="p">(</span>target_nr <span class="p">-</span> <span class="m">1</span><span class="p">)</span> . <span class="s2">&quot;wincmd w&quot;</span>
+</span><span class='line'>  <span class="k">call</span> NormalizeWidths<span class="p">()</span>
+</span><span class='line'><span class="k">endf</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p><img class="screenshot" src="/images/vextoggle/10.png" title="vim" alt="vim screenshot"></p>
 
 <p>All that&rsquo;s left are the final touches to window sizing, which occur in <code>VexSize()</code> and <code>NormalizeWidths()</code>. The first function sets and locks the sidebar width, then calls the second to normalize the widths off all other windows. <code>NormalizeWidths()</code> is a little hacky, but as far as I can tell it&rsquo;s the only native vimscript way to normalize window widths without affecting their heights. <code>'eadirection'</code> controls which dimensions are affected when <code>'equal always'</code> is set. We set it to <code>hor</code> (horizontal), toggle <code>'equal always'</code> off and back on (it&rsquo;s on by default), triggering the width normalization, and finally restore <code>'eadirection'</code> to it&rsquo;s original value.</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -197,29 +196,27 @@
 <span class='line-number'>10</span>
 <span class='line-number'>11</span>
 <span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>fun! VexSize(vex_width)
-</span><span class='line'>  execute "vertical resize" . a:vex_width
-</span><span class='line'>  set winfixwidth
-</span><span class='line'>  call NormalizeWidths()
-</span><span class='line'>endf
+</pre></td><td class='code'><pre><code class='vim'><span class='line'><span class="k">fun</span><span class="p">!</span> VexSize<span class="p">(</span>vex_width<span class="p">)</span>
+</span><span class='line'>  execute <span class="s2">&quot;vertical resize&quot;</span> . <span class="k">a</span>:vex_width
+</span><span class='line'>  <span class="k">set</span> <span class="nb">winfixwidth</span>
+</span><span class='line'>  <span class="k">call</span> NormalizeWidths<span class="p">()</span>
+</span><span class='line'><span class="k">endf</span>
 </span><span class='line'>
-</span><span class='line'>fun! NormalizeWidths()
-</span><span class='line'>  let eadir_pref = &eadirection
-</span><span class='line'>  set eadirection=hor
-</span><span class='line'>  set equalalways! equalalways!
-</span><span class='line'>  let &eadirection = eadir_pref
-</span><span class='line'>endf</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'><span class="k">fun</span><span class="p">!</span> NormalizeWidths<span class="p">()</span>
+</span><span class='line'>  <span class="k">let</span> eadir_pref <span class="p">=</span> &amp;<span class="nb">eadirection</span>
+</span><span class='line'>  <span class="k">set</span> <span class="nb">eadirection</span><span class="p">=</span>hor
+</span><span class='line'>  <span class="k">set</span> <span class="nb">equalalways</span><span class="p">!</span> <span class="nb">equalalways</span><span class="p">!</span>
+</span><span class='line'>  <span class="k">let</span> &amp;<span class="nb">eadirection</span> <span class="p">=</span> eadir_pref
+</span><span class='line'><span class="k">endf</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Netrw lets you open a selected file in a vertical split with the <code>v</code> key, and I wanted to normalize window widths when such a split was added so things would remain evenly sized. The following autocommand makes it so.</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>augroup NetrwGroup
-</span><span class='line'>  autocmd! BufEnter * call NormalizeWidths()
-</span><span class='line'>augroup END</span></code></pre></td></tr></table></div></figure>
-
+<pre><code>augroup NetrwGroup
+  autocmd! BufEnter * call NormalizeWidths()
+augroup END
+</code></pre>
 
 <p><img class="screenshot" src="/images/vextoggle/12.png" title="vim" alt="vim screenshot"></p>
 
@@ -229,15 +226,11 @@
 
 <p>I find myself mostly using Netrw&rsquo;s &ldquo;thin&rdquo; liststyle rather than the &ldquo;tree&rdquo; style I originally liked, but both work equally well in the sidebar. Finally, my <a href="https://github.com/ivanbrennan/vim/blob/master/vimrc">vimrc</a> is available for reference, though the relevant Netrw settings I&rsquo;m using are pasted below:</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>let g:netrw_liststyle=0         " thin (change to 3 for tree)
-</span><span class='line'>let g:netrw_banner=0            " no banner
-</span><span class='line'>let g:netrw_altv=1              " open files on right
-</span><span class='line'>let g:netrw_preview=1           " open previews vertically</span></code></pre></td></tr></table></div></figure>
-
+<pre><code>let g:netrw_liststyle=0         " thin (change to 3 for tree)
+let g:netrw_banner=0            " no banner
+let g:netrw_altv=1              " open files on right
+let g:netrw_preview=1           " open previews vertically
+</code></pre>
 </div>
 
 
@@ -292,6 +285,12 @@
   </footer>
 </article>
 
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
 </div>
 
 <aside class="sidebar">
@@ -323,39 +322,6 @@
   </ul>
 </section>
 
-<section>
-  <h1>GitHub Repos</h1>
-  <ul id="gh_repos">
-    <li class="loading">Status updating...</li>
-  </ul>
-  
-  <a href="https://github.com/ivanbrennan">@ivanbrennan</a> on GitHub
-  
-  <script type="text/javascript">
-    $(document).ready(function(){
-        if (!window.jXHR){
-            var jxhr = document.createElement('script');
-            jxhr.type = 'text/javascript';
-            jxhr.src = '/javascripts/libs/jXHR.js';
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(jxhr, s);
-        }
-
-        github.showRepos({
-            user: 'ivanbrennan',
-            count: 0,
-            skip_forks: true,
-            target: '#gh_repos'
-        });
-    });
-  </script>
-  <script src="/javascripts/github.js" type="text/javascript"> </script>
-</section>
-
-
-
-
-
   
 </aside>
 
@@ -369,6 +335,22 @@
 
 </footer>
   
+
+<script type="text/javascript">
+      var disqus_shortname = 'codemachine';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://ivanbrennan.github.io/blog/2014/01/16/rigging-vims-netrw/';
+        var disqus_url = 'http://ivanbrennan.github.io/blog/2014/01/16/rigging-vims-netrw/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
 
 
 
