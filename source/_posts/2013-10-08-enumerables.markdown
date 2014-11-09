@@ -34,7 +34,7 @@ Pretty nice, but why don't we do [Tom Waits](http://www.youtube.com/watch?v=Byom
 i_got.zip(but_not) {|got_not| got_not.join(", ")}
 # => nil
 ```
-Whoops! Passing `#zip` a block will invoke the block for each output array, but return `nil` at the end of the day. A call `#map` to will do the trick.
+Whoops! Passing `#zip` a block will invoke the block for each output array, but return `nil` at the end of the day. A call to `#map` to will do the trick.
 ``` ruby
 i_got.zip(but_not).map {|got_not| got_not.join(", ")}
 # => ["I got the style, but not the grace",

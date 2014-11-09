@@ -9,13 +9,13 @@ categories: unix
 Performing a project-wide search-and-replace is a common task, and yet I still forget how to do it in Vim. While there's not that much to it (build an argument list of relevant files and run a global substitution across them), I've had to look it up enough times to start wondering if there's a better way. I ended up writing a shell function, as well as a Ruby-specific wrapper for it.
 
 Now if I want to rename a function across my project's javascript files, I can drop onto the command-line and run:
-```
-greplace **.js uglyFunctionName nicerFunctionName
-```
+
+    $ greplace **.js uglyFunctionName nicerFunctionName
+
 Or, if I'm renaming a Ruby method:
-```
-rupl bad_method_name good_method_name
-```
+
+    $ rupl bad_method_name good_method_name
+
 
 ## The Sauce
 Using `find`, `grep`, and `sed` in concert, we declare which files to search, what to search for, and what to do with those files that contain a match.

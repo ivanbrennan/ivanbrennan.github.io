@@ -18,9 +18,9 @@ It's a subtle distinction, but one that carries real repercussions. If we move o
 Despite this apparent disadvantage to symlinks, the general consensus seems to be to prefer them for linking to dotfiles. They do offer the ability to link across separate filesystems, and besides, I'm not planning on moving them around, so I went ahead and made some symlinks to serve my purpose.
 
 Take, for example, my `~/.bash_profile`. I created a directory for my dotfiles at `~/Development/resources/dotfiles/`, moved the file to that directory, and linked to it with a symlink from its original location in `~`, allowing my shell to pick it up at the expected location (`~`).
-```
-mkdir -p ~/Development/resources/dotfiles/
-mv ~/.bash_profile ~/Development/resources/dotfiles/bash_profile
-ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
-```
+
+    $ mkdir -p ~/Development/resources/dotfiles/
+    $ mv ~/.bash_profile ~/Development/resources/dotfiles/bash_profile
+    $ ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
+
 I removed the `.` from the target filename both for convenience (so it shows up in Finder), and to distinguish it from the symlink I created at `~/.bash_profile`. Then I initialized a git repository in the `dotfiles` directory, putting my precious dotfiles under version control and making it easier to share them.

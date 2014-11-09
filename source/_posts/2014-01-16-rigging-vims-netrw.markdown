@@ -13,7 +13,7 @@ Netrw is not NERDTree. It does much more, but the flip side is that NERDTree foc
 
 My first goal was to toggle a sidebar navigator open/closed with a keystroke or two. The `:Vexplore` command opens a Netrw browser in a vertical split. If you pass the command a directory, it will open into that location, otherwise it opens in the current file's parent directory. There's a distinction between the current file's parent directory and the "current working directory" that Vim keeps track of. Say you start Vim from within ~/Development. You can `:edit` files anywhere you like (~/Development/resources, ~, /usr/local, etc.), and until you explicitly tell Vim to `:cd` to a new location, the current working directory will remain where it started, at ~/Development. You can use this as a home-base to work from in the current Vim session. With this in mind, I composed a small set of functions to toggle the sidebar in either the current file's directory (to access neighboring files), or the "current working directory" (which I tend to leave at the project root), and mapped them to a couple keystrokes I find convenient.
 
-```
+```vim
 fun! VexToggle(dir)
   if exists("t:vex_buf_nr")
     call VexClose()
@@ -25,7 +25,7 @@ endf
 
 I'm using `t:vex_buf_nr` to track whether the sidebar is currently open. The `t:` is scoping the variable to the current tab. That's so each tab can have its own sidebar. If you're not familiar with Vim's tabs, don't worry about it. It's a minor detail here. In the else clause, we pass `a:dir` (the `dir` argument that was passed into `VexToggle()`) to `VexOpen()`.
 
-```
+```vim
 fun! VexOpen(dir)
   let g:netrw_browse_split=4    " open files in previous window
   let vex_width = 25
@@ -46,16 +46,16 @@ If you have several splits open, calling `:Vexplore` will open a Netrw explorer 
 
 I made a couple mappings to call `VexToggle()`. The first passes it Vim's "current working directory" as an argument, while the second passes an empty string. That way, I can use the first mapping to toggle an explorer sidebar from the project root and the second to toggle an explorer from whichever directory houses the file I'm currently editing.
 
-```
-noremap <Leader><Tab> :call VexToggle(getcwd())<CR>
-noremap <Leader>` :call VexToggle("")<CR>
-```
+
+    noremap <Leader><Tab> :call VexToggle(getcwd())<CR>
+    noremap <Leader>` :call VexToggle("")<CR>
+
 
 {% img screenshot /images/vextoggle/8.png 'vim' 'vim screenshot' %}
 
 When the sidebar is open, either mapping can be used to close it. `VexClose()` starts by noting which window it was called from, so it can return the cursor to that window after the sidebar has closed. The exception is when the cursor was *in* the sidebar when `VexClose()` was called, in which case the cursor will land in the previous window (whichever window holds the alternate file `"#"`). The middle section switches to the sidebar, closes it, and removes the internal variable that was tracking its presence. Finally, we switch to the appropriate destination window and call `NormalizeWidths()` to normalize the widths of all open windows. Note that we have to subtract 1 from the original window number that was stored, since closing the sidebar window decremented all the remaining window numbers.
 
-```
+```vim
 fun! VexClose()
   let cur_win_nr = winnr()
   let target_nr = ( cur_win_nr == 1 ? winnr("#") : cur_win_nr )
@@ -73,7 +73,7 @@ endf
 
 All that's left are the final touches to window sizing, which occur in `VexSize()` and `NormalizeWidths()`. The first function sets and locks the sidebar width, then calls the second to normalize the widths off all other windows. `NormalizeWidths()` is a little hacky, but as far as I can tell it's the only native vimscript way to normalize window widths without affecting their heights. `'eadirection'` controls which dimensions are affected when `'equal always'` is set. We set it to `hor` (horizontal), toggle `'equal always'` off and back on (it's on by default), triggering the width normalization, and finally restore `'eadirection'` to it's original value.
 
-```
+```vim
 fun! VexSize(vex_width)
   execute "vertical resize" . a:vex_width
   set winfixwidth
@@ -90,11 +90,9 @@ endf
 
 Netrw lets you open a selected file in a vertical split with the `v` key, and I wanted to normalize window widths when such a split was added so things would remain evenly sized. The following autocommand makes it so.
 
-```
-augroup NetrwGroup
-  autocmd! BufEnter * call NormalizeWidths()
-augroup END
-```
+    augroup NetrwGroup
+      autocmd! BufEnter * call NormalizeWidths()
+    augroup END
 
 {% img screenshot /images/vextoggle/12.png 'vim' 'vim screenshot' %}
 
@@ -104,9 +102,7 @@ I ran into a couple minor bugs in Netrw during all of this, and turned to the [v
 
 I find myself mostly using Netrw's "thin" liststyle rather than the "tree" style I originally liked, but both work equally well in the sidebar. Finally, my [vimrc](https://github.com/ivanbrennan/vim/blob/master/vimrc) is available for reference, though the relevant Netrw settings I'm using are pasted below:
 
-```
-let g:netrw_liststyle=0         " thin (change to 3 for tree)
-let g:netrw_banner=0            " no banner
-let g:netrw_altv=1              " open files on right
-let g:netrw_preview=1           " open previews vertically
-```
+    let g:netrw_liststyle=0         " thin (change to 3 for tree)
+    let g:netrw_banner=0            " no banner
+    let g:netrw_altv=1              " open files on right
+    let g:netrw_preview=1           " open previews vertically
