@@ -4,7 +4,7 @@
   <title><![CDATA[detached head]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2014-11-06T23:30:30-05:00</updated>
+  <updated>2014-11-08T19:30:40-05:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -12,6 +12,61 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[unix know-how]]></title>
+    <link href="http://ivanbrennan.github.io/blog/2014/11/04/unix-know-how/"/>
+    <updated>2014-11-04T22:48:00-05:00</updated>
+    <id>http://ivanbrennan.github.io/blog/2014/11/04/unix-know-how</id>
+    <content type="html"><![CDATA[<p>I was recently working with MySQL&rsquo;s timezone conversion capabilities and noticed that the following query didn&rsquo;t work when run against my local database (though it worked elsewhere):</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SELECT</span> <span class="n">CONVERT_TZ</span><span class="p">(</span><span class="s1">&#39;2014-01-01 12:00:00&#39;</span><span class="p">,</span> <span class="s1">&#39;America/New_York&#39;</span><span class="p">,</span> <span class="s1">&#39;UTC&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="o">=&gt;</span> <span class="k">null</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The named timezones (<code>America/New_York</code>, <code>UTC</code>) weren&rsquo;t recognized, but if I specified timezones numerically, it worked as expected:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">SELECT</span> <span class="n">CONVERT_TZ</span><span class="p">(</span><span class="s1">&#39;2014-01-01 12:00:00&#39;</span><span class="p">,</span> <span class="s1">&#39;-5:00&#39;</span><span class="p">,</span> <span class="s1">&#39;+00:00&#39;</span><span class="p">);</span>
+</span><span class='line'><span class="o">=&gt;</span> <span class="mi">2014</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span> <span class="mi">17</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I hadn&rsquo;t loaded my system&rsquo;s zoneinfo files into the <code>mysql</code> database. I followed the <a href="http://dev.mysql.com/doc/refman/5.5/en/time-zone-support.html">docs</a> and ran the <code>mysql_tzinfo_to_sql</code> utility to do so:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root mysql
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Midway through loading the tables, <code>mysql_tzinfo_to_sql</code> failed with: &ldquo;ERROR 1406 (22001) at line 38408: Data too long for column &lsquo;Abbreviation&rsquo; at row 1&rdquo;. A coworker suggested I write the command&rsquo;s output to a file so I could see the problem:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>mysql_tzinfo_to_sql /usr/share/zoneinfo &gt; debuggingfile
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This produced a file of SQL insert statements, with the problematic code on line 38408:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sql'><span class='line'><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">time_zone_transition_type</span> <span class="p">(</span><span class="n">Time_zone_id</span><span class="p">,</span> <span class="n">Transition_type_id</span><span class="p">,</span> <span class="k">Offset</span><span class="p">,</span> <span class="n">Is_DST</span><span class="p">,</span> <span class="n">Abbreviation</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="o">@</span><span class="n">time_zone_id</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Local time zone must be set--see zic manual page&#39;</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Clearly, the <code>'Local time zone must be set--see zic manual page'</code> value was too long for the Abbreviation column. I shortened it to <code>'unset'</code>, fed the file into mysql, and all was well.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>mysql -u root mysql &lt; debuggingfile
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I was struck by the simplicity of this solution, and how a little unix know-how can demystify a problem.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[search &amp; replace]]></title>
@@ -97,9 +152,9 @@
 
 <h2>Ingredients</h2>
 
-<p>The first thing <code>greplace</code> does is test whether it received the wrong number of arguments: <code>[ "$#" != 3 ]</code>. If so, it prints a usage message and returns an error code. Otherwise, it sets some local variables with more memorable names than <code>1</code>, <code>2</code>, and <code>3</code>.</p>
+<p>The first thing <code>greplace</code> does is test whether it received the wrong number of arguments: <code>[ "$#" != 3 ]</code>. If so, we print a usage message and return an error code. Otherwise, we set some local variables with more memorable names than <code>1</code>, <code>2</code>, and <code>3</code>.</p>
 
-<p>Next, we <code>find</code> pathnames in the current directory (and subdirectories) that match <code>file_pattern</code>. Using <code>find ... --exec &lt;command&gt; {};</code> runs a command on each found path, expanding <code>{}</code> to the pathname. Replacing <code>;</code> with <code>+</code> will instead expand <code>{}</code> to as many of the found pathnames as possible. This allows us to feed all the found files as arguments to a single <code>grep</code>.</p>
+<p>Next, we <code>find</code> pathnames in the current directory (and subdirectories) that match <code>file_pattern</code>. Using <code>find ... --exec &lt;command&gt; {};</code> lets us run a command on each found path, expanding <code>{}</code> to the pathname. Replacing <code>;</code> with <code>+</code> will instead expand <code>{}</code> to as many of the found pathnames as possible, which allows us to feed all the found files as arguments to a single <code>grep</code>.</p>
 
 <p>We <code>grep</code> the relevant files for <code>search_pattern</code>, restricting results to the names of files (<code>-l</code>) that contain a whole-word (<code>-w</code>) match. We also print a <a href="http://en.wikipedia.org/wiki/Null_character">null-character</a> after each filename in the results (<code>--null</code>), which will be useful as a delimiter in the next step.</p>
 
@@ -111,7 +166,7 @@
 
 <h2>Caveats</h2>
 
-<p>A few things limit this function&rsquo;s portability. For one, not all versions of <code>grep</code> recognize <code>--null</code>. GNU grep uses <code>-Z</code> instead. Also, the <code>-i ''</code> syntax may not be recognized by all versions of <code>sed</code> (actually, from what I was able to gather, that syntax might be unique to the version bundled with OSX).</p>
+<p>A few things limit this function&rsquo;s portability. For one, not all versions of <code>grep</code> recognize the <code>--null</code> flag. GNU grep uses <code>-Z</code> instead. Also, the <code>-i ''</code> syntax may not be recognized by all versions of <code>sed</code> (actually, from what I was able to gather, that syntax might be unique to the version bundled with OSX).</p>
 
 <p>That being said, it would only take a few minor tweaks to get this working on a different system.</p>
 ]]></content>

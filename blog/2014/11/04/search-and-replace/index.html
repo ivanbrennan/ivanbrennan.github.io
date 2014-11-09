@@ -170,9 +170,9 @@
 
 <h2>Ingredients</h2>
 
-<p>The first thing <code>greplace</code> does is test whether it received the wrong number of arguments: <code>[ "$#" != 3 ]</code>. If so, it prints a usage message and returns an error code. Otherwise, it sets some local variables with more memorable names than <code>1</code>, <code>2</code>, and <code>3</code>.</p>
+<p>The first thing <code>greplace</code> does is test whether it received the wrong number of arguments: <code>[ "$#" != 3 ]</code>. If so, we print a usage message and return an error code. Otherwise, we set some local variables with more memorable names than <code>1</code>, <code>2</code>, and <code>3</code>.</p>
 
-<p>Next, we <code>find</code> pathnames in the current directory (and subdirectories) that match <code>file_pattern</code>. Using <code>find ... --exec &lt;command&gt; {};</code> runs a command on each found path, expanding <code>{}</code> to the pathname. Replacing <code>;</code> with <code>+</code> will instead expand <code>{}</code> to as many of the found pathnames as possible. This allows us to feed all the found files as arguments to a single <code>grep</code>.</p>
+<p>Next, we <code>find</code> pathnames in the current directory (and subdirectories) that match <code>file_pattern</code>. Using <code>find ... --exec &lt;command&gt; {};</code> lets us run a command on each found path, expanding <code>{}</code> to the pathname. Replacing <code>;</code> with <code>+</code> will instead expand <code>{}</code> to as many of the found pathnames as possible, which allows us to feed all the found files as arguments to a single <code>grep</code>.</p>
 
 <p>We <code>grep</code> the relevant files for <code>search_pattern</code>, restricting results to the names of files (<code>-l</code>) that contain a whole-word (<code>-w</code>) match. We also print a <a href="http://en.wikipedia.org/wiki/Null_character">null-character</a> after each filename in the results (<code>--null</code>), which will be useful as a delimiter in the next step.</p>
 
@@ -184,7 +184,7 @@
 
 <h2>Caveats</h2>
 
-<p>A few things limit this function&rsquo;s portability. For one, not all versions of <code>grep</code> recognize <code>--null</code>. GNU grep uses <code>-Z</code> instead. Also, the <code>-i ''</code> syntax may not be recognized by all versions of <code>sed</code> (actually, from what I was able to gather, that syntax might be unique to the version bundled with OSX).</p>
+<p>A few things limit this function&rsquo;s portability. For one, not all versions of <code>grep</code> recognize the <code>--null</code> flag. GNU grep uses <code>-Z</code> instead. Also, the <code>-i ''</code> syntax may not be recognized by all versions of <code>sed</code> (actually, from what I was able to gather, that syntax might be unique to the version bundled with OSX).</p>
 
 <p>That being said, it would only take a few minor tweaks to get this working on a different system.</p>
 </div>
@@ -235,6 +235,8 @@
         <a class="basic-alignment left" href="/blog/2014/10/27/faster-specs/" title="Previous Post: Faster Specs">&laquo; Faster Specs</a>
       
       
+        <a class="basic-alignment right" href="/blog/2014/11/04/unix-know-how/" title="Next Post: unix know-how">unix know-how &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -246,6 +248,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/11/04/unix-know-how/">Unix Know-how</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2014/11/04/search-and-replace/">Search &amp; Replace</a>
@@ -261,10 +267,6 @@
     
       <li class="post">
         <a href="/blog/2014/01/16/rigging-vims-netrw/">Rigging Vim's Netrw</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/01/14/polymorphic-mythology/">Polymorphic Mythology</a>
       </li>
     
   </ul>
