@@ -5,29 +5,31 @@ date: 2014-11-04 22:48
 comments: true
 categories: unix, sql
 ---
-I was recently working with MySQL's timezone conversion capabilities and noticed that the following query didn't work when run against my local database (though it worked elsewhere):
+I was working with MySQL queries that involved timezone conversion when I noticed that my local instance of MySQL didn't recognize named timezones. Queries with named timezones were returning `null`, while those with numeric offsets from UTC were returning correct conversions:
 
     > SELECT CONVERT_TZ('2014-01-01 12:00:00', 'America/New_York', 'UTC');
     => null
 
-The named timezones (`America/New_York`, `UTC`) weren't recognized, but if I specified timezones numerically, it worked as expected:
-
     > SELECT CONVERT_TZ('2014-01-01 12:00:00', '-5:00', '+00:00');
     => 2014-01-01 17:00:00
 
-I hadn't loaded my system's zoneinfo files into the `mysql` database. I followed the [docs](http://dev.mysql.com/doc/refman/5.5/en/time-zone-support.html) and ran the `mysql_tzinfo_to_sql` utility to do so:
+I hadn't loaded my system's zoneinfo files into the `mysql` database. As per the [docs](http://dev.mysql.com/doc/refman/5.5/en/time-zone-support.html), I used the `mysql_tzinfo_to_sql` utility to load them from `/usr/share/zoneinfo`:
 
     $ mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root mysql
 
-Midway through loading the tables, `mysql_tzinfo_to_sql` failed with: "ERROR 1406 (22001) at line 38408: Data too long for column 'Abbreviation' at row 1". A coworker suggested I write the command's output to a file so I could see the problem:
+The process failed before loading all the tables:
+
+    ERROR 1406 (22001) at line 38408: Data too long for column 'Abbreviation' at row 1
+
+Now I could reference `America/New_York`, but not `UTC`, since the process had failed before loading that table. A coworker suggested I write the command's output to a file so I could debug:
 
     $ mysql_tzinfo_to_sql /usr/share/zoneinfo > debuggingfile
 
-This produced a file of SQL insert statements, with the problematic code on line 38408:
+The `debuggingfile` contained many insert statements, and line 38408 revealed the problem:
 
     INSERT INTO time_zone_transition_type (Time_zone_id, Transition_type_id, Offset, Is_DST, Abbreviation) VALUES (@time_zone_id, 0, 0, 0, 'Local time zone must be set--see zic manual page');
 
-Clearly, the `'Local time zone must be set--see zic manual page'` value was too long for the Abbreviation column. I shortened it to `'unset'`, fed the file into mysql, and all was well.
+The `'Local time zone must be set--see zic manual page'` value was too long for the Abbreviation column. I shortened it to `'unset'`, fed the file into mysql, and all was well.
 
     $ mysql -u root mysql < debuggingfile
 
