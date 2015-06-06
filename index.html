@@ -9,7 +9,7 @@
   <meta name="author" content="Ivan Brennan">
 
   
-  <meta name="description" content="I was working with MySQL queries that involved timezone conversion when I noticed that my local instance of MySQL didn&rsquo;t recognize named &hellip;">
+  <meta name="description" content="A while back I stopped using &ldquo;jk&rdquo; to exit Vim&rsquo;s insert-mode, turning instead to the mostly-useless Caps Lock. I set it to be &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,6 +63,63 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/06/06/karabiner/">Karabiner</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-06-06T14:45:00-04:00" pubdate data-updated="true">Jun 6<span>th</span>, 2015</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>A while back I stopped using &ldquo;jk&rdquo; to exit Vim&rsquo;s insert-mode, turning instead to the mostly-useless <code>Caps Lock</code>. I set it to be <code>Control</code>, then used <a href="https://pqrs.org/osx/karabiner/">Karabiner</a> to turn it into a dual-purpose <code>Control</code>/<code>Escape</code>. Typed by itself, it&rsquo;s <code>Escape</code>; in concert with another key it&rsquo;s <code>Control</code>. The boost in comfort and productivity has been huge.</p>
+
+<p>Bringing <code>Escape</code> closer to home feels like a more sensible solution, and I&rsquo;m no longer typing &ldquo;jk&rdquo; all over the place when my fingers forget they&rsquo;re not in Vim. The productivity gains, however, are largely the result of having a <code>Control</code> key that&rsquo;s so accessible. It&rsquo;s opened up my use of control-modified commands like Vim&rsquo;s autocompletion and the shell&rsquo;s reverse-incremental-search quite a bit.</p>
+
+<p>To set this up on OS X, first go to the Keyboard pane of System Preferences and change <code>Caps Lock</code> to <code>Control</code>.</p>
+
+<p><img class="caps-lock" src="/images/karabiner/caps-lock.png" title="caps-lock" alt="caps-lock"></p>
+
+<p>Then use Karabiner to send <code>Escape</code> when you type <code>Control</code> by itself.</p>
+
+<pre><code>* karabiner preferences -&gt; "Change Key" tab
+* scroll down to "Change Control_L Key (Left Control)"
+* check "Control_L to Control_L (+ When you type Control_L only, send Escape)"
+</code></pre>
+
+<p><img class="escape" src="/images/karabiner/escape.png" title="escape" alt="escape"></p>
+
+<h2>More Control</h2>
+
+<p>I recently took this one step further and turned my <code>Return</code> key into a dual-purpose <code>Control</code>/<code>Return</code>, giving me easy access to a <code>Control</code> key on either side of the keyboard.</p>
+
+<p><img class="return" src="/images/karabiner/return.png" title="return" alt="return"></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1352,63 +1409,6 @@ $ ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/10/23/yield-the-weird/">Yield the Weird</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-10-23T22:32:00-04:00" pubdate data-updated="true">Oct 23<span>rd</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>I&rsquo;m messing around with <code>yield</code> to get a handle on the various closures in Ruby, and I built a method that returns a rotated-mapped array. You could of course do this with the built-in <code>#rotate</code> and <code>#map</code> methods, but what fun is that?</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">rotomap</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
-</span><span class='line'>  <span class="n">arr</span><span class="o">.</span><span class="n">each_index</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="o">[]</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">roto</span><span class="p">,</span> <span class="n">i</span><span class="o">|</span>
-</span><span class='line'>    <span class="n">roto</span> <span class="o">&lt;&lt;</span> <span class="k">yield</span><span class="p">(</span> <span class="n">arr</span><span class="o">[</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">n</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">count</span><span class="p">)</span> <span class="o">]</span> <span class="p">)</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">rotomap</span><span class="p">(</span><span class="o">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="o">]</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">x</span> <span class="o">*</span> <span class="mi">5</span><span class="si">}</span><span class="s2"> merge requests&quot;</span> <span class="p">}</span>
-</span><span class='line'><span class="c1"># =&gt; [&quot;20 merge requests&quot;, &quot;25 merge requests&quot;, &quot;5 merge requests&quot;, &quot;10 merge requests&quot;, &quot;15 merge requests&quot;]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>I don&rsquo;t imagine there&rsquo;s a lot of rotomapping going on out there, but it was fun to slap this together.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -1422,6 +1422,10 @@ $ ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/06/06/karabiner/">Karabiner</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2014/11/04/unix-know-how/">Unix Know-how</a>
@@ -1439,10 +1443,6 @@ $ ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
         <a href="/blog/2014/10/26/vim-key-mappings/">Vim Key-mappings</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2014/01/16/rigging-vims-netrw/">Rigging Vim&#8217;s Netrw</a>
-      </li>
-    
   </ul>
 </section>
 
@@ -1452,7 +1452,7 @@ $ ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2014 - Ivan Brennan -
+  Copyright &copy; 2015 - Ivan Brennan -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

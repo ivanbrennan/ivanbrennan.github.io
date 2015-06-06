@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: keyboard | codemachine]]></title>
+  <link href="http://ivanbrennan.github.io/blog/categories/keyboard/atom.xml" rel="self"/>
+  <link href="http://ivanbrennan.github.io/"/>
+  <updated>2015-06-06T16:41:23-04:00</updated>
+  <id>http://ivanbrennan.github.io/</id>
+  <author>
+    <name><![CDATA[Ivan Brennan]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[karabiner]]></title>
+    <link href="http://ivanbrennan.github.io/blog/2015/06/06/karabiner/"/>
+    <updated>2015-06-06T14:45:00-04:00</updated>
+    <id>http://ivanbrennan.github.io/blog/2015/06/06/karabiner</id>
+    <content type="html"><![CDATA[<p>A while back I stopped using &ldquo;jk&rdquo; to exit Vim&rsquo;s insert-mode, turning instead to the mostly-useless <code>Caps Lock</code>. I set it to be <code>Control</code>, then used <a href="https://pqrs.org/osx/karabiner/">Karabiner</a> to turn it into a dual-purpose <code>Control</code>/<code>Escape</code>. Typed by itself, it&rsquo;s <code>Escape</code>; in concert with another key it&rsquo;s <code>Control</code>. The boost in comfort and productivity has been huge.</p>
+
+<p>Bringing <code>Escape</code> closer to home feels like a more sensible solution, and I&rsquo;m no longer typing &ldquo;jk&rdquo; all over the place when my fingers forget they&rsquo;re not in Vim. The productivity gains, however, are largely the result of having a <code>Control</code> key that&rsquo;s so accessible. It&rsquo;s opened up my use of control-modified commands like Vim&rsquo;s autocompletion and the shell&rsquo;s reverse-incremental-search quite a bit.</p>
+
+<p>To set this up on OS X, first go to the Keyboard pane of System Preferences and change <code>Caps Lock</code> to <code>Control</code>.</p>
+
+<p><img class="caps-lock" src="/images/karabiner/caps-lock.png" title="&lsquo;caps-lock&rsquo; &lsquo;caps-lock&rsquo;" ></p>
+
+<p>Then use Karabiner to send <code>Escape</code> when you type <code>Control</code> by itself.</p>
+
+<pre><code>* karabiner preferences -&gt; "Change Key" tab
+* scroll down to "Change Control_L Key (Left Control)"
+* check "Control_L to Control_L (+ When you type Control_L only, send Escape)"
+</code></pre>
+
+<p><img class="escape" src="/images/karabiner/escape.png" title="&lsquo;escape&rsquo; &lsquo;escape&rsquo;" ></p>
+
+<h2>More Control</h2>
+
+<p>I recently took this one step further and turned my <code>Return</code> key into a dual-purpose <code>Control</code>/<code>Return</code>, giving me easy access to a <code>Control</code> key on either side of the keyboard.</p>
+
+<p><img class="return" src="/images/karabiner/return.png" title="&lsquo;return&rsquo; &lsquo;return&rsquo;" ></p>
+]]></content>
+  </entry>
+  
+</feed>
