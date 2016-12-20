@@ -9,7 +9,7 @@
   <meta name="author" content="Ivan Brennan">
 
   
-  <meta name="description" content="I&rsquo;m messing around with yield to get a handle on the various closures in Ruby, and I built a method that returns a rotated-mapped array. You &hellip;">
+  <meta name="description" content="After getting familiar with Git and the concept of version control, I got interested in backing up my dotfiles (.bash_profile, .vimrc and the like), &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,6 +63,61 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/11/01/other-peoples-dotfiles/">Other People&#8217;s Dotfiles (OPD)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-01T02:21:00-04:00" pubdate data-updated="true">Nov 1<span>st</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>After getting familiar with Git and the concept of version control, I got interested in backing up my dotfiles (<code>.bash_profile</code>, <code>.vimrc</code> and the like), most of which were in <code>~</code>. Now, turning my entire home directory into a Git repository would be asking for trouble, but a classmate suggested I might use symlinks to get around this.</p>
+
+<p>The basic idea is this: move your dotfiles into their own directory, link to them from their original locations, ensuring they&rsquo;re still available to the applications that need them, and run <code>git init</code> with a little less trepidation.</p>
+
+<p>I did some googling and found I&rsquo;m not the first to think of <a href="http://dotfiles.github.io">this</a>. There are some pretty advanced scripts out there for backing up your dotfiles this way, but I wanted to do it myself since I wasn&rsquo;t backing up that many files and I wanted to understand how it worked. The consensus seems to be to use symlinks, which begs the question: what&rsquo;s the difference between a symlink (or &ldquo;soft link&rdquo;), and a hard link?</p>
+
+<p>What we think of as a filename is actually a pointer to a specific location in memory. If we have a file <code>~/goblet</code>, pointing at memory location-X, we could create a hard link to the same location with a different name, say <code>~/Stockpile/golden_cup</code>. Both <code>~/goblet</code> and <code>~/Stockpile/treasure/golden_cup</code> point directly at the same location in memory. We could instead create a symlink <code>~/Cloud/chalice</code> pointing at <code>~/goblet</code>, which in turn points to location-X in memory.</p>
+
+<p>It&rsquo;s a subtle distinction, but one that carries real repercussions. If we move or delete the original <code>~/goblet</code>, then the hard link <code>~/Stockpile/golden_cup</code> will still point at the same data (moving another pointer has no effect on this pointer), but the symlink will be broken. It just pointed at the original path (<code>~/goblet</code>), and now it&rsquo;s connection to the memory location is severed.</p>
+
+<p>Despite this apparent disadvantage to symlinks, the general consensus seems to be to prefer them for linking to dotfiles. They do offer the ability to link across separate filesystems, and besides, I&rsquo;m not planning on moving them around, so I went ahead and made some symlinks to serve my purpose.</p>
+
+<p>Take, for example, my <code>~/.bash_profile</code>. I created a directory for my dotfiles at <code>~/Development/resources/dotfiles/</code>, moved the file to that directory, and linked to it with a symlink from its original location in <code>~</code>, allowing my shell to pick it up at the expected location (<code>~</code>).</p>
+
+<pre><code>$ mkdir -p ~/Development/resources/dotfiles/
+$ mv ~/.bash_profile ~/Development/resources/dotfiles/bash_profile
+$ ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
+</code></pre>
+
+<p>I removed the <code>.</code> from the target filename both for convenience (so it shows up in Finder), and to distinguish it from the symlink I created at <code>~/.bash_profile</code>. Then I initialized a git repository in the <code>dotfiles</code> directory, putting my precious dotfiles under version control and making it easier to share them.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -511,6 +566,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/12/20/debugging-etags/">Debugging-etags</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/06/06/karabiner/">Karabiner</a>
       </li>
     
@@ -526,10 +585,6 @@
         <a href="/blog/2014/10/27/faster-specs/">Faster Specs</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2014/10/26/vim-key-mappings/">Vim Key-mappings</a>
-      </li>
-    
   </ul>
 </section>
 
@@ -539,7 +594,7 @@
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - Ivan Brennan -
+  Copyright &copy; 2016 - Ivan Brennan -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

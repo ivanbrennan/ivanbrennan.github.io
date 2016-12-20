@@ -9,7 +9,7 @@
   <meta name="author" content="Ivan Brennan">
 
   
-  <meta name="description" content="A while back I stopped using &ldquo;jk&rdquo; to exit Vim&rsquo;s insert-mode, turning instead to the mostly-useless Caps Lock. I set it to be &hellip;">
+  <meta name="description" content="I&rsquo;ve been using ctags to navigate the codebases I work with in Vim for a couple years, largely thanks to a blog post by Tim Pope where he &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,6 +63,182 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/12/20/debugging-etags/">Debugging-etags</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-12-20T07:52:00-05:00" pubdate data-updated="true">Dec 20<span>th</span>, 2016</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I&rsquo;ve been using ctags to navigate the codebases I work with in Vim for a couple years, largely thanks to a <a href="http://tbaggery.com/2011/08/08/effortless-ctags-with-git.html">blog post</a> by Tim Pope where he describes how to use git hooks to keep your tags up-to-date. Omitting a few details, the script I use boils down to this:</p>
+
+<pre><code>git ls-files | ctags -L - -o ".git/tags" --tag-relative=yes --languages=-javascript,sql
+</code></pre>
+
+<p>On a large Rails app I&rsquo;ve been working with, it takes 1 second and generates a 7MB tags file.</p>
+
+<p>More recently, I started playing around with Emacs, and I&rsquo;ve been looking for a way to port my tagging strategy over to <em>e</em>tags. There are a few ways you can generate etags. Emacs comes with its own <code>etags</code> executable, but the more featureful implementations of ctags can also generate etags.</p>
+
+<p>I&rsquo;ve been using <a href="https://github.com/universal-ctags/ctags">universal-ctags</a>, which picked up where <a href="http://ctags.sourceforge.net">exuberant-ctags</a> left off a few years ago, adding more language support, so I added <code>-e</code> to my tagging command and gave that a try.</p>
+
+<p>It took 90 seconds and produced an <strong><em>8GB</em></strong> tags file. At first, I thought this must be a problem with the etags format itself, but when I tried Emacs&#8217; own <code>etags</code> executable, it took 13 seconds and produced a 3MB file. Next, I tried exuberant-ctags, which took 2 seconds and produced a 1MB file.</p>
+
+<p>Narrowing in on the problem was an interesting process that pulled together several shell scripting concepts and tools, including redirection, sub-shells, and <code>awk</code>.</p>
+
+<p>The first step was to generate performance stats to profile each file&rsquo;s contribution to execution time and tags file-size. I wanted a list of records like:</p>
+
+<pre><code>some_file.rb &lt;- source-file
+0.004        &lt;- processing time (seconds)
+8159         &lt;- source file-size (bytes)
+13389        &lt;- tags file-size (bytes)
+
+another_file.rb
+0.002
+345
+4859
+
+...
+</code></pre>
+
+<p>To generate these stats, I ran a shell script that iterated through the files, generating tags for each in turn, and appending stats to a running log file.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="c">#!/bin/sh</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">for </span>f in <span class="k">$(</span>git ls-files<span class="k">)</span>
+</span><span class='line'><span class="k">do</span>
+</span><span class='line'>  <span class="o">(</span> <span class="nb">echo</span> <span class="s2">&quot;$f&quot;</span>
+</span><span class='line'>    <span class="o">(</span> <span class="nv">TIMEFORMAT</span><span class="o">=</span><span class="s1">&#39;%R&#39;</span>
+</span><span class='line'>      <span class="nb">time </span>ctags -e -o tmp.TAGS --tag-relative<span class="o">=</span>yes --languages<span class="o">=</span>-javascript,sql <span class="nv">$f</span> <span class="o">)</span>
+</span><span class='line'>    <span class="o">(</span> ls -l <span class="nv">$f</span>
+</span><span class='line'>      ls -l tmp.TAGS <span class="o">)</span> | awk <span class="s1">&#39;{ print $5 }&#39;</span>
+</span><span class='line'>    <span class="nb">echo</span> <span class="o">)</span> &gt;&gt; etagging.log 2&gt;&amp;1
+</span><span class='line'>  rm tmp.TAGS
+</span><span class='line'><span class="k">done</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I&rsquo;ll break this down a bit.</p>
+
+<p>First we run <code>git ls-files</code> in a sub-shell to generate the list of files we&rsquo;ll be iterating over:</p>
+
+<pre><code>for f in $(git ls-files)
+</code></pre>
+
+<p>On each iteration, we run a few commands to generate performance stats and append their output to a log file named <code>etagging.log</code>. This could be done like,</p>
+
+<pre><code>run a command &gt;&gt; etagging.log
+run another command &gt;&gt; etagging.log
+run one more command &gt;&gt; etagging.log
+</code></pre>
+
+<p>but by using a sub-shell, we can do the same with a single <code>&gt;&gt;</code> indirection operator.</p>
+
+<pre><code>( run a command
+  run another command
+  run one more command ) &gt;&gt; etagging.log
+</code></pre>
+
+<p>I&rsquo;m using the <code>time</code> command to record the time spent processing each file, and this introduces some extra complexity. For one, I only want the real (perceived) time, and because I&rsquo;m using the shell&rsquo;s <code>time</code> built-in, I need to set the <code>TIMEFORMAT</code> shell variable to acheive this.</p>
+
+<p>Furthermore, <code>time</code> prints its results to stderr rather than stdout. If I simply used <code>&gt;&gt;</code> as above, the time stats would print to my terminal rather than to the logfile. To redirect stderr to the log file as well, the form changes to:</p>
+
+<pre><code>( run a command
+  run another command
+  run one more command ) &gt;&gt; etagging.log 2&gt;&amp;1
+</code></pre>
+
+<p>You could read this as, &ldquo;Run these commands in a sub-shell, send the sub-shell&rsquo;s standard output data to a log file, and send the standard error data to the same location you&rsquo;re sending the standard output.&rdquo;</p>
+
+<p>The <code>2</code> and <code>1</code> above are &ldquo;file-descriptors&rdquo; that indicate stderr and stdout, respectively. Think of a file-descriptor as a numeric identifier associated with a particular stream of data. If you&rsquo;re familiar with pointers in C, you could think of <code>&amp;1</code> as the location of stdout. Thus, <code>2&gt;&amp;1</code> says to redirect stderr to the same place that stdout is headed.</p>
+
+<p>The order of the redirection commands is important. If we&rsquo;d written,</p>
+
+<pre><code>( run some commands ) 2&gt;&amp;1 &gt;&gt; etagging.log
+</code></pre>
+
+<p>then stderr would redirected to the same location as stdout (<code>2&gt;&amp;1</code>) <em>before</em> we&rsquo;d changed stdout to point to the log file. It would be like saying, &ldquo;Hey stderr, see the river stdout is headed towards? Go there. Hey stdout, change direction, go the that hilltop.&rdquo;</p>
+
+<p>After the time stats have been generated, we want to include the size of the source file as well as of the generated tags file:</p>
+
+<pre><code>( ls -l $f
+  ls -l tmp.TAGS ) | awk '{ print $5 }'
+</code></pre>
+
+<p>This produces long-format file-listings, and we pipe the results to <code>awk</code> to extract the 5th field from each line, which happens to the number of bytes in the file.</p>
+
+<p>Once the script has run to completion, I&rsquo;d like to sort the results by time and tag-size. The <code>sort</code> command expects newline-separated records with whitespace-separated fields. We can use <code>awk</code> to translate our results to the horizontal format <code>sort</code> expects.</p>
+
+<pre><code>awk 'BEGIN { RS=""; FS="\n" } { print $1, $2, $3, $4 }' etagging.log
+</code></pre>
+
+<p>We&rsquo;re using a <code>BEGIN</code> block to set up awk&rsquo;s <code>RS</code> (record-separator) and <code>FS</code> (field-separator) variables, allowing it to correctly identify each record. The next block defines the actions we want to take on each record, namely to print each of its fields on a single line. We can pipe this into <code>sort</code> and generate stats sorted by time:</p>
+
+<pre><code>awk 'BEGIN { RS=""; FS="\n" } { print $1, $2, $3, $4 }' etagging.log | sort -nrk2 &gt; etagging-time
+</code></pre>
+
+<p>Here we&rsquo;re telling <code>sort</code> to sort numerically, in reverse order, treating the 2nd field (time) as the sort-key. We can do the same for tag file size, the 4th field:</p>
+
+<pre><code>awk 'BEGIN { RS=""; FS="\n" } { print $1, $2, $3, $4 }' etagging.log | sort -nrk4 &gt; etagging-size
+</code></pre>
+
+<p>Finally, we can take a look at what floated to the top.</p>
+
+<pre><code>$ head -n 3 etagging-time
+app/models/taxi_edit.json 108.024 273517 8084569921
+vendor/assets/stylesheets/bootstrap/bootstrap.min.css 2.159 118153 288792277
+app/models/appointment.rb 0.252 10096 2481
+
+$ head -n 3 etagging-size
+app/models/taxi_edit.json 108.024 273517 8084569921
+vendor/assets/stylesheets/bootstrap/bootstrap.min.css 2.159 118153 288792277
+vendor/assets/stylesheets/intlTelInput.css 0.051 18194 5464144
+</code></pre>
+
+<p>As you can see, the top two offenders, both by time and by size, are a large json file and a minified bootstrap stylesheet, neither of which I have much interest in tagging. This shed some light on the performance disparity between universal-ctags and other tagging libraries, as universal-ctags recently added json support, so it was the only implementation tagging json at all.</p>
+
+<p>A quick fix is to add json to the languages I exclude from tagging, but it begged the question, why didn&rsquo;t it have the same problem when run without the <code>-e</code> flag? Turns out the issue was extremely long lines in the source files. The tags file includes a source line reference, and it truncates these references when outputting <em>c</em>tags, but not when outputting <em>e</em>tags.</p>
+
+<p>I reported the issue to the universal-ctags project (they were, in fact, very helpful during the debugging process as well).</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1354,61 +1530,6 @@ let g:netrw_preview=1           " open previews vertically
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/11/01/other-peoples-dotfiles/">Other People&#8217;s Dotfiles (OPD)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-11-01T02:21:00-04:00" pubdate data-updated="true">Nov 1<span>st</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>After getting familiar with Git and the concept of version control, I got interested in backing up my dotfiles (<code>.bash_profile</code>, <code>.vimrc</code> and the like), most of which were in <code>~</code>. Now, turning my entire home directory into a Git repository would be asking for trouble, but a classmate suggested I might use symlinks to get around this.</p>
-
-<p>The basic idea is this: move your dotfiles into their own directory, link to them from their original locations, ensuring they&rsquo;re still available to the applications that need them, and run <code>git init</code> with a little less trepidation.</p>
-
-<p>I did some googling and found I&rsquo;m not the first to think of <a href="http://dotfiles.github.io">this</a>. There are some pretty advanced scripts out there for backing up your dotfiles this way, but I wanted to do it myself since I wasn&rsquo;t backing up that many files and I wanted to understand how it worked. The consensus seems to be to use symlinks, which begs the question: what&rsquo;s the difference between a symlink (or &ldquo;soft link&rdquo;), and a hard link?</p>
-
-<p>What we think of as a filename is actually a pointer to a specific location in memory. If we have a file <code>~/goblet</code>, pointing at memory location-X, we could create a hard link to the same location with a different name, say <code>~/Stockpile/golden_cup</code>. Both <code>~/goblet</code> and <code>~/Stockpile/treasure/golden_cup</code> point directly at the same location in memory. We could instead create a symlink <code>~/Cloud/chalice</code> pointing at <code>~/goblet</code>, which in turn points to location-X in memory.</p>
-
-<p>It&rsquo;s a subtle distinction, but one that carries real repercussions. If we move or delete the original <code>~/goblet</code>, then the hard link <code>~/Stockpile/golden_cup</code> will still point at the same data (moving another pointer has no effect on this pointer), but the symlink will be broken. It just pointed at the original path (<code>~/goblet</code>), and now it&rsquo;s connection to the memory location is severed.</p>
-
-<p>Despite this apparent disadvantage to symlinks, the general consensus seems to be to prefer them for linking to dotfiles. They do offer the ability to link across separate filesystems, and besides, I&rsquo;m not planning on moving them around, so I went ahead and made some symlinks to serve my purpose.</p>
-
-<p>Take, for example, my <code>~/.bash_profile</code>. I created a directory for my dotfiles at <code>~/Development/resources/dotfiles/</code>, moved the file to that directory, and linked to it with a symlink from its original location in <code>~</code>, allowing my shell to pick it up at the expected location (<code>~</code>).</p>
-
-<pre><code>$ mkdir -p ~/Development/resources/dotfiles/
-$ mv ~/.bash_profile ~/Development/resources/dotfiles/bash_profile
-$ ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
-</code></pre>
-
-<p>I removed the <code>.</code> from the target filename both for convenience (so it shows up in Finder), and to distinguish it from the symlink I created at <code>~/.bash_profile</code>. Then I initialized a git repository in the <code>dotfiles</code> directory, putting my precious dotfiles under version control and making it easier to share them.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -1422,6 +1543,10 @@ $ ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/12/20/debugging-etags/">Debugging-etags</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2015/06/06/karabiner/">Karabiner</a>
@@ -1439,10 +1564,6 @@ $ ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
         <a href="/blog/2014/10/27/faster-specs/">Faster Specs</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2014/10/26/vim-key-mappings/">Vim Key-mappings</a>
-      </li>
-    
   </ul>
 </section>
 
@@ -1452,7 +1573,7 @@ $ ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - Ivan Brennan -
+  Copyright &copy; 2016 - Ivan Brennan -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
