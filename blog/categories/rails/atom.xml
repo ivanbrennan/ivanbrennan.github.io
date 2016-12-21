@@ -4,7 +4,7 @@
   <title><![CDATA[Category: rails, | codemachine]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/rails/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2016-12-20T23:34:50-05:00</updated>
+  <updated>2016-12-20T23:36:23-05:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -28,11 +28,11 @@
 
 <p>Next we created a project directory from scratch, initialized a chef repo within it, and cloned an existing cookbook into the cookbooks directory. Easier said than done, but the ascii-art made it all worth while.</p>
 
-<p><img class="production <a" src="href="http://i.imgur.com/gEGr6LJ.jpg">http://i.imgur.com/gEGr6LJ.jpg</a>" title="&lsquo;production&rsquo; &lsquo;production&rsquo;" ></p>
+<p>{% img production <a href="http://i.imgur.com/gEGr6LJ.jpg">http://i.imgur.com/gEGr6LJ.jpg</a> &lsquo;production&rsquo; &lsquo;production&rsquo; %}</p>
 
 <p>These little exercises were helpful, but we were still bogged down trying to map out the components and configurations encompassed by Chef. We backed up, got some helpful input from the TA&rsquo;s here at Flatiron School, and started mapping out the components necessary to <em>our</em> project, pinpointing the core functionality we needed to start with.</p>
 
-<p><img class="sketch <a" src="href="http://i.imgur.com/oih6feU.jpg">http://i.imgur.com/oih6feU.jpg</a>" title="&lsquo;sketch&rsquo; &lsquo;sketch&rsquo;" ></p>
+<p>{% img sketch <a href="http://i.imgur.com/oih6feU.jpg">http://i.imgur.com/oih6feU.jpg</a> &lsquo;sketch&rsquo; &lsquo;sketch&rsquo; %}</p>
 
 <h3>Step 1: Get a local chef repo communicating with DigitalOcean</h3>
 
