@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "debugging-etags"
+title: "Debugging etags"
 date: 2016-12-20 07:52
 comments: true
 categories: 
