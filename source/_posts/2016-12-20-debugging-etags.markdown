@@ -12,15 +12,17 @@ I've been using ctags to navigate the codebases I work with in Vim for a couple 
 
 On a large Rails app I've been working with, it takes 1 second and generates a 7MB tags file.
 
-More recently, I started playing around with Emacs, and I've been looking for a way to port my tagging strategy over to *e*tags. There are a few ways you can generate etags. Emacs comes with its own `etags` executable, but the more featureful implementations of ctags can also generate etags.
+More recently, I started playing around with Emacs, and I've been looking for a way to port my tagging strategy over to *e*tags. There are a few ways you can generate etags. Emacs comes with its own `etags` executable, but the more featureful implementations of ctags can also generate them.
 
-I've been using [universal-ctags](https://github.com/universal-ctags/ctags), which picked up where [exuberant-ctags](http://ctags.sourceforge.net) left off a few years ago, adding more language support, so I added `-e` to my tagging command and gave that a try.
+I've been using [universal-ctags](https://github.com/universal-ctags/ctags), which picked up where [exuberant-ctags](http://ctags.sourceforge.net) left off a few years ago, so I added `-e` to my tagging command and gave it a whirl. 90 seconds later it handed me an ***8GB*** tags file.
 
-It took 90 seconds and produced an ***8GB*** tags file. At first, I thought this must be a problem with the etags format itself, but when I tried Emacs' own `etags` executable, it took 13 seconds and produced a 3MB file. Next, I tried exuberant-ctags, which took 2 seconds and produced a 1MB file.
+At first, I thought this must be a problem with the etags format itself, but when I tried Emacs' own `etags` executable, it took 13 seconds and produced a 3MB file. Next, I tried exuberant-ctags, which took 2 seconds and produced a 1MB file.
 
-Narrowing in on the problem was an interesting process that pulled together several shell scripting concepts and tools, including redirection, sub-shells, and `awk`.
+Narrowing in on the problem further was an interesting process that called on several shell-scripting concepts and tools, including I/O redirection, sub-shells, and `awk`.
 
-The first step was to generate performance stats to profile each file's contribution to execution time and tags file-size. I wanted a list of records like:
+## Benchmarking
+
+First, I needed to gather some data profiling each file's contribution to execution time and tags-size. I wanted something like,
 
 	some_file.rb <- source-file
 	0.004        <- processing time (seconds)
@@ -34,7 +36,7 @@ The first step was to generate performance stats to profile each file's contribu
 
 	...
 
-To generate these stats, I ran a shell script that iterated through the files, generating tags for each in turn, and appending stats to a running log file.
+I wrote a shell script to iterate through the files, generating tags for each and recording the time taken and resulting tags size, appending these stats to a log file.
 ```sh
 #!/bin/sh
 
@@ -49,75 +51,89 @@ do
   rm tmp.TAGS
 done
 ```
-I'll break this down a bit.
-
-First we run `git ls-files` in a sub-shell to generate the list of files we'll be iterating over:
+I'll break this down a bit. First, we run `git ls-files` in a sub-shell to generate a list of files to loop through.
 
 	for f in $(git ls-files)
 
-On each iteration, we run a few commands to generate performance stats and append their output to a log file named `etagging.log`. This could be done like,
+For each file, we run some commands (`echo`, `time`, `ctags`, `ls`) and redirect their output to a log file. This could be done like,
 
 	run a command >> etagging.log
 	run another command >> etagging.log
 	run one more command >> etagging.log
 
-but by using a sub-shell, we can do the same with a single `>>` indirection operator.
+but using a sub-shell lets us capture it all in one go:
 
 	( run a command
 	  run another command
 	  run one more command ) >> etagging.log
   
-I'm using the `time` command to record the time spent processing each file, and this introduces some extra complexity. For one, I only want the real (perceived) time, and because I'm using the shell's `time` built-in, I need to set the `TIMEFORMAT` shell variable to acheive this.
+### Time and redirection
 
-Furthermore, `time` prints its results to stderr rather than stdout. If I simply used `>>` as above, the time stats would print to my terminal rather than to the logfile. To redirect stderr to the log file as well, the form changes to:
+Using the `time` [builtin](https://en.wikipedia.org/wiki/Shell_builtin) to benchmark tags creation introduces a little more complexity. We only want the real (perceived) time, so we need to set the `TIMEFORMAT` shell variable accordingly.
+
+Since `time` broadcasts its results through stderr rather than stdout, we can't rely on just `>>`, which redirects stdout, or our time data would print to screen rather than being recorded. So once we've redirected stdout to the log-file, we need to redirect stderr there as well.
 
 	( run a command
 	  run another command
 	  run one more command ) >> etagging.log 2>&1
   
-You could read this as, "Run these commands in a sub-shell, send the sub-shell's standard output data to a log file, and send the standard error data to the same location you're sending the standard output."
+You could read this as,
+> run commands in a sub-shell, send the sub-shell's standard output to the log-file, and send its standard error data to the same location you're sending the standard output (i.e. the log-file)
 
-The `2` and `1` above are "file-descriptors" that indicate stderr and stdout, respectively. Think of a file-descriptor as a numeric identifier associated with a particular stream of data. If you're familiar with pointers in C, you could think of `&1` as the location of stdout. Thus, `2>&1` says to redirect stderr to the same place that stdout is headed.
+The digits in `2>&1` are [file descriptors](https://en.wikipedia.org/wiki/File_descriptor), indicating stderr (`2`) and stdout (`1`). A running process has 3 standard I/O streams through which to communicate. As a source of input, it has stdin (`0`); when it's ready to broadcast some output, it _generally_ sends that to stdout (`1`), but _some_ output is semantically different (e.g. error messages), and it's useful to have a separate stream for such data. This is where stderr (`2`) comes in.
 
-The order of the redirection commands is important. If we'd written,
+If you're familiar with pointers in C, you could think of `&1` as the location of stdout, so `2>&1` says to redirect stderr to the same place that stdout is headed. The order of redirection operations is significant. If we'd written,
 
 	( run some commands ) 2>&1 >> etagging.log
 	
-then stderr would redirected to the same location as stdout (`2>&1`) *before* we'd changed stdout to point to the log file. It would be like saying, "Hey stderr, see the river stdout is headed towards? Go there. Hey stdout, change direction, go the that hilltop."
+we'd be directing stderr to the same location as stdout and then directing stdout elsewhere. It would be like saying,
+> Hey stderr, ask stdout where it's currently headed. Go there.
 
-After the time stats have been generated, we want to include the size of the source file as well as of the generated tags file:
+> Hey stdout, change of plans: I want you to go to this log-file.
+
+### Space and a little awk
+
+We also want to record the size of the source-file and the size of the tags-file. We use `awk` to extract these sizes (in bytes) from the 5th field of long-format `ls` file-listings:
 
 	( ls -l $f
 	  ls -l tmp.TAGS ) | awk '{ print $5 }'
   
-This produces long-format file-listings, and we pipe the results to `awk` to extract the 5th field from each line, which happens to the number of bytes in the file.
+## Sorting the results
 
-Once the script has run to completion, I'd like to sort the results by time and tag-size. The `sort` command expects newline-separated records with whitespace-separated fields. We can use `awk` to translate our results to the horizontal format `sort` expects.
+Once I had the profiling data, I wanted to sort it by time and tag-size to see which files were causing the big slowdown and eating up my diskspace. The `sort` command expects newline-separated records with whitespace-separated fields. I used `awk` to translate the results to the horizontal format `sort` expects.
 
 	awk 'BEGIN { RS=""; FS="\n" } { print $1, $2, $3, $4 }' etagging.log
 
-We're using a `BEGIN` block to set up awk's `RS` (record-separator) and `FS` (field-separator) variables, allowing it to correctly identify each record. The next block defines the actions we want to take on each record, namely to print each of its fields on a single line. We can pipe this into `sort` and generate stats sorted by time:
+The `BEGIN` block to sets up awk's `RS` (record-separator) and `FS` (field-separator) variables, allowing it to correctly identify each record. The next block defines the actions to take on each record. In this case I just want to print each of its fields on a single line. Piping this into `sort` generates results sorted by time:
 
 	awk 'BEGIN { RS=""; FS="\n" } { print $1, $2, $3, $4 }' etagging.log | sort -nrk2 > etagging-time
 
-Here we're telling `sort` to sort numerically, in reverse order, treating the 2nd field (time) as the sort-key. We can do the same for tag file size, the 4th field:
+Here I'm telling `sort` to sort numerically, in reverse order, treating the 2nd field as the sort-key. I did the same for tag file size, the 4th field:
 
 	awk 'BEGIN { RS=""; FS="\n" } { print $1, $2, $3, $4 }' etagging.log | sort -nrk4 > etagging-size
 
-Finally, we can take a look at what floated to the top.
+## Identifying the Culprit
+
+Here's what floated to the top:
 
 	$ head -n 3 etagging-time
-	app/models/taxi_edit.json 108.024 273517 8084569921
+	app/models/something_big.json 108.024 273517 8084569921
 	vendor/assets/stylesheets/bootstrap/bootstrap.min.css 2.159 118153 288792277
 	app/models/appointment.rb 0.252 10096 2481
 
 	$ head -n 3 etagging-size
-	app/models/taxi_edit.json 108.024 273517 8084569921
+	app/models/something_big.json 108.024 273517 8084569921
 	vendor/assets/stylesheets/bootstrap/bootstrap.min.css 2.159 118153 288792277
 	vendor/assets/stylesheets/intlTelInput.css 0.051 18194 5464144
 
-As you can see, the top two offenders, both by time and by size, are a large json file and a minified bootstrap stylesheet, neither of which I have much interest in tagging. This shed some light on the performance disparity between universal-ctags and other tagging libraries, as universal-ctags recently added json support, so it was the only implementation tagging json at all.
+The two top offenders, by both time and by size, were a large JSON file and a minified bootstrap stylesheet, neither of which I had much interest in tagging. The JSON file outshadowed everything else by miles, and that shed some light on the performance disparity between universal-ctags and the other tagging libraries: only universal-ctags had JSON support, so it was the only one tagging JSON at all.
 
-A quick fix is to add json to the languages I exclude from tagging, but it begged the question, why didn't it have the same problem when run without the `-e` flag? Turns out the issue was extremely long lines in the source files. The tags file includes a source line reference, and it truncates these references when outputting *c*tags, but not when outputting *e*tags.
+A quick fix was to add JSON to the languages I exclude from tagging, but it begged the question, why didn't *c*tags exhibit the same problem as *e*tags?
 
-I reported the issue to the universal-ctags project (they were, in fact, very helpful during the debugging process as well).
+The hint was hiding in that _minified_ stylesheet. The JSON file and the stylesheet had extremely long lines. Both ctags and etags include source line references, and these references get truncated to a reasonable length when generating *c*tags, but not when generating *e*tags.
+
+### Conclusion
+
+I'd like to thank the team at universal-ctags for help debugging this and tracking down the root of the problem. They were quick to respond, incredibly helpful, and are looking into how to resolve the underlying issue. In the meantime, I've adjusted my command for generating *e*tags.
+
+	git ls-files | ctags -L - -e -o ".git/etags" --tag-relative=yes --languages=-javascript,sql,json,css
