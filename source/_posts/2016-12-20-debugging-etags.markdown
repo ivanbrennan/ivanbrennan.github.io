@@ -134,6 +134,6 @@ The hint was hiding in that _minified_ stylesheet. The JSON file and the stylesh
 
 ### Conclusion
 
-The team at [universal-ctags](https://github.com/universal-ctags/ctags) was incredibly helpful in debugging this and helped turn a source of frustration into a learning experience. They were quick to respond and are looking into how to best resolve the underlying issue. In the meantime, I've adjusted my command for generating *e*tags.
+The team at [universal-ctags](https://github.com/universal-ctags/ctags) was incredibly helpful in debugging this and helped turn a source of frustration into a learning experience. They were quick to respond and are looking into resolving the underlying issue. In the meantime, I've adjusted my command for generating *e*tags.
 
 	git ls-files | ctags -L - -e -o ".git/etags" --tag-relative=yes --languages=-javascript,sql,json,css
