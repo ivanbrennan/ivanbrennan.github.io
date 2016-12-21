@@ -96,15 +96,17 @@
 
 <p>On a large Rails app I&rsquo;ve been working with, it takes 1 second and generates a 7MB tags file.</p>
 
-<p>More recently, I started playing around with Emacs, and I&rsquo;ve been looking for a way to port my tagging strategy over to <em>e</em>tags. There are a few ways you can generate etags. Emacs comes with its own <code>etags</code> executable, but the more featureful implementations of ctags can also generate etags.</p>
+<p>More recently, I started playing around with Emacs, and I&rsquo;ve been looking for a way to port my tagging strategy over to <em>e</em>tags. There are a few ways you can generate etags. Emacs comes with its own <code>etags</code> executable, but the more featureful implementations of ctags can also generate them.</p>
 
-<p>I&rsquo;ve been using <a href="https://github.com/universal-ctags/ctags">universal-ctags</a>, which picked up where <a href="http://ctags.sourceforge.net">exuberant-ctags</a> left off a few years ago, adding more language support, so I added <code>-e</code> to my tagging command and gave that a try.</p>
+<p>I&rsquo;ve been using <a href="https://github.com/universal-ctags/ctags">universal-ctags</a>, which picked up where <a href="http://ctags.sourceforge.net">exuberant-ctags</a> left off a few years ago, so I added <code>-e</code> to my tagging command and gave it a whirl. 90 seconds later it handed me an <strong><em>8GB</em></strong> tags file.</p>
 
-<p>It took 90 seconds and produced an <strong><em>8GB</em></strong> tags file. At first, I thought this must be a problem with the etags format itself, but when I tried Emacs&#8217; own <code>etags</code> executable, it took 13 seconds and produced a 3MB file. Next, I tried exuberant-ctags, which took 2 seconds and produced a 1MB file.</p>
+<p>At first, I thought this must be a problem with the etags format itself, but when I tried Emacs&#8217; own <code>etags</code> executable, it took 13 seconds and produced a 3MB file. Next, I tried exuberant-ctags, which took 2 seconds and produced a 1MB file.</p>
 
-<p>Narrowing in on the problem was an interesting process that pulled together several shell scripting concepts and tools, including redirection, sub-shells, and <code>awk</code>.</p>
+<p>Narrowing in on the problem further was an interesting process that called on several shell-scripting concepts and tools, including I/O redirection, sub-shells, and <code>awk</code>.</p>
 
-<p>The first step was to generate performance stats to profile each file&rsquo;s contribution to execution time and tags file-size. I wanted a list of records like:</p>
+<h2>Benchmarking</h2>
+
+<p>First, I needed to gather some data profiling each file&rsquo;s contribution to execution time and tags-size. I wanted something like,</p>
 
 <pre><code>some_file.rb &lt;- source-file
 0.004        &lt;- processing time (seconds)
@@ -119,7 +121,7 @@ another_file.rb
 ...
 </code></pre>
 
-<p>To generate these stats, I ran a shell script that iterated through the files, generating tags for each in turn, and appending stats to a running log file.</p>
+<p>I wrote a shell script to iterate through the files, generating tags for each and recording the time taken and resulting tags size, appending these stats to a log file.</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -148,88 +150,105 @@ another_file.rb
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>I&rsquo;ll break this down a bit.</p>
-
-<p>First we run <code>git ls-files</code> in a sub-shell to generate the list of files we&rsquo;ll be iterating over:</p>
+<p>I&rsquo;ll break this down a bit. First, we run <code>git ls-files</code> in a sub-shell to generate a list of files to loop through.</p>
 
 <pre><code>for f in $(git ls-files)
 </code></pre>
 
-<p>On each iteration, we run a few commands to generate performance stats and append their output to a log file named <code>etagging.log</code>. This could be done like,</p>
+<p>For each file, we run some commands (<code>echo</code>, <code>time</code>, <code>ctags</code>, <code>ls</code>) and redirect their output to a log file. This could be done like,</p>
 
 <pre><code>run a command &gt;&gt; etagging.log
 run another command &gt;&gt; etagging.log
 run one more command &gt;&gt; etagging.log
 </code></pre>
 
-<p>but by using a sub-shell, we can do the same with a single <code>&gt;&gt;</code> indirection operator.</p>
+<p>but using a sub-shell lets us capture it all in one go:</p>
 
 <pre><code>( run a command
   run another command
   run one more command ) &gt;&gt; etagging.log
 </code></pre>
 
-<p>I&rsquo;m using the <code>time</code> command to record the time spent processing each file, and this introduces some extra complexity. For one, I only want the real (perceived) time, and because I&rsquo;m using the shell&rsquo;s <code>time</code> built-in, I need to set the <code>TIMEFORMAT</code> shell variable to acheive this.</p>
+<h3>Time and redirection</h3>
 
-<p>Furthermore, <code>time</code> prints its results to stderr rather than stdout. If I simply used <code>&gt;&gt;</code> as above, the time stats would print to my terminal rather than to the logfile. To redirect stderr to the log file as well, the form changes to:</p>
+<p>Using the <code>time</code> <a href="https://en.wikipedia.org/wiki/Shell_builtin">builtin</a> to benchmark tags creation introduces a little more complexity. We only want the real (perceived) time, so we need to set the <code>TIMEFORMAT</code> shell variable accordingly.</p>
+
+<p>Since <code>time</code> broadcasts its results through stderr rather than stdout, we can&rsquo;t rely on just <code>&gt;&gt;</code>, which redirects stdout, or our time data would print to screen rather than being recorded. So once we&rsquo;ve redirected stdout to the log-file, we need to redirect stderr there as well.</p>
 
 <pre><code>( run a command
   run another command
   run one more command ) &gt;&gt; etagging.log 2&gt;&amp;1
 </code></pre>
 
-<p>You could read this as, &ldquo;Run these commands in a sub-shell, send the sub-shell&rsquo;s standard output data to a log file, and send the standard error data to the same location you&rsquo;re sending the standard output.&rdquo;</p>
+<p>You could read this as,</p>
 
-<p>The <code>2</code> and <code>1</code> above are &ldquo;file-descriptors&rdquo; that indicate stderr and stdout, respectively. Think of a file-descriptor as a numeric identifier associated with a particular stream of data. If you&rsquo;re familiar with pointers in C, you could think of <code>&amp;1</code> as the location of stdout. Thus, <code>2&gt;&amp;1</code> says to redirect stderr to the same place that stdout is headed.</p>
+<blockquote><p>run commands in a sub-shell, send the sub-shell&rsquo;s standard output to the log-file, and send its standard error data to the same location you&rsquo;re sending the standard output (i.e. the log-file)</p></blockquote>
 
-<p>The order of the redirection commands is important. If we&rsquo;d written,</p>
+<p>The digits in <code>2&gt;&amp;1</code> are <a href="https://en.wikipedia.org/wiki/File_descriptor">file descriptors</a>, indicating stderr (<code>2</code>) and stdout (<code>1</code>). A running process has 3 standard I/O streams through which to communicate. As a source of input, it has stdin (<code>0</code>); when it&rsquo;s ready to broadcast some output, it <em>generally</em> sends that to stdout (<code>1</code>), but <em>some</em> output is semantically different (e.g. error messages), and it&rsquo;s useful to have a separate stream for such data. This is where stderr (<code>2</code>) comes in.</p>
+
+<p>If you&rsquo;re familiar with pointers in C, you could think of <code>&amp;1</code> as the location of stdout, so <code>2&gt;&amp;1</code> says to redirect stderr to the same place that stdout is headed. The order of redirection operations is significant. If we&rsquo;d written,</p>
 
 <pre><code>( run some commands ) 2&gt;&amp;1 &gt;&gt; etagging.log
 </code></pre>
 
-<p>then stderr would redirected to the same location as stdout (<code>2&gt;&amp;1</code>) <em>before</em> we&rsquo;d changed stdout to point to the log file. It would be like saying, &ldquo;Hey stderr, see the river stdout is headed towards? Go there. Hey stdout, change direction, go the that hilltop.&rdquo;</p>
+<p>we&rsquo;d be directing stderr to the same location as stdout and then directing stdout elsewhere. It would be like saying,</p>
 
-<p>After the time stats have been generated, we want to include the size of the source file as well as of the generated tags file:</p>
+<blockquote><p>Hey stderr, ask stdout where it&rsquo;s currently headed. Go there.</p>
+
+<p>Hey stdout, change of plans: I want you to go to this log-file.</p></blockquote>
+
+<h3>Space and a little awk</h3>
+
+<p>We also want to record the size of the source-file and the size of the tags-file. We use <code>awk</code> to extract these sizes (in bytes) from the 5th field of long-format <code>ls</code> file-listings:</p>
 
 <pre><code>( ls -l $f
   ls -l tmp.TAGS ) | awk '{ print $5 }'
 </code></pre>
 
-<p>This produces long-format file-listings, and we pipe the results to <code>awk</code> to extract the 5th field from each line, which happens to the number of bytes in the file.</p>
+<h2>Sorting the results</h2>
 
-<p>Once the script has run to completion, I&rsquo;d like to sort the results by time and tag-size. The <code>sort</code> command expects newline-separated records with whitespace-separated fields. We can use <code>awk</code> to translate our results to the horizontal format <code>sort</code> expects.</p>
+<p>Once I had the profiling data, I wanted to sort it by time and tag-size to see which files were causing the big slowdown and eating up my diskspace. The <code>sort</code> command expects newline-separated records with whitespace-separated fields. I used <code>awk</code> to translate the results to the horizontal format <code>sort</code> expects.</p>
 
 <pre><code>awk 'BEGIN { RS=""; FS="\n" } { print $1, $2, $3, $4 }' etagging.log
 </code></pre>
 
-<p>We&rsquo;re using a <code>BEGIN</code> block to set up awk&rsquo;s <code>RS</code> (record-separator) and <code>FS</code> (field-separator) variables, allowing it to correctly identify each record. The next block defines the actions we want to take on each record, namely to print each of its fields on a single line. We can pipe this into <code>sort</code> and generate stats sorted by time:</p>
+<p>The <code>BEGIN</code> block to sets up awk&rsquo;s <code>RS</code> (record-separator) and <code>FS</code> (field-separator) variables, allowing it to correctly identify each record. The next block defines the actions to take on each record. In this case I just want to print each of its fields on a single line. Piping this into <code>sort</code> generates results sorted by time:</p>
 
 <pre><code>awk 'BEGIN { RS=""; FS="\n" } { print $1, $2, $3, $4 }' etagging.log | sort -nrk2 &gt; etagging-time
 </code></pre>
 
-<p>Here we&rsquo;re telling <code>sort</code> to sort numerically, in reverse order, treating the 2nd field (time) as the sort-key. We can do the same for tag file size, the 4th field:</p>
+<p>Here I&rsquo;m telling <code>sort</code> to sort numerically, in reverse order, treating the 2nd field as the sort-key. I did the same for tag file size, the 4th field:</p>
 
 <pre><code>awk 'BEGIN { RS=""; FS="\n" } { print $1, $2, $3, $4 }' etagging.log | sort -nrk4 &gt; etagging-size
 </code></pre>
 
-<p>Finally, we can take a look at what floated to the top.</p>
+<h2>Identifying the Culprit</h2>
+
+<p>Here&rsquo;s what floated to the top:</p>
 
 <pre><code>$ head -n 3 etagging-time
-app/models/taxi_edit.json 108.024 273517 8084569921
+app/models/something_big.json 108.024 273517 8084569921
 vendor/assets/stylesheets/bootstrap/bootstrap.min.css 2.159 118153 288792277
 app/models/appointment.rb 0.252 10096 2481
 
 $ head -n 3 etagging-size
-app/models/taxi_edit.json 108.024 273517 8084569921
+app/models/something_big.json 108.024 273517 8084569921
 vendor/assets/stylesheets/bootstrap/bootstrap.min.css 2.159 118153 288792277
 vendor/assets/stylesheets/intlTelInput.css 0.051 18194 5464144
 </code></pre>
 
-<p>As you can see, the top two offenders, both by time and by size, are a large json file and a minified bootstrap stylesheet, neither of which I have much interest in tagging. This shed some light on the performance disparity between universal-ctags and other tagging libraries, as universal-ctags recently added json support, so it was the only implementation tagging json at all.</p>
+<p>The two top offenders, by both time and by size, were a large JSON file and a minified bootstrap stylesheet, neither of which I had much interest in tagging. The JSON file outshadowed everything else by miles, and that shed some light on the performance disparity between universal-ctags and the other tagging libraries: only universal-ctags had JSON support, so it was the only one tagging JSON at all.</p>
 
-<p>A quick fix is to add json to the languages I exclude from tagging, but it begged the question, why didn&rsquo;t it have the same problem when run without the <code>-e</code> flag? Turns out the issue was extremely long lines in the source files. The tags file includes a source line reference, and it truncates these references when outputting <em>c</em>tags, but not when outputting <em>e</em>tags.</p>
+<p>A quick fix was to add JSON to the languages I exclude from tagging, but it begged the question, why didn&rsquo;t <em>c</em>tags exhibit the same problem as <em>e</em>tags?</p>
 
-<p>I reported the issue to the universal-ctags project (they were, in fact, very helpful during the debugging process as well).</p>
+<p>The hint was hiding in that <em>minified</em> stylesheet. The JSON file and the stylesheet had extremely long lines. Both ctags and etags include source line references, and these references get truncated to a reasonable length when generating <em>c</em>tags, but not when generating <em>e</em>tags.</p>
+
+<h3>Conclusion</h3>
+
+<p>I&rsquo;d like to thank the team at universal-ctags for help debugging this and tracking down the root of the problem. They were quick to respond, incredibly helpful, and are looking into how to resolve the underlying issue. In the meantime, I&rsquo;ve adjusted my command for generating <em>e</em>tags.</p>
+
+<pre><code>git ls-files | ctags -L - -e -o ".git/etags" --tag-relative=yes --languages=-javascript,sql,json,css
+</code></pre>
 </div>
 
 
