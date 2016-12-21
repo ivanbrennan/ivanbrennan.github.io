@@ -4,7 +4,7 @@
   <title><![CDATA[Category: ergonomics, | codemachine]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/ergonomics/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2016-12-20T23:36:23-05:00</updated>
+  <updated>2016-12-20T23:37:27-05:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -24,7 +24,7 @@
 
 <p>To set this up on OS X, first go to the Keyboard pane of System Preferences and change <code>Caps Lock</code> to <code>Control</code>.</p>
 
-<p>{% img caps-lock /images/karabiner/caps-lock.png &lsquo;caps-lock&rsquo; &lsquo;caps-lock&rsquo; %}</p>
+<p><img class="caps-lock" src="/images/karabiner/caps-lock.png" title="&lsquo;caps-lock&rsquo; &lsquo;caps-lock&rsquo;" ></p>
 
 <p>Then use Karabiner to send <code>Escape</code> when you type <code>Control</code> by itself.</p>
 
@@ -33,13 +33,13 @@
 * check "Control_L to Control_L (+ When you type Control_L only, send Escape)"
 </code></pre>
 
-<p>{% img escape /images/karabiner/escape.png &lsquo;escape&rsquo; &lsquo;escape&rsquo; %}</p>
+<p><img class="escape" src="/images/karabiner/escape.png" title="&lsquo;escape&rsquo; &lsquo;escape&rsquo;" ></p>
 
 <h2>More Control</h2>
 
 <p>I recently took this one step further and turned my <code>Return</code> key into a dual-purpose <code>Control</code>/<code>Return</code>, giving me easy access to a <code>Control</code> key on either side of the keyboard.</p>
 
-<p>{% img return /images/karabiner/return.png &lsquo;return&rsquo; &lsquo;return&rsquo; %}</p>
+<p><img class="return" src="/images/karabiner/return.png" title="&lsquo;return&rsquo; &lsquo;return&rsquo;" ></p>
 ]]></content>
   </entry>
   

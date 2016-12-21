@@ -4,7 +4,7 @@
   <title><![CDATA[Category: vim | codemachine]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/vim/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2016-12-20T23:36:23-05:00</updated>
+  <updated>2016-12-20T23:37:27-05:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -72,7 +72,7 @@ I&rsquo;ll put my cursor on the <em>N</em> in <code>NameError</code> and type (i
 
 <p>In iTerm&rsquo;s <em>Preferences</em> (<code>⌘,</code>), the <em>Profiles</em> tab has a <em>Keys</em> subtab. From there, you can define custom actions to trigger with any number of key-combinations. Clicking the &lsquo;<strong>+</strong>&rsquo; at the bottom of the list reveals a dialog to add a new combination.</p>
 
-<p>{% img screenshot /images/iterm/keys.png &lsquo;keys&rsquo; &lsquo;iterm keys screenshot&rsquo; %}</p>
+<p><img class="screenshot" src="/images/iterm/keys.png" title="&lsquo;keys&rsquo; &lsquo;iterm keys screenshot&rsquo;" ></p>
 
 <p>I hit Control-Enter to enter <code>^↩</code> in the <em>Keyboard Shortcut</em> field and selected <em>Send Escape Sequence</em> from the <em>Action</em> drop-down, revealing a field labeled &ldquo;Esc+&rdquo;. Here I entered <code>[25~</code>, telling iTerm to send Esc + <code>[25~</code> when Control-Enter is typed.</p>
 
@@ -184,7 +184,7 @@ endif
 
 <p>Netrw is not NERDTree. It does much more, but the flip side is that NERDTree focuses on doing one thing well. That being said, at some point I got interested in reproducing what I liked about NERDTree using the built-in capabilities of Netrw. It took a bit of configuration and some dirty language (vimscript) but if you&rsquo;re not averse to any of that, read on.</p>
 
-<p>{% img screenshot /images/vextoggle/4.png &lsquo;vim&rsquo; &lsquo;vim screenshot&rsquo; %}</p>
+<p><img class="screenshot" src="/images/vextoggle/4.png" title="&lsquo;vim&rsquo; &lsquo;vim screenshot&rsquo;" ></p>
 
 <p>My first goal was to toggle a sidebar navigator open/closed with a keystroke or two. The <code>:Vexplore</code> command opens a Netrw browser in a vertical split. If you pass the command a directory, it will open into that location, otherwise it opens in the current file&rsquo;s parent directory. There&rsquo;s a distinction between the current file&rsquo;s parent directory and the &ldquo;current working directory&rdquo; that Vim keeps track of. Say you start Vim from within ~/Development. You can <code>:edit</code> files anywhere you like (~/Development/resources, ~, /usr/local, etc.), and until you explicitly tell Vim to <code>:cd</code> to a new location, the current working directory will remain where it started, at ~/Development. You can use this as a home-base to work from in the current Vim session. With this in mind, I composed a small set of functions to toggle the sidebar in either the current file&rsquo;s directory (to access neighboring files), or the &ldquo;current working directory&rdquo; (which I tend to leave at the project root), and mapped them to a couple keystrokes I find convenient.</p>
 
@@ -231,7 +231,7 @@ endf
 noremap &lt;Leader&gt;` :call VexToggle("")&lt;CR&gt;
 </code></pre>
 
-<p>{% img screenshot /images/vextoggle/8.png &lsquo;vim&rsquo; &lsquo;vim screenshot&rsquo; %}</p>
+<p><img class="screenshot" src="/images/vextoggle/8.png" title="&lsquo;vim&rsquo; &lsquo;vim screenshot&rsquo;" ></p>
 
 <p>When the sidebar is open, either mapping can be used to close it. <code>VexClose()</code> starts by noting which window it was called from, so it can return the cursor to that window after the sidebar has closed. The exception is when the cursor was <em>in</em> the sidebar when <code>VexClose()</code> was called, in which case the cursor will land in the previous window (whichever window holds the alternate file <code>"#"</code>). The middle section switches to the sidebar, closes it, and removes the internal variable that was tracking its presence. Finally, we switch to the appropriate destination window and call <code>NormalizeWidths()</code> to normalize the widths of all open windows. Note that we have to subtract 1 from the original window number that was stored, since closing the sidebar window decremented all the remaining window numbers.</p>
 
@@ -249,7 +249,7 @@ fun! VexClose()
 endf
 ```</p>
 
-<p>{% img screenshot /images/vextoggle/10.png &lsquo;vim&rsquo; &lsquo;vim screenshot&rsquo; %}</p>
+<p><img class="screenshot" src="/images/vextoggle/10.png" title="&lsquo;vim&rsquo; &lsquo;vim screenshot&rsquo;" ></p>
 
 <p>All that&rsquo;s left are the final touches to window sizing, which occur in <code>VexSize()</code> and <code>NormalizeWidths()</code>. The first function sets and locks the sidebar width, then calls the second to normalize the widths off all other windows. <code>NormalizeWidths()</code> is a little hacky, but as far as I can tell it&rsquo;s the only native vimscript way to normalize window widths without affecting their heights. <code>'eadirection'</code> controls which dimensions are affected when <code>'equal always'</code> is set. We set it to <code>hor</code> (horizontal), toggle <code>'equal always'</code> off and back on (it&rsquo;s on by default), triggering the width normalization, and finally restore <code>'eadirection'</code> to it&rsquo;s original value.</p>
 
@@ -275,7 +275,7 @@ endf
 augroup END
 </code></pre>
 
-<p>{% img screenshot /images/vextoggle/12.png &lsquo;vim&rsquo; &lsquo;vim screenshot&rsquo; %}</p>
+<p><img class="screenshot" src="/images/vextoggle/12.png" title="&lsquo;vim&rsquo; &lsquo;vim screenshot&rsquo;" ></p>
 
 <p><strong><em>Closing Notes</em></strong></p>
 
