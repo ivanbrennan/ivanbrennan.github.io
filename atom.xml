@@ -4,7 +4,7 @@
   <title><![CDATA[codemachine]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2016-12-20T23:37:27-05:00</updated>
+  <updated>2017-06-03T13:27:25-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -12,6 +12,162 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Shell: while loops and variable assignments]]></title>
+    <link href="http://ivanbrennan.github.io/blog/2017/06/03/shell-while-loops-and-variable-assignments/"/>
+    <updated>2017-06-03T11:22:00-04:00</updated>
+    <id>http://ivanbrennan.github.io/blog/2017/06/03/shell-while-loops-and-variable-assignments</id>
+    <content type="html"><![CDATA[<p>A common idiom in shell scripting is to tweak the value of <code>IFS</code> (internal field separator) while reading lines of input:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="k">while </span><span class="nv">IFS</span><span class="o">=</span> <span class="nb">read</span> -r line
+</span><span class='line'><span class="k">do</span>
+</span><span class='line'>    <span class="c"># ...</span>
+</span><span class='line'><span class="k">done</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This leads to questions about <code>IFS</code> itself and the <code>-r</code> flag, and there are plenty of good answers out there. I&rsquo;d like to focus, however, on the <em>syntax</em> of <code>IFS=</code> and it&rsquo;s location in the above line, rather than the mechanics of reading input.</p>
+
+<p>Shell variables can be assigned and referenced:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>&gt; <span class="nv">var</span><span class="o">=</span>A
+</span><span class='line'>&gt; <span class="nb">echo</span> <span class="nv">$var</span>
+</span><span class='line'>A
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Sometimes you want to set a variable for the duration of a single command:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>&gt; <span class="nv">name</span><span class="o">=</span>Bob bash -c <span class="s1">&#39;echo $name&#39;</span>
+</span><span class='line'>Bob
+</span><span class='line'>&gt; <span class="nb">echo</span> <span class="nv">$name</span>
+</span><span class='line'>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>At first glance, you might expect the first line of our <code>while</code> loop to look like:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="nv">IFS</span><span class="o">=</span> <span class="k">while </span><span class="nb">read</span> -r line
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>but this generates a syntax error. In the <code>name=Bob</code> example, our entire line consisted of a single <a href="http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_01">simple command</a>, defined as</p>
+
+<blockquote><p>a sequence of optional variable assignments and redirections, in any sequence, optionally followed by words and redirections, terminated by a control operator.</p></blockquote>
+
+<p>The <code>while</code> loop, however, is a <a href="http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_04">compound command</a>, with the format:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="k">while </span>compound-list-1
+</span><span class='line'><span class="k">do</span>
+</span><span class='line'><span class="k">    </span>compound-list-2
+</span><span class='line'><span class="k">done</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>with <code>compound-list-1</code> being a sequence of <a href="http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_03">lists</a>. A list is defined as</p>
+
+<blockquote><p>a sequence of one or more AND-OR lists separated by the operators &lsquo;;&rsquo; and &lsquo;&amp;&rsquo;.</p></blockquote>
+
+<p>with an <code>AND-OR</code> list being</p>
+
+<blockquote><p>a sequence of one or more pipelines separated by the operators &ldquo;&amp;&amp;&rdquo; and &ldquo;||&rdquo; .</p></blockquote>
+
+<p>A <a href="http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_02">pipeline</a>, in turn, has the format:</p>
+
+<blockquote><p>[!] command1 [ | command2 &hellip;]</p></blockquote>
+
+<p>It feels like we&rsquo;re going in circles, but the long and short of it is that we can view</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="k">while </span><span class="nv">IFS</span><span class="o">=</span> <span class="nb">read</span> -r line
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>as</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="k">while </span>simple-command
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Note that this means we&rsquo;re setting <code>IFS</code> to a temporary value only during the <code>read</code> command, not during the body of the loop.</p>
+
+<p>To make this a little more concrete, here&rsquo;s a script I&rsquo;ve called <code>while-vars.sh</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="nv">var</span><span class="o">=</span>A
+</span><span class='line'><span class="nv">i</span><span class="o">=</span>1
+</span><span class='line'>
+</span><span class='line'>tester<span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>  <span class="nb">echo</span> <span class="s2">&quot;var in tester: $var&quot;</span>
+</span><span class='line'>  <span class="o">((</span> <span class="nv">$i</span> &gt; 0 <span class="o">))</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nb">echo</span> -e <span class="s2">&quot;var before loop: $var\n&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">while </span><span class="nv">var</span><span class="o">=</span>B tester; <span class="k">do</span>
+</span><span class='line'><span class="k">  </span><span class="nb">let </span>i-<span class="o">=</span>1
+</span><span class='line'>  <span class="nb">echo</span> <span class="s2">&quot;var in loop: $var&quot;</span>
+</span><span class='line'><span class="k">done</span>
+</span><span class='line'>
+</span><span class='line'><span class="nb">echo</span> -e <span class="s2">&quot;\nvar after loop: $var&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The result:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>&gt; bash <span class="k">while</span>-vars.sh
+</span><span class='line'>var before loop: A
+</span><span class='line'>
+</span><span class='line'>var in tester: B
+</span><span class='line'>var in loop: A
+</span><span class='line'>var in tester: B
+</span><span class='line'>
+</span><span class='line'>var after loop: A
+</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Debugging etags]]></title>

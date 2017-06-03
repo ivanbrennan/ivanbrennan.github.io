@@ -1,0 +1,384 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Shell: while loops and variable assignments - codemachine</title>
+  <meta name="author" content="Ivan Brennan">
+
+  
+  <meta name="description" content="A common idiom in shell scripting is to tweak the value of IFS (internal field separator) while reading lines of input: 1
+2
+3
+4
+while IFS= read -r &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://ivanbrennan.github.io/blog/2017/06/03/shell-while-loops-and-variable-assignments">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="codemachine" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">codemachine</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:ivanbrennan.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Shell: While Loops and Variable Assignments</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2017-06-03T11:22:00-04:00" pubdate data-updated="true">Jun 3<span>rd</span>, 2017</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>A common idiom in shell scripting is to tweak the value of <code>IFS</code> (internal field separator) while reading lines of input:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="k">while </span><span class="nv">IFS</span><span class="o">=</span> <span class="nb">read</span> -r line
+</span><span class='line'><span class="k">do</span>
+</span><span class='line'>    <span class="c"># ...</span>
+</span><span class='line'><span class="k">done</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This leads to questions about <code>IFS</code> itself and the <code>-r</code> flag, and there are plenty of good answers out there. I&rsquo;d like to focus, however, on the <em>syntax</em> of <code>IFS=</code> and it&rsquo;s location in the above line, rather than the mechanics of reading input.</p>
+
+<p>Shell variables can be assigned and referenced:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>&gt; <span class="nv">var</span><span class="o">=</span>A
+</span><span class='line'>&gt; <span class="nb">echo</span> <span class="nv">$var</span>
+</span><span class='line'>A
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Sometimes you want to set a variable for the duration of a single command:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>&gt; <span class="nv">name</span><span class="o">=</span>Bob bash -c <span class="s1">&#39;echo $name&#39;</span>
+</span><span class='line'>Bob
+</span><span class='line'>&gt; <span class="nb">echo</span> <span class="nv">$name</span>
+</span><span class='line'>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>At first glance, you might expect the first line of our <code>while</code> loop to look like:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="nv">IFS</span><span class="o">=</span> <span class="k">while </span><span class="nb">read</span> -r line
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>but this generates a syntax error. In the <code>name=Bob</code> example, our entire line consisted of a single <a href="http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_01">simple command</a>, defined as</p>
+
+<blockquote><p>a sequence of optional variable assignments and redirections, in any sequence, optionally followed by words and redirections, terminated by a control operator.</p></blockquote>
+
+<p>The <code>while</code> loop, however, is a <a href="http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_04">compound command</a>, with the format:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="k">while </span>compound-list-1
+</span><span class='line'><span class="k">do</span>
+</span><span class='line'><span class="k">    </span>compound-list-2
+</span><span class='line'><span class="k">done</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>with <code>compound-list-1</code> being a sequence of <a href="http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_03">lists</a>. A list is defined as</p>
+
+<blockquote><p>a sequence of one or more AND-OR lists separated by the operators &lsquo;;&rsquo; and &lsquo;&amp;&rsquo;.</p></blockquote>
+
+<p>with an <code>AND-OR</code> list being</p>
+
+<blockquote><p>a sequence of one or more pipelines separated by the operators &ldquo;&amp;&amp;&rdquo; and &ldquo;||&rdquo; .</p></blockquote>
+
+<p>A <a href="http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_02">pipeline</a>, in turn, has the format:</p>
+
+<blockquote><p>[!] command1 [ | command2 &hellip;]</p></blockquote>
+
+<p>It feels like we&rsquo;re going in circles, but the long and short of it is that we can view</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="k">while </span><span class="nv">IFS</span><span class="o">=</span> <span class="nb">read</span> -r line
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>as</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="k">while </span>simple-command
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Note that this means we&rsquo;re setting <code>IFS</code> to a temporary value only during the <code>read</code> command, not during the body of the loop.</p>
+
+<p>To make this a little more concrete, here&rsquo;s a script I&rsquo;ve called <code>while-vars.sh</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="nv">var</span><span class="o">=</span>A
+</span><span class='line'><span class="nv">i</span><span class="o">=</span>1
+</span><span class='line'>
+</span><span class='line'>tester<span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>  <span class="nb">echo</span> <span class="s2">&quot;var in tester: $var&quot;</span>
+</span><span class='line'>  <span class="o">((</span> <span class="nv">$i</span> &gt; 0 <span class="o">))</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nb">echo</span> -e <span class="s2">&quot;var before loop: $var\n&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">while </span><span class="nv">var</span><span class="o">=</span>B tester; <span class="k">do</span>
+</span><span class='line'><span class="k">  </span><span class="nb">let </span>i-<span class="o">=</span>1
+</span><span class='line'>  <span class="nb">echo</span> <span class="s2">&quot;var in loop: $var&quot;</span>
+</span><span class='line'><span class="k">done</span>
+</span><span class='line'>
+</span><span class='line'><span class="nb">echo</span> -e <span class="s2">&quot;\nvar after loop: $var&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The result:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>&gt; bash <span class="k">while</span>-vars.sh
+</span><span class='line'>var before loop: A
+</span><span class='line'>
+</span><span class='line'>var in tester: B
+</span><span class='line'>var in loop: A
+</span><span class='line'>var in tester: B
+</span><span class='line'>
+</span><span class='line'>var after loop: A
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Ivan Brennan</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2017-06-03T11:22:00-04:00" pubdate data-updated="true">Jun 3<span>rd</span>, 2017</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/shell/'>shell</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://ivanbrennan.github.io/blog/2017/06/03/shell-while-loops-and-variable-assignments/" data-via="" data-counturl="http://ivanbrennan.github.io/blog/2017/06/03/shell-while-loops-and-variable-assignments/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/12/20/debugging-etags/" title="Previous Post: Debugging etags">&laquo; Debugging etags</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2017/06/03/shell-while-loops-and-variable-assignments/">Shell: While Loops and Variable Assignments</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/20/debugging-etags/">Debugging Etags</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/06/06/karabiner/">Karabiner</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/04/unix-know-how/">Unix Know-how</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/11/04/search-and-replace/">Search &amp; Replace</a>
+      </li>
+    
+  </ul>
+</section>
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2017 - Ivan Brennan -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'codemachine';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://ivanbrennan.github.io/blog/2017/06/03/shell-while-loops-and-variable-assignments/';
+        var disqus_url = 'http://ivanbrennan.github.io/blog/2017/06/03/shell-while-loops-and-variable-assignments/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
