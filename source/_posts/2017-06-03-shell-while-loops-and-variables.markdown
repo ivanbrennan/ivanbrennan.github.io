@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Shell: while loops and variable assignments"
+title: "Shell: while loops and variables"
 date: 2017-06-03 11:22
 comments: true
 categories: shell
