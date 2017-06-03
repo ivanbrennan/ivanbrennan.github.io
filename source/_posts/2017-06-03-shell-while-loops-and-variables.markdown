@@ -32,7 +32,7 @@ At first glance, you might expect the first line of our `while` loop to look lik
 ```sh
 IFS= while read -r line
 ```
-but this generates a syntax error. In the `name=Bob` example, our entire line consisted of a single [simple command](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_01), defined as
+but this causes a syntax error. In the `name=Bob` example, our entire line consisted of a single [simple command](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_01), defined as
 > a sequence of optional variable assignments and redirections, in any sequence, optionally followed by words and redirections, terminated by a control operator.
 
 The `while` loop, however, is a [compound command](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_04), with the format:
