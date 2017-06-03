@@ -13,7 +13,7 @@ do
     # ...
 done
 ```
-This leads to questions about `IFS` itself and the `-r` flag, and there are plenty of good answers out there. I'd like to focus, however, on the *syntax* of `IFS=` and it's location in the above line, rather than the mechanics of reading input.
+This leads to questions about `IFS` itself and the `-r` flag, and there are plenty of good answers out there. I'd like to focus, however, on the *syntax* of `IFS=` and it's location in the above line.
 
 Shell variables can be assigned and referenced:
 ```sh
