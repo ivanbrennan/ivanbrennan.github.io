@@ -4,7 +4,7 @@
   <title><![CDATA[Category: shell | codemachine]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/shell/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2017-06-03T13:31:34-04:00</updated>
+  <updated>2017-06-03T13:33:44-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -28,7 +28,7 @@ do</p>
 
 <p>done
 <code>``
-This leads to questions about</code>IFS<code>itself and the</code>-r<code>flag, and there are plenty of good answers out there. I'd like to focus, however, on the *syntax* of</code>IFS=` and it&rsquo;s location in the above line, rather than the mechanics of reading input.</p>
+This leads to questions about</code>IFS<code>itself and the</code>-r<code>flag, and there are plenty of good answers out there. I'd like to focus, however, on the *syntax* of</code>IFS=` and it&rsquo;s location in the above line.</p>
 
 <p>Shell variables can be assigned and referenced:
 ```sh</p>

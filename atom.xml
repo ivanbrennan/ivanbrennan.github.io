@@ -4,7 +4,7 @@
   <title><![CDATA[codemachine]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2017-06-03T13:31:34-04:00</updated>
+  <updated>2017-06-03T13:33:44-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -31,7 +31,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>This leads to questions about <code>IFS</code> itself and the <code>-r</code> flag, and there are plenty of good answers out there. I&rsquo;d like to focus, however, on the <em>syntax</em> of <code>IFS=</code> and it&rsquo;s location in the above line, rather than the mechanics of reading input.</p>
+<p>This leads to questions about <code>IFS</code> itself and the <code>-r</code> flag, and there are plenty of good answers out there. I&rsquo;d like to focus, however, on the <em>syntax</em> of <code>IFS=</code> and it&rsquo;s location in the above line.</p>
 
 <p>Shell variables can be assigned and referenced:</p>
 
