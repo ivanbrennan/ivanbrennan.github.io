@@ -4,7 +4,7 @@
   <title><![CDATA[Category: shell | codemachine]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/shell/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2017-06-03T13:27:25-04:00</updated>
+  <updated>2017-06-03T13:31:34-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -14,10 +14,10 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Shell: while loops and variable assignments]]></title>
-    <link href="http://ivanbrennan.github.io/blog/2017/06/03/shell-while-loops-and-variable-assignments/"/>
+    <title type="html"><![CDATA[Shell: while loops and variables]]></title>
+    <link href="http://ivanbrennan.github.io/blog/2017/06/03/shell-while-loops-and-variables/"/>
     <updated>2017-06-03T11:22:00-04:00</updated>
-    <id>http://ivanbrennan.github.io/blog/2017/06/03/shell-while-loops-and-variable-assignments</id>
+    <id>http://ivanbrennan.github.io/blog/2017/06/03/shell-while-loops-and-variables</id>
     <content type="html"><![CDATA[<p>A common idiom in shell scripting is to tweak the value of <code>IFS</code> (internal field separator) while reading lines of input:
 ```sh
 while IFS= read -r line
