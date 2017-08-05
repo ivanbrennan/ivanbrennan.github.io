@@ -4,7 +4,7 @@
   <title><![CDATA[Category: awk | codemachine]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/awk/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2017-08-05T19:48:47-04:00</updated>
+  <updated>2017-08-05T19:56:35-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -44,7 +44,7 @@ The patterns are treated as shell globs that must match the entire line. Multili
 
 <p>I want to be able to <code>ls</code> a subdirectory by tapping <code>↑</code> and appending to the path. I also find the unfiltered approach more intuitive when interacting with recent history.</p>
 
-<p>More distant history, on the other hand, could benefit from some filtering. I don&rsquo;t see much value in persisting <code>ls</code> or <code>man</code> commands from one session to the next, as I&rsquo;m not likely to search for them, and when I&rsquo;m reaching back into a previous session&rsquo;s history it&rsquo;s nearly always by searching &mdash; either <em>reverse-search-history</em> (<code>C-r</code>) or the less well-known <em>history-search-backward</em>, which retreives the previous command matching what you&rsquo;ve already typed (I&rsquo;ve bound this to <code>M-p</code>).</p>
+<p>More distant history, on the other hand, could benefit from some filtering. I don&rsquo;t see much value in persisting <code>ls</code> or <code>man</code> commands from one session to the next, as I&rsquo;m not likely to search for them, and when I&rsquo;m reaching back into a previous session&rsquo;s history it&rsquo;s nearly always by searching &mdash; either <em>reverse-search-history</em> (<code>C-r</code>) or the less well-known <em>history-search-backward</em>, which retrieves the previous command matching what you&rsquo;ve already typed (I&rsquo;ve bound this to <code>M-p</code>).</p>
 
 <p>The only things I&rsquo;m using <code>HISTIGNORE</code> for are commands like <code>jobs</code> and <code>fg</code>, which I never reach for through the hands of history.</p>
 
@@ -79,7 +79,7 @@ The actual filtering logic lives in an Awk script. We run the persisted history 
 
 <p>Writing the actual filtering logic was interesting. It&rsquo;s the first time I made good use of Awk beyond its most basic capabilities.</p>
 
-<p>Awk processes input, in this case <code>~/.bash_history</code>, one line at a time, splitting it into individual fields (space-delimited by default). The individual fields are referencable as <code>$1</code>, <code>$2</code>, etc. and the entire line can be referenced by <code>$0</code>. The Awk script itself defines a set of commands that run on each line, and a common idiom, in pseudocode is:</p>
+<p>Awk processes input, in this case <code>~/.bash_history</code>, one line at a time, splitting it into individual fields (space-delimited by default). The individual fields are referenceable as <code>$1</code>, <code>$2</code>, etc. and the entire line can be referenced by <code>$0</code>. The Awk script itself defines a set of commands that run on each line, and a common idiom, in pseudocode is:</p>
 
 <pre><code>/pattern/ {
   # commands to run on any line matching pattern 
@@ -186,7 +186,7 @@ gsed 0.060s
 sed  0.080s
 </code></pre>
 
-<p>Awk is the best choice, I think. GNU Sed can shave 10 milliseconds off the runtime, but the extra dependency and the 80+ character regex just aren&rsquo;t worth it.</p>
+<p>Awk is the best choice, I think. GNU Sed can shave 10 milliseconds off the run time, but the extra dependency and the 80+ character regex just aren&rsquo;t worth it.</p>
 ]]></content>
   </entry>
   
