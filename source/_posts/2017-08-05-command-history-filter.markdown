@@ -159,4 +159,4 @@ Benchmarking the Awk, GNU Sed, and Sed solutions on a 50,000 line file:
     gsed 0.060s
     sed  0.080s
     
-Awk is the best choice, I think. GNU Sed can shave 10 milliseconds off the run time, but the extra dependency and the 80+ character regex just aren't worth it.
+Awk is the best choice, I think. GNU Sed can shave 10 milliseconds off the run time, but the extra dependency and the 80+ character regex aren't worth it.
