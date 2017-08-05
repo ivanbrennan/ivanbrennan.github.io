@@ -31,7 +31,7 @@ The patterns are treated as shell globs that must match the entire line. Multili
 
 I want to be able to `ls` a subdirectory by tapping `↑` and appending to the path. I also find the unfiltered approach more intuitive when interacting with recent history. 
 
-More distant history, on the other hand, could benefit from some filtering. I don't see much value in persisting `ls` or `man` commands from one session to the next, as I'm not likely to search for them, and when I'm reaching back into a previous session's history it's nearly always by searching -- either _reverse-search-history_ (`C-r`) or the less well-known _history-search-backward_, which retreives the previous command matching what you've already typed (I've bound this to `M-p`).
+More distant history, on the other hand, could benefit from some filtering. I don't see much value in persisting `ls` or `man` commands from one session to the next, as I'm not likely to search for them, and when I'm reaching back into a previous session's history it's nearly always by searching -- either _reverse-search-history_ (`C-r`) or the less well-known _history-search-backward_, which retrieves the previous command matching what you've already typed (I've bound this to `M-p`).
 
 The only things I'm using `HISTIGNORE` for are commands like `jobs` and `fg`, which I never reach for through the hands of history.
 
@@ -65,7 +65,7 @@ The actual filtering logic lives in an Awk script. We run the persisted history 
 
 Writing the actual filtering logic was interesting. It's the first time I made good use of Awk beyond its most basic capabilities.
 
-Awk processes input, in this case `~/.bash_history`, one line at a time, splitting it into individual fields (space-delimited by default). The individual fields are referencable as `$1`, `$2`, etc. and the entire line can be referenced by `$0`. The Awk script itself defines a set of commands that run on each line, and a common idiom, in pseudocode is:
+Awk processes input, in this case `~/.bash_history`, one line at a time, splitting it into individual fields (space-delimited by default). The individual fields are referenceable as `$1`, `$2`, etc. and the entire line can be referenced by `$0`. The Awk script itself defines a set of commands that run on each line, and a common idiom, in pseudocode is:
 
     /pattern/ {
       # commands to run on any line matching pattern 
@@ -159,4 +159,4 @@ Benchmarking the Awk, GNU Sed, and Sed solutions on a 50,000 line file:
     gsed 0.060s
     sed  0.080s
     
-Awk is the best choice, I think. GNU Sed can shave 10 milliseconds off the runtime, but the extra dependency and the 80+ character regex just aren't worth it.
+Awk is the best choice, I think. GNU Sed can shave 10 milliseconds off the run time, but the extra dependency and the 80+ character regex just aren't worth it.
