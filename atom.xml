@@ -4,7 +4,7 @@
   <title><![CDATA[codemachine]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2017-06-03T13:45:19-04:00</updated>
+  <updated>2017-08-05T19:48:47-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -12,6 +12,233 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[History: filtered vs unfiltered]]></title>
+    <link href="http://ivanbrennan.github.io/blog/2017/08/05/command-history-filter/"/>
+    <updated>2017-08-05T08:49:00-04:00</updated>
+    <id>http://ivanbrennan.github.io/blog/2017/08/05/command-history-filter</id>
+    <content type="html"><![CDATA[<p>I get a lot of use out of shell history. At its simplest, tapping <code>↑</code> cycles through previous commands. Incremental search (<code>C-r</code>) will retrieve matching history entries, updating as you type. There are more ways you can access history, but these two in particular have become ingrained in my workflow.</p>
+
+<p>I&rsquo;m running Bash (for now), and have it configured to save a good deal of history:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="nb">export </span><span class="nv">HISTSIZE</span><span class="o">=</span>10000
+</span><span class='line'><span class="nb">shopt</span> -s histappend
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>When you start a shell, Bash reads <code>~/.bash_history</code> (or <code>$HISTFILE</code> if that&rsquo;s been set), initializing the in-memory history your session will interact with. When exiting the shell, new history is written to disk, making it available to future sessions. With <code>histappend</code> set, the history file is appended to rather than being overwritten.</p>
+
+<p>I&rsquo;ve also configured it to save multiline commands with embedded newline characters, separated by timestamps. This makes it easy to recall and modify more complex commands, such as loops and pipelines.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="nb">export </span><span class="nv">HISTTIMEFORMAT</span><span class="o">=</span><span class="s1">&#39;%F %T &#39;</span>
+</span><span class='line'><span class="nb">shopt</span> -s cmdhist lithist
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Bash also has a <code>HISTIGNORE</code> variable that can hold a colon-separated list of patterns to exclude from history. If, for example, you wanted to ignore the <code>jobs</code> builtin and any <code>ls</code> commands, you could set:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="nv">HISTIGNORE</span><span class="o">=</span><span class="s1">&#39;jobs:ls[ ]*&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The patterns are treated as shell globs that must match the entire line. Multiline entries are decided based on the first line. I tried this out and quickly realized I prefer an unfiltered recent history, for the most part. If I run,</p>
+
+<pre><code>ls /path/to/some/directory
+</code></pre>
+
+<p>I want to be able to <code>ls</code> a subdirectory by tapping <code>↑</code> and appending to the path. I also find the unfiltered approach more intuitive when interacting with recent history.</p>
+
+<p>More distant history, on the other hand, could benefit from some filtering. I don&rsquo;t see much value in persisting <code>ls</code> or <code>man</code> commands from one session to the next, as I&rsquo;m not likely to search for them, and when I&rsquo;m reaching back into a previous session&rsquo;s history it&rsquo;s nearly always by searching &mdash; either <em>reverse-search-history</em> (<code>C-r</code>) or the less well-known <em>history-search-backward</em>, which retreives the previous command matching what you&rsquo;ve already typed (I&rsquo;ve bound this to <code>M-p</code>).</p>
+
+<p>The only things I&rsquo;m using <code>HISTIGNORE</code> for are commands like <code>jobs</code> and <code>fg</code>, which I never reach for through the hands of history.</p>
+
+<h3>Filtering persisted history</h3>
+
+<p>To keep commands like <code>ls</code> from polluting the history of future shell sessions, I&rsquo;m running a custom filter to groom <code>~/.bash_history</code> upon exit. I initially tried filtering just the new entries that were to be appended to the existing file, but the order Bash runs things in upon exit made this infeasible. It also turned out to be unnecessary, as the filter can process 50,000 lines in about 70 milliseconds.</p>
+
+<p>I&rsquo;m trapping <code>EXIT</code> to trigger the filter in my <code>~/.bashrc</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="k">if</span> <span class="o">[[</span> <span class="nv">$-</span> <span class="o">==</span> *i* <span class="o">]]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">  </span><span class="nb">trap</span> <span class="s1">&#39;$HOME/.bash_history_filter &gt;/dev/null 2&gt;&amp;1 &amp;&#39;</span> EXIT
+</span><span class='line'><span class="k">fi</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The cryptic <code>$-</code> variable holds flags indicating which shell options are in effect, and I&rsquo;m using it to restrict the trap to interactive shells, indicated by an <code>i</code> flag. The script it runs, <code>~/.bash_history_filter</code>, is as follows:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'><span class="c">#!/bin/sh</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">tmpfile</span><span class="o">=</span><span class="k">$(</span>mktemp<span class="k">)</span>
+</span><span class='line'><span class="nb">trap</span> <span class="s1">&#39;rm -f &quot;$tmpfile&quot;&#39;</span> EXIT
+</span><span class='line'>
+</span><span class='line'><span class="nv">awk_script</span><span class="o">=</span><span class="s2">&quot;$HOME/.bash_history_filter.awk&quot;</span>
+</span><span class='line'><span class="nv">persisted_history</span><span class="o">=</span><span class="s2">&quot;${HISTFILE:-$HOME/.bash_history}&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="o">[[</span> -r <span class="s2">&quot;$awk_script&quot;</span> <span class="o">&amp;&amp;</span> -r <span class="s2">&quot;$persisted_history&quot;</span> <span class="o">]]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">  </span>awk -f <span class="s2">&quot;$awk_script&quot;</span> <span class="s2">&quot;$persisted_history&quot;</span> &gt; <span class="s2">&quot;$tmpfile&quot;</span>
+</span><span class='line'>
+</span><span class='line'>  mv <span class="s2">&quot;$tmpfile&quot;</span> <span class="s2">&quot;$persisted_history&quot;</span>
+</span><span class='line'><span class="k">fi</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The actual filtering logic lives in an Awk script. We run the persisted history through that script, output to a temporary file, then replace the history file with the results. As a cautionary measure, we lay an exit trap to remove the temporary file in case something goes wrong.</p>
+
+<p>Writing the actual filtering logic was interesting. It&rsquo;s the first time I made good use of Awk beyond its most basic capabilities.</p>
+
+<p>Awk processes input, in this case <code>~/.bash_history</code>, one line at a time, splitting it into individual fields (space-delimited by default). The individual fields are referencable as <code>$1</code>, <code>$2</code>, etc. and the entire line can be referenced by <code>$0</code>. The Awk script itself defines a set of commands that run on each line, and a common idiom, in pseudocode is:</p>
+
+<pre><code>/pattern/ {
+  # commands to run on any line matching pattern 
+}
+
+$1 ~ /word/ {
+  # commands to run on any line whose first field matches word 
+}
+</code></pre>
+
+<p>You can call <code>next</code> to skip any subsequent commands and jump to the next line of input. You can also set and manipulate whatever variables you need to track state, accumulate text, etc. The <code>print</code> function gives you control over what makes it into the output stream.</p>
+
+<p>This is what I ended up with:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='awk'><span class='line'><span class="sr">/^#[[:digit:]]{10}$/</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">timestamp</span> <span class="o">=</span> <span class="o">$</span><span class="mi">0</span>
+</span><span class='line'>  <span class="nx">histentry</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+</span><span class='line'>  <span class="kr">next</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="o">$</span><span class="mi">1</span> <span class="o">~</span> <span class="sr">/^(ls?|man|cat)$/</span><span class="p">)</span> <span class="o">||</span> <span class="sr">/^[[:alpha:]]$/</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="o">!</span> <span class="nx">timestamp</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="kr">print</span>
+</span><span class='line'>  <span class="p">}</span> <span class="nx">else</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">histentry</span> <span class="o">=</span> <span class="o">$</span><span class="mi">0</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  <span class="kr">next</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">timestamp</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kr">print</span> <span class="nx">timestamp</span>
+</span><span class='line'>  <span class="nx">timestamp</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">histentry</span> <span class="p">{</span>
+</span><span class='line'>  <span class="kr">print</span> <span class="nx">histentry</span>
+</span><span class='line'>  <span class="nx">histentry</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">{</span> <span class="kr">print</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>It&rsquo;s essentially a state-machine.</p>
+
+<p><img class="state-machine" src="http://ivanbrennan.github.io/images/history-filter/state-machine.png" title="state-machine" alt="state-machine"></p>
+
+<p>Getting the Awk script just right took some work, and I found it helpful to have some <a href="https://github.com/ivanbrennan/dotfiles/blob/master/shell/filter_test">automated tests</a> at my back as I fiddled with it.</p>
+
+<p>When processing multiline entries, I decided that if a command is complex enough to warrant mutliple lines, it&rsquo;s worth remembering, even if its first line matches an uninteresting pattern. The &ldquo;uninteresting&rdquo; predicate ended up as:</p>
+
+<pre><code>($1 ~ /^(ls?|man|cat)$/) || /^[[:alpha:]]$/
+</code></pre>
+
+<p>This matches some commands that are uninteresting with or without arguments, any line that consists of a single letter. I have some functions/aliases I use &mdash; <code>v</code> for (neo)vim, <code>e</code> for emacs, <code>t</code> for tmux &mdash; which aren&rsquo;t very interesting by themselves, but could have interesting arguments. I frequently use <code>C-r</code>, for example, to recall/reuse a previous <code>tmux new-session</code> command:</p>
+
+<pre><code>t new-session -s ruby-project -c /path/to/ruby-project
+</code></pre>
+
+<p>I tried out Sed as an alternative to Awk for this use, but decided against it. Sed has an extremely terse syntax and fought me most of the way. I finally found a couple ways to make it work, but they&rsquo;re pretty gnarly. If you install GNU Sed, you can tell Sed to treat lines as separated by NULL bytes. The entire file will be slurped into a single &ldquo;line&rdquo; on which you can apply substitution:</p>
+
+<pre><code>gsed --null-data \
+     --regexp-extended \
+     's/(#[0-9]{10}\n((cat|ls?|man)([^[:alnum:]][^\n]*)?|[[:alpha:]])\n)+(#[0-9]{10}\n|$)/\5/g' \
+     "$infile" &gt;"$outfile"
+</code></pre>
+
+<p>Sed implementations that don&rsquo;t have the NULL byte trick up their sleeve (e.g. BSD Sed), will instead have to juggle data back and forth between the &ldquo;hold-space&rdquo; and &ldquo;pattern-space&rdquo;. I scripted this out of morbid curiosity, but I wouldn&rsquo;t wish it on anyone:</p>
+
+<pre><code>sed -E -f horrendous.sed "$infile" &gt;"$outfile"
+</code></pre>
+
+<p>with the following <code>horrendous.sed</code> script:</p>
+
+<pre><code>$ {
+  1 h
+  1!H
+  x
+  /^#[[:digit:]]{10}\n((ls?|cat|man)([^[:alnum:]][[:print:]]*)?|[[:alpha:]])$/ d
+  p
+}
+
+/^#[[:digit:]]{10}$/ !{
+  1 h
+  1!H
+  d
+}
+
+x
+/^$/ d
+/^#[[:digit:]]{10}$/ d
+/^#[[:digit:]]{10}\n((ls?|cat|man)([^[:alnum:]][[:print:]]*)?|[[:alpha:]])$/ d
+</code></pre>
+
+<p>Benchmarking the Awk, GNU Sed, and Sed solutions on a 50,000 line file:</p>
+
+<pre><code>awk  0.070s
+gsed 0.060s
+sed  0.080s
+</code></pre>
+
+<p>Awk is the best choice, I think. GNU Sed can shave 10 milliseconds off the runtime, but the extra dependency and the 80+ character regex just aren&rsquo;t worth it.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Shell: while loops and variables]]></title>

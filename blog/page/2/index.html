@@ -9,7 +9,7 @@
   <meta name="author" content="Ivan Brennan">
 
   
-  <meta name="description" content="I&rsquo;m in the early stages of a team project. Our goal is to build a rails app that uses chef-solo to automate the creation and provisioning of a &hellip;">
+  <meta name="description" content="It took me a while to wrap my head around a Chef role. It sounds simple enough at first &mdash; a collection of recipes that allows a node to act in &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,6 +63,50 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/11/21/chef-roles/">Chef Roles</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-21T09:11:00-05:00" pubdate data-updated="true">Nov 21<span>st</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>It took me a while to wrap my head around a Chef role. It sounds simple enough at first &mdash; a collection of recipes that allows a node to act in a certain capacity, as say, a Redis server &mdash; but Chef also deals in cookbooks, which are also collections of recipes. So then what&rsquo;s the difference between a cookbook and a role?</p>
+
+<p>A cookbook is a collection of recipes relating to a particular piece of technology. The nginx cookbook, for example, contains several recipes related to building and configuring nginx: <code>nginx::source</code> builds nginx from source, <code>nginx::ohai_plugin</code> provides the Ohai plugin as a template, <code>nginx::passenger</code> builds the passenger gem, etc.</p>
+
+<p>A node is a single server, and Chef can apply a variety of recipes to the node to set it up as needed. Those recipes can be selected from a variety of cookbooks, and we don&rsquo;t have to use every recipe in a given cookbook. So how do we package the particular mix of recipes we need for a certain type of node? In a role.</p>
+
+<p>For lack of a better analogy, you could think of a role as a multi-course meal made from several recipes pulled from a variety of cookbooks. A couple from a Pasta cookbook, one from a French Cuisine cookbook, one from a Pastries cookbook. The meal won&rsquo;t be made from every single recipe in those books, just the desired ones.</p>
+
+<p>Recipes can include each other too, like mixins in Ruby (the <code>nginx::source</code> recipe, for example, includes the <code>nginx::ohai_plugin</code> recipe as part of it) but let&rsquo;s not add to the confusion just yet.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -638,6 +682,10 @@ $ ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2017/08/05/command-history-filter/">History: Filtered vs Unfiltered</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2017/06/03/shell-while-loops-and-variables/">Shell: While Loops and Variables</a>
       </li>
     
@@ -651,10 +699,6 @@ $ ln -s ~/Development/resources/dotfiles/bash_profile ~/.bash_profile
     
       <li class="post">
         <a href="/blog/2014/11/04/unix-know-how/">Unix Know-how</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/11/04/search-and-replace/">Search &amp; Replace</a>
       </li>
     
   </ul>
