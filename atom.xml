@@ -4,7 +4,7 @@
   <title><![CDATA[codemachine]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2017-08-05T19:56:35-04:00</updated>
+  <updated>2017-08-05T19:58:14-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -236,7 +236,7 @@ gsed 0.060s
 sed  0.080s
 </code></pre>
 
-<p>Awk is the best choice, I think. GNU Sed can shave 10 milliseconds off the run time, but the extra dependency and the 80+ character regex just aren&rsquo;t worth it.</p>
+<p>Awk is the best choice, I think. GNU Sed can shave 10 milliseconds off the run time, but the extra dependency and the 80+ character regex aren&rsquo;t worth it.</p>
 ]]></content>
   </entry>
   
