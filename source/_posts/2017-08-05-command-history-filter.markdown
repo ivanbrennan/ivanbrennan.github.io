@@ -13,39 +13,39 @@ I'm running Bash (for now), and have it configured to save a good deal of histor
 export HISTSIZE=10000
 shopt -s histappend
 ```
-When you start a shell, Bash reads `~/.bash_history` (or `$HISTFILE` if that's been set), initializing the in-memory history your session will interact with. When exiting the shell, new history is written to disk, making it available to future sessions. With `histappend` set, the history file is appended to rather than being overwritten.
+When you start a shell, Bash reads `~/.bash_history` (or `$HISTFILE` if that's been set), initializing the in-memory history your session will interact with. When exiting the shell, new history is written to disk, making it available to future sessions. With `histappend` set, the history file is appended to rather than overwritten.
 
-I've also configured it to save multiline commands with embedded newline characters, separated by timestamps. This makes it easy to recall and modify more complex commands, such as loops and pipelines.
+I've also configured it to save multiline commands with embedded newlines, separated by timestamps. This makes it easy to recall and modify more complex commands, like loops and functions.
 ```sh
 export HISTTIMEFORMAT='%F %T '
 shopt -s cmdhist lithist
 ```
 
-Bash also has a `HISTIGNORE` variable that can hold a colon-separated list of patterns to exclude from history. If, for example, you wanted to ignore the `jobs` builtin and any `ls` commands, you could set:
+Bash has a `HISTIGNORE` variable that can hold patterns you want to exclude from history. The patterns are colon-separated and treated as shell globs that must match the entire line. Multiline entries are decided based on the first line.
+
+If, for example, you wanted to ignore the `jobs` builtin and any `ls` commands, you could set:
 ```sh
 HISTIGNORE='jobs:ls[ ]*'
 ```
-The patterns are treated as shell globs that must match the entire line. Multiline entries are decided based on the first line. I tried this out and quickly realized I prefer an unfiltered recent history, for the most part. If I run,
+I tried this out but quickly realized I prefer an unfiltered recent history. If I run,
 
     ls /path/to/some/directory
 
-I want to be able to `ls` a subdirectory by tapping `↑` and appending to the path. I also find the unfiltered approach more intuitive when interacting with recent history. 
+I want to be able to repeat `ls` on a subdirectory by tapping `↑` and appending to the path.
 
-More distant history, on the other hand, could benefit from some filtering. I don't see much value in persisting `ls` or `man` commands from one session to the next, as I'm not likely to search for them, and when I'm reaching back into a previous session's history it's nearly always by searching -- either _reverse-search-history_ (`C-r`) or the less well-known _history-search-backward_, which retrieves the previous command matching what you've already typed (I've bound this to `M-p`).
+More distant history, on the other hand, could benefit from filtering. I don't see much value in persisting `ls` or `man` commands from one session to the next. I'm not likely to search for them, and when I'm reaching back into a previous session's history it's nearly always via search -- either _reverse-search-history_ (`C-r`) or the less well-known _history-search-backward_, which retrieves the previous command matching what you've already typed, and which I've bound to `M-p`.
 
-The only things I'm using `HISTIGNORE` for are commands like `jobs` and `fg`, which I never reach for through the hands of history.
+The only things I'm using `HISTIGNORE` for are commands like `jobs` and `fg`, which I tend to just retype.
 
 ### Filtering persisted history
 
-To keep commands like `ls` from polluting the history of future shell sessions, I'm running a custom filter to groom `~/.bash_history` upon exit. I initially tried filtering just the new entries that were to be appended to the existing file, but the order Bash runs things in upon exit made this infeasible. It also turned out to be unnecessary, as the filter can process 50,000 lines in about 70 milliseconds.
-
-I'm trapping `EXIT` to trigger the filter in my `~/.bashrc`:
+To keep commands like `ls` from polluting the history of future shell sessions, I've written a script to filter my `~/.bash_history` when exiting the shell. The script is triggered by an `EXIT` trap in my `~/.bashrc`:
 ```sh
 if [[ $- == *i* ]]; then
   trap '$HOME/.bash_history_filter >/dev/null 2>&1 &' EXIT
 fi
 ```
-The cryptic `$-` variable holds flags indicating which shell options are in effect, and I'm using it to restrict the trap to interactive shells, indicated by an `i` flag. The script it runs, `~/.bash_history_filter`, is as follows:
+The cryptic `$-` variable holds flags indicating which shell options are in effect, and I'm using it to restrict the trap to interactive shells (indicated by the `i` flag). The script it runs is as follows:
 ```sh
 #!/bin/sh
 
@@ -61,11 +61,9 @@ if [[ -r "$awk_script" && -r "$persisted_history" ]]; then
   mv "$tmpfile" "$persisted_history"
 fi
 ```
-The actual filtering logic lives in an Awk script. We run the persisted history through that script, output to a temporary file, then replace the history file with the results. As a cautionary measure, we lay an exit trap to remove the temporary file in case something goes wrong.
+The actual filtering logic lives in an Awk script. The shell history is run through that filter and output to a temporary file, which subsequently replaces the original history file. An exit trap will remove the temporary file if something goes wrong and the script exits before executing the `mv`.
 
-Writing the actual filtering logic was interesting. It's the first time I made good use of Awk beyond its most basic capabilities.
-
-Awk processes input, in this case `~/.bash_history`, one line at a time, splitting it into individual fields (space-delimited by default). The individual fields are referenceable as `$1`, `$2`, etc. and the entire line can be referenced by `$0`. The Awk script itself defines a set of commands that run on each line, and a common idiom, in pseudocode is:
+Awk processes input one line at a time, splitting the line into individual fields (space-delimited by default). The fields are referenceable as `$1`, `$2`, etc. and the entire line is available in `$0`. Each line is run through the set of Awk commands you define. A common idiom, in pseudocode is:
 
     /pattern/ {
       # commands to run on any line matching pattern 
@@ -75,9 +73,7 @@ Awk processes input, in this case `~/.bash_history`, one line at a time, splitti
       # commands to run on any line whose first field matches word 
     }
 
-You can call `next` to skip any subsequent commands and jump to the next line of input. You can also set and manipulate whatever variables you need to track state, accumulate text, etc. The `print` function gives you control over what makes it into the output stream. 
-
-This is what I ended up with:
+You can call `next` to skip any subsequent commands and jump to the next line of input. You can also set and manipulate variables to track state, accumulate text, etc. and `print` to write output. My filter is:
 ```awk
 /^#[[:digit:]]{10}$/ {
   timestamp = $0
@@ -113,7 +109,7 @@ It's essentially a state-machine.
 
 Getting the Awk script just right took some work, and I found it helpful to have some [automated tests](https://github.com/ivanbrennan/dotfiles/blob/master/shell/filter_test) at my back as I fiddled with it.
 
-When processing multiline entries, I decided that if a command is complex enough to warrant mutliple lines, it's worth remembering, even if its first line matches an uninteresting pattern. The "uninteresting" predicate ended up as:
+When processing multiline entries, I decided that if a command is complex enough to warrant mutliple lines, it's worth remembering, even if its first line matches an "uninteresting" pattern. The "uninteresting" predicate ended up as:
 
     ($1 ~ /^(ls?|man|cat)$/) || /^[[:alpha:]]$/
 
