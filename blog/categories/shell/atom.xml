@@ -4,7 +4,7 @@
   <title><![CDATA[Category: shell, | codemachine]]></title>
   <link href="http://ivanbrennan.github.io/blog/categories/shell/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2017-08-05T19:58:14-04:00</updated>
+  <updated>2017-08-06T07:57:32-04:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -25,40 +25,40 @@
 export HISTSIZE=10000
 shopt -s histappend
 </code>
-When you start a shell, Bash reads <code>~/.bash_history</code> (or <code>$HISTFILE</code> if that&rsquo;s been set), initializing the in-memory history your session will interact with. When exiting the shell, new history is written to disk, making it available to future sessions. With <code>histappend</code> set, the history file is appended to rather than being overwritten.</p>
+When you start a shell, Bash reads <code>~/.bash_history</code> (or <code>$HISTFILE</code> if that&rsquo;s been set), initializing the in-memory history your session will interact with. When exiting the shell, new history is written to disk, making it available to future sessions. With <code>histappend</code> set, the history file is appended to rather than overwritten.</p>
 
-<p>I&rsquo;ve also configured it to save multiline commands with embedded newline characters, separated by timestamps. This makes it easy to recall and modify more complex commands, such as loops and pipelines.
+<p>I&rsquo;ve also configured it to save multiline commands with embedded newlines, separated by timestamps. This makes it easy to recall and modify more complex commands, like loops and functions.
 <code>sh
 export HISTTIMEFORMAT='%F %T '
 shopt -s cmdhist lithist
 </code></p>
 
-<p>Bash also has a <code>HISTIGNORE</code> variable that can hold a colon-separated list of patterns to exclude from history. If, for example, you wanted to ignore the <code>jobs</code> builtin and any <code>ls</code> commands, you could set:
+<p>Bash has a <code>HISTIGNORE</code> variable that can hold patterns you want to exclude from history. The patterns are colon-separated and treated as shell globs that must match the entire line. Multiline entries are decided based on the first line.</p>
+
+<p>If, for example, you wanted to ignore the <code>jobs</code> builtin and any <code>ls</code> commands, you could set:
 <code>sh
 HISTIGNORE='jobs:ls[ ]*'
 </code>
-The patterns are treated as shell globs that must match the entire line. Multiline entries are decided based on the first line. I tried this out and quickly realized I prefer an unfiltered recent history, for the most part. If I run,</p>
+I tried this out but quickly realized I prefer an unfiltered recent history. If I run,</p>
 
 <pre><code>ls /path/to/some/directory
 </code></pre>
 
-<p>I want to be able to <code>ls</code> a subdirectory by tapping <code>↑</code> and appending to the path. I also find the unfiltered approach more intuitive when interacting with recent history.</p>
+<p>I want to be able to repeat <code>ls</code> on a subdirectory by tapping <code>↑</code> and appending to the path.</p>
 
-<p>More distant history, on the other hand, could benefit from some filtering. I don&rsquo;t see much value in persisting <code>ls</code> or <code>man</code> commands from one session to the next, as I&rsquo;m not likely to search for them, and when I&rsquo;m reaching back into a previous session&rsquo;s history it&rsquo;s nearly always by searching &mdash; either <em>reverse-search-history</em> (<code>C-r</code>) or the less well-known <em>history-search-backward</em>, which retrieves the previous command matching what you&rsquo;ve already typed (I&rsquo;ve bound this to <code>M-p</code>).</p>
+<p>More distant history, on the other hand, could benefit from filtering. I don&rsquo;t see much value in persisting <code>ls</code> or <code>man</code> commands from one session to the next. I&rsquo;m not likely to search for them, and when I&rsquo;m reaching back into a previous session&rsquo;s history it&rsquo;s nearly always via search &mdash; either <em>reverse-search-history</em> (<code>C-r</code>) or the less well-known <em>history-search-backward</em>, which retrieves the previous command matching what you&rsquo;ve already typed, and which I&rsquo;ve bound to <code>M-p</code>.</p>
 
-<p>The only things I&rsquo;m using <code>HISTIGNORE</code> for are commands like <code>jobs</code> and <code>fg</code>, which I never reach for through the hands of history.</p>
+<p>The only things I&rsquo;m using <code>HISTIGNORE</code> for are commands like <code>jobs</code> and <code>fg</code>, which I tend to just retype.</p>
 
 <h3>Filtering persisted history</h3>
 
-<p>To keep commands like <code>ls</code> from polluting the history of future shell sessions, I&rsquo;m running a custom filter to groom <code>~/.bash_history</code> upon exit. I initially tried filtering just the new entries that were to be appended to the existing file, but the order Bash runs things in upon exit made this infeasible. It also turned out to be unnecessary, as the filter can process 50,000 lines in about 70 milliseconds.</p>
-
-<p>I&rsquo;m trapping <code>EXIT</code> to trigger the filter in my <code>~/.bashrc</code>:
+<p>To keep commands like <code>ls</code> from polluting the history of future shell sessions, I&rsquo;ve written a script to filter my <code>~/.bash_history</code> when exiting the shell. The script is triggered by an <code>EXIT</code> trap in my <code>~/.bashrc</code>:
 <code>sh
 if [[ $- == *i* ]]; then
   trap '$HOME/.bash_history_filter &gt;/dev/null 2&gt;&amp;1 &amp;' EXIT
 fi
 </code>
-The cryptic <code>$-</code> variable holds flags indicating which shell options are in effect, and I&rsquo;m using it to restrict the trap to interactive shells, indicated by an <code>i</code> flag. The script it runs, <code>~/.bash_history_filter</code>, is as follows:
+The cryptic <code>$-</code> variable holds flags indicating which shell options are in effect, and I&rsquo;m using it to restrict the trap to interactive shells (indicated by the <code>i</code> flag). The script it runs is as follows:
 ```sh</p>
 
 <h1>!/bin/sh</h1>
@@ -74,12 +74,10 @@ persisted_history=&ldquo;${HISTFILE:&ndash;$HOME/.bash_history}&rdquo;</p>
 
 <p>  mv &ldquo;$tmpfile&rdquo; &ldquo;$persisted_history&rdquo;
 fi
-```
-The actual filtering logic lives in an Awk script. We run the persisted history through that script, output to a temporary file, then replace the history file with the results. As a cautionary measure, we lay an exit trap to remove the temporary file in case something goes wrong.</p>
+<code>``
+The actual filtering logic lives in an Awk script. The shell history is run through that filter and output to a temporary file, which subsequently replaces the original history file. An exit trap will remove the temporary file if something goes wrong and the script exits before executing the</code>mv`.</p>
 
-<p>Writing the actual filtering logic was interesting. It&rsquo;s the first time I made good use of Awk beyond its most basic capabilities.</p>
-
-<p>Awk processes input, in this case <code>~/.bash_history</code>, one line at a time, splitting it into individual fields (space-delimited by default). The individual fields are referenceable as <code>$1</code>, <code>$2</code>, etc. and the entire line can be referenced by <code>$0</code>. The Awk script itself defines a set of commands that run on each line, and a common idiom, in pseudocode is:</p>
+<p>Awk processes input one line at a time, splitting the line into individual fields (space-delimited by default). The fields are referenceable as <code>$1</code>, <code>$2</code>, etc. and the entire line is available in <code>$0</code>. Each line is run through the set of Awk commands you define. A common idiom, in pseudocode is:</p>
 
 <pre><code>/pattern/ {
   # commands to run on any line matching pattern 
@@ -90,9 +88,7 @@ $1 ~ /word/ {
 }
 </code></pre>
 
-<p>You can call <code>next</code> to skip any subsequent commands and jump to the next line of input. You can also set and manipulate whatever variables you need to track state, accumulate text, etc. The <code>print</code> function gives you control over what makes it into the output stream.</p>
-
-<p>This is what I ended up with:
+<p>You can call <code>next</code> to skip any subsequent commands and jump to the next line of input. You can also set and manipulate variables to track state, accumulate text, etc. and <code>print</code> to write output. My filter is:
 ```awk
 /^#[[:digit:]]{10}$/ {
   timestamp = $0
@@ -134,7 +130,7 @@ $1 ~ /word/ {
 
 <p>Getting the Awk script just right took some work, and I found it helpful to have some <a href="https://github.com/ivanbrennan/dotfiles/blob/master/shell/filter_test">automated tests</a> at my back as I fiddled with it.</p>
 
-<p>When processing multiline entries, I decided that if a command is complex enough to warrant mutliple lines, it&rsquo;s worth remembering, even if its first line matches an uninteresting pattern. The &ldquo;uninteresting&rdquo; predicate ended up as:</p>
+<p>When processing multiline entries, I decided that if a command is complex enough to warrant mutliple lines, it&rsquo;s worth remembering, even if its first line matches an &ldquo;uninteresting&rdquo; pattern. The &ldquo;uninteresting&rdquo; predicate ended up as:</p>
 
 <pre><code>($1 ~ /^(ls?|man|cat)$/) || /^[[:alpha:]]$/
 </code></pre>
