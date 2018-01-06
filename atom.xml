@@ -4,7 +4,7 @@
   <title><![CDATA[codemachine]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2017-08-06T09:12:41-04:00</updated>
+  <updated>2018-01-06T13:51:46-05:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -12,6 +12,161 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[follow the types]]></title>
+    <link href="http://ivanbrennan.github.io/blog/2018/01/06/follow-the-types/"/>
+    <updated>2018-01-06T13:18:00-05:00</updated>
+    <id>http://ivanbrennan.github.io/blog/2018/01/06/follow-the-types</id>
+    <content type="html"><![CDATA[<p>Time for some Haskell. The following expression evaluates to <code>Just 6</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="nf">fmap</span> <span class="n">sum</span> <span class="o">$</span> <span class="kt">Just</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So does this one:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="p">(</span><span class="n">fmap</span> <span class="o">.</span> <span class="n">fmap</span><span class="p">)</span> <span class="n">sum</span> <span class="kt">Just</span> <span class="o">$</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>How does the second one work? How do the type signatures line up?</p>
+
+<p>First consider <code>fmap . fmap</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="p">(</span><span class="o">.</span><span class="p">)</span> <span class="ow">::</span> <span class="p">(</span><span class="n">b</span> <span class="ow">-&gt;</span> <span class="n">c</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">c</span>
+</span><span class='line'>
+</span><span class='line'><span class="nf">fmap</span> <span class="ow">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="ow">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">f</span> <span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="o">.</span><span class="p">)</span> <span class="n">fmap</span> <span class="ow">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="ow">=&gt;</span> <span class="p">(</span><span class="n">a1</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">b</span><span class="p">))</span>
+</span><span class='line'>                      <span class="ow">-&gt;</span> <span class="n">a1</span>
+</span><span class='line'>                      <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">f</span> <span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="nf">fmap</span> <span class="o">.</span> <span class="n">fmap</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Functor</span> <span class="n">f</span><span class="p">,</span> <span class="kt">Functor</span> <span class="n">f1</span><span class="p">)</span> <span class="ow">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">b</span><span class="p">)</span>
+</span><span class='line'>                                       <span class="ow">-&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="n">a</span><span class="p">)</span>
+</span><span class='line'>                                       <span class="ow">-&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then <code>sum</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="nf">sum</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Num</span> <span class="n">a</span><span class="p">,</span> <span class="kt">Foldable</span> <span class="n">t</span><span class="p">)</span> <span class="ow">=&gt;</span> <span class="n">t</span> <span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">a</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now apply <code>fmap . fmap</code> to <code>sum</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="p">(</span><span class="n">fmap</span> <span class="o">.</span> <span class="n">fmap</span><span class="p">)</span> <span class="n">sum</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Num</span> <span class="n">b</span><span class="p">,</span>
+</span><span class='line'>                      <span class="kt">Foldable</span> <span class="n">t</span><span class="p">,</span>
+</span><span class='line'>                      <span class="kt">Functor</span> <span class="n">f</span><span class="p">,</span>
+</span><span class='line'>                      <span class="kt">Functor</span> <span class="n">f1</span><span class="p">)</span> <span class="ow">=&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span>
+</span><span class='line'>                                  <span class="ow">-&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next, the tricky bit.
+Note that <code>(a -&gt; b) ~ ((-&gt;) a b)</code>.
+So the signature of <code>Just</code>, which we&rsquo;d usually write:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="kt">Just</span> <span class="ow">::</span> <span class="n">a</span> <span class="ow">-&gt;</span> <span class="kt">Maybe</span> <span class="n">a</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>can also be expressed as:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="kt">Just</span> <span class="ow">::</span> <span class="p">(</span><span class="ow">-&gt;</span><span class="p">)</span> <span class="n">a</span> <span class="p">(</span><span class="kt">Maybe</span> <span class="n">a</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We want the type signature for <code>(fmap . fmap) sum Just</code>.</p>
+
+<p>Consider the signature of <code>(fmap . fmap) sum</code>.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="o">...</span>
+</span><span class='line'><span class="kt">Functor</span> <span class="n">f</span><span class="p">,</span>
+</span><span class='line'><span class="kt">Functor</span> <span class="n">f1</span><span class="p">)</span> <span class="ow">=&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span>
+</span><span class='line'>            <span class="ow">-&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>f1</code> must have a Functor instance.</p>
+
+<p><code>((-&gt;) a)</code> has a <a href="https://github.com/ghc/packages-base/blob/52c0b09036c36f1ed928663abb2f295fd36a88bb/GHC/Base.lhs#L234">Functor instance</a> for all a.</p>
+
+<p><code>((-&gt;) (t b))</code>, therefore, has a Functor instance.</p>
+
+<p>If we replace <code>f1</code> with <code>((-&gt;) (t b))</code>, we produce a more specific type signature, expressing a specialization of <code>(fmap . fmap) sum</code></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'>    <span class="o">...</span> <span class="ow">=&gt;</span> <span class="p">((</span><span class="ow">-&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span> <span class="p">(</span><span class="n">f</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span>
+</span><span class='line'>        <span class="ow">-&gt;</span> <span class="p">((</span><span class="ow">-&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span> <span class="p">(</span><span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We can further specialize it by replacing <code>f</code> with Maybe.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'>    <span class="o">...</span> <span class="ow">=&gt;</span> <span class="p">((</span><span class="ow">-&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span> <span class="p">(</span><span class="kt">Maybe</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span>
+</span><span class='line'>        <span class="ow">-&gt;</span> <span class="p">((</span><span class="ow">-&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span> <span class="p">(</span><span class="kt">Maybe</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now consider a specialization of <code>Just</code> where <code>a ~ (t b)</code></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="kt">Just</span> <span class="ow">::</span> <span class="p">(</span><span class="ow">-&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">)</span> <span class="p">(</span><span class="kt">Maybe</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If we apply the specialized <code>(fmap . fmap) sum</code> to this specialization of <code>Just</code>, we get:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'>    <span class="o">...</span> <span class="ow">=&gt;</span> <span class="p">((</span><span class="ow">-&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span> <span class="p">(</span><span class="kt">Maybe</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>which can be rewritten idiomatically as:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'>    <span class="o">...</span> <span class="ow">=&gt;</span> <span class="n">t</span> <span class="n">b</span> <span class="ow">-&gt;</span> <span class="kt">Maybe</span> <span class="n">b</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This leaves us with:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="p">(</span><span class="n">fmap</span> <span class="o">.</span> <span class="n">fmap</span><span class="p">)</span> <span class="n">sum</span> <span class="kt">Just</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Num</span> <span class="n">b</span><span class="p">,</span> <span class="kt">Foldable</span> <span class="n">t</span><span class="p">)</span> <span class="ow">=&gt;</span> <span class="n">t</span> <span class="n">b</span> <span class="ow">-&gt;</span> <span class="kt">Maybe</span> <span class="n">b</span>
+</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[History: filtered vs unfiltered]]></title>

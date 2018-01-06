@@ -9,7 +9,9 @@
   <meta name="author" content="Ivan Brennan">
 
   
-  <meta name="description" content="I get a lot of use out of shell history. At its simplest, tapping ↑ cycles through previous commands. Incremental search (C-r) will retrieve matching &hellip;">
+  <meta name="description" content="Time for some Haskell. The following expression evaluates to Just 6: 1
+fmap sum $ Just [1, 2, 3] So does this one: 1
+(fmap . fmap) sum Just $ [1, 2, &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -63,6 +65,188 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2018/01/06/follow-the-types/">Follow the Types</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2018-01-06T13:18:00-05:00" pubdate data-updated="true">Jan 6<span>th</span>, 2018</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Time for some Haskell. The following expression evaluates to <code>Just 6</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="nf">fmap</span> <span class="n">sum</span> <span class="o">$</span> <span class="kt">Just</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So does this one:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="p">(</span><span class="n">fmap</span> <span class="o">.</span> <span class="n">fmap</span><span class="p">)</span> <span class="n">sum</span> <span class="kt">Just</span> <span class="o">$</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>How does the second one work? How do the type signatures line up?</p>
+
+<p>First consider <code>fmap . fmap</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="p">(</span><span class="o">.</span><span class="p">)</span> <span class="ow">::</span> <span class="p">(</span><span class="n">b</span> <span class="ow">-&gt;</span> <span class="n">c</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">c</span>
+</span><span class='line'>
+</span><span class='line'><span class="nf">fmap</span> <span class="ow">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="ow">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">f</span> <span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">(</span><span class="o">.</span><span class="p">)</span> <span class="n">fmap</span> <span class="ow">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="ow">=&gt;</span> <span class="p">(</span><span class="n">a1</span> <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">b</span><span class="p">))</span>
+</span><span class='line'>                      <span class="ow">-&gt;</span> <span class="n">a1</span>
+</span><span class='line'>                      <span class="ow">-&gt;</span> <span class="p">(</span><span class="n">f</span> <span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="nf">fmap</span> <span class="o">.</span> <span class="n">fmap</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Functor</span> <span class="n">f</span><span class="p">,</span> <span class="kt">Functor</span> <span class="n">f1</span><span class="p">)</span> <span class="ow">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">b</span><span class="p">)</span>
+</span><span class='line'>                                       <span class="ow">-&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="n">a</span><span class="p">)</span>
+</span><span class='line'>                                       <span class="ow">-&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then <code>sum</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="nf">sum</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Num</span> <span class="n">a</span><span class="p">,</span> <span class="kt">Foldable</span> <span class="n">t</span><span class="p">)</span> <span class="ow">=&gt;</span> <span class="n">t</span> <span class="n">a</span> <span class="ow">-&gt;</span> <span class="n">a</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now apply <code>fmap . fmap</code> to <code>sum</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="p">(</span><span class="n">fmap</span> <span class="o">.</span> <span class="n">fmap</span><span class="p">)</span> <span class="n">sum</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Num</span> <span class="n">b</span><span class="p">,</span>
+</span><span class='line'>                      <span class="kt">Foldable</span> <span class="n">t</span><span class="p">,</span>
+</span><span class='line'>                      <span class="kt">Functor</span> <span class="n">f</span><span class="p">,</span>
+</span><span class='line'>                      <span class="kt">Functor</span> <span class="n">f1</span><span class="p">)</span> <span class="ow">=&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span>
+</span><span class='line'>                                  <span class="ow">-&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next, the tricky bit.
+Note that <code>(a -&gt; b) ~ ((-&gt;) a b)</code>.
+So the signature of <code>Just</code>, which we&rsquo;d usually write:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="kt">Just</span> <span class="ow">::</span> <span class="n">a</span> <span class="ow">-&gt;</span> <span class="kt">Maybe</span> <span class="n">a</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>can also be expressed as:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="kt">Just</span> <span class="ow">::</span> <span class="p">(</span><span class="ow">-&gt;</span><span class="p">)</span> <span class="n">a</span> <span class="p">(</span><span class="kt">Maybe</span> <span class="n">a</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We want the type signature for <code>(fmap . fmap) sum Just</code>.</p>
+
+<p>Consider the signature of <code>(fmap . fmap) sum</code>.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="o">...</span>
+</span><span class='line'><span class="kt">Functor</span> <span class="n">f</span><span class="p">,</span>
+</span><span class='line'><span class="kt">Functor</span> <span class="n">f1</span><span class="p">)</span> <span class="ow">=&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span>
+</span><span class='line'>            <span class="ow">-&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>f1</code> must have a Functor instance.</p>
+
+<p><code>((-&gt;) a)</code> has a <a href="https://github.com/ghc/packages-base/blob/52c0b09036c36f1ed928663abb2f295fd36a88bb/GHC/Base.lhs#L234">Functor instance</a> for all a.</p>
+
+<p><code>((-&gt;) (t b))</code>, therefore, has a Functor instance.</p>
+
+<p>If we replace <code>f1</code> with <code>((-&gt;) (t b))</code>, we produce a more specific type signature, expressing a specialization of <code>(fmap . fmap) sum</code></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'>    <span class="o">...</span> <span class="ow">=&gt;</span> <span class="p">((</span><span class="ow">-&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span> <span class="p">(</span><span class="n">f</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span>
+</span><span class='line'>        <span class="ow">-&gt;</span> <span class="p">((</span><span class="ow">-&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span> <span class="p">(</span><span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We can further specialize it by replacing <code>f</code> with Maybe.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'>    <span class="o">...</span> <span class="ow">=&gt;</span> <span class="p">((</span><span class="ow">-&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span> <span class="p">(</span><span class="kt">Maybe</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span>
+</span><span class='line'>        <span class="ow">-&gt;</span> <span class="p">((</span><span class="ow">-&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span> <span class="p">(</span><span class="kt">Maybe</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now consider a specialization of <code>Just</code> where <code>a ~ (t b)</code></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="kt">Just</span> <span class="ow">::</span> <span class="p">(</span><span class="ow">-&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">)</span> <span class="p">(</span><span class="kt">Maybe</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If we apply the specialized <code>(fmap . fmap) sum</code> to this specialization of <code>Just</code>, we get:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'>    <span class="o">...</span> <span class="ow">=&gt;</span> <span class="p">((</span><span class="ow">-&gt;</span><span class="p">)</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span> <span class="p">(</span><span class="kt">Maybe</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>which can be rewritten idiomatically as:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'>    <span class="o">...</span> <span class="ow">=&gt;</span> <span class="n">t</span> <span class="n">b</span> <span class="ow">-&gt;</span> <span class="kt">Maybe</span> <span class="n">b</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This leaves us with:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='haskell'><span class='line'><span class="p">(</span><span class="n">fmap</span> <span class="o">.</span> <span class="n">fmap</span><span class="p">)</span> <span class="n">sum</span> <span class="kt">Just</span> <span class="ow">::</span> <span class="p">(</span><span class="kt">Num</span> <span class="n">b</span><span class="p">,</span> <span class="kt">Foldable</span> <span class="n">t</span><span class="p">)</span> <span class="ow">=&gt;</span> <span class="n">t</span> <span class="n">b</span> <span class="ow">-&gt;</span> <span class="kt">Maybe</span> <span class="n">b</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1717,155 +1901,6 @@ let g:netrw_preview=1           " open previews vertically
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/01/14/polymorphic-mythology/">Polymorphic Mythology</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-01-14T17:33:00-05:00" pubdate data-updated="true">Jan 14<span>th</span>, 2014</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>I was recently introduced to polymorphic associations in Active Record. They provide some extra flexibility in how you choose to wire up your models, and can be an elegant solution to some otherwise awkward problems. To demonstrate, I&rsquo;ll show how you could use them to catalog a collection of mythology.</p>
-
-<p>We&rsquo;ll start with a tiny collection of tales: The Reign of the Hydra, The Golden Voyage, and The Life of King Adrastus. In addition to needing a myth model, we&rsquo;ll need models for beasts, voyages, and heros. Let&rsquo;s set things up so that a character/event/etc. can be the central figure in any number of myths, with each myth centered around a single such figure. Our beast model, then, could simply be,</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Beast</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
-</span><span class='line'>  <span class="n">has_many</span> <span class="ss">:myths</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>backed by a straightforward migration,</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">CreateBeasts</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Migration</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">change</span>
-</span><span class='line'>    <span class="n">create_table</span> <span class="ss">:beasts</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
-</span><span class='line'>      <span class="n">t</span><span class="o">.</span><span class="n">string</span> <span class="ss">:name</span>
-</span><span class='line'>    <span class="k">end</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>But wiring up the myth model isn&rsquo;t so simple. We could write three <code>belongs_to</code> statements into <code>myth.rb</code>, create three columns &mdash; beast_id, voyage_id, and hero_id &mdash; in the myths table, and find a way to enforce that two of the three always hold null values, but that&rsquo;s pretty cumbersome. Plus, as our catalog expands and we discover new types of central-figures (fools, floods, fires), we&rsquo;ll have to add more columns to accommodate any new classes we create. That&rsquo;s a lot of work to store a whole lot of nils.</p>
-
-<p>Polymorphic associations allow you to handle this more elegantly. Let&rsquo;s describe the role that our central-figure plays in the context of a myth. For lack of a better term, I&rsquo;ll call it &ldquo;memorable&rdquo;. A dragon ravishing the countryside, an epic voyage, a tragic hero, these are all &ldquo;memorable&rdquo; things that could take center-stage in a myth. Using this common thread, we&rsquo;ll build a polymorphic association that can relate a myth to any such &ldquo;memorable&rdquo; object.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Myth</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
-</span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:memorable</span><span class="p">,</span> <span class="ss">:polymorphic</span> <span class="o">=&gt;</span> <span class="kp">true</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>At the other end of the association, we&rsquo;ll tweak the <code>has_many</code> statements in each of our &ldquo;memorable&rdquo; models, declaring the role they can play in relation to a myth. The beast model, for example, becomes</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Beast</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
-</span><span class='line'>  <span class="n">has_many</span> <span class="ss">:myths</span><span class="p">,</span> <span class="ss">:as</span> <span class="o">=&gt;</span> <span class="ss">:memorable</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Now we can back the myth model with a much simpler table. The &ldquo;memorable&rdquo; central-figure&rsquo;s id and its type will be stored in a pair of columns, providing a myth with all it needs (a foreign key and the table that key applies to) to retrieve its central-figure.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">CreateMyths</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Migration</span>
-</span><span class='line'>  <span class="k">def</span> <span class="nf">change</span>
-</span><span class='line'>    <span class="n">create_table</span> <span class="ss">:myths</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
-</span><span class='line'>      <span class="n">t</span><span class="o">.</span><span class="n">string</span>  <span class="ss">:name</span>
-</span><span class='line'>
-</span><span class='line'>      <span class="n">t</span><span class="o">.</span><span class="n">integer</span> <span class="ss">:memorable_id</span>
-</span><span class='line'>      <span class="n">t</span><span class="o">.</span><span class="n">string</span>  <span class="ss">:memorable_type</span>
-</span><span class='line'>    <span class="k">end</span>
-</span><span class='line'>  <span class="k">end</span>
-</span><span class='line'><span class="k">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Active Record provides a shorthand for creating such a pair of columns: <code>t.references :memorable, :polymorphic =&gt; true</code>, which we could use in place of lines 6 and 7 above.</p>
-
-<p>The polymorphic association allows us to create associations between existing objects,</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">adrastus</span> <span class="o">=</span> <span class="no">Hero</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;Adrastus&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="n">life</span> <span class="o">=</span> <span class="no">Myth</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;The Life of King Adrastus&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="n">life</span><span class="o">.</span><span class="n">memorable</span> <span class="o">=</span> <span class="n">adrastus</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">afterlife</span> <span class="o">=</span> <span class="no">Myth</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;The Afterlife of King Adrastus&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="n">adrastus</span><span class="o">.</span><span class="n">myths</span> <span class="o">&lt;&lt;</span> <span class="n">afterlife</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>and to build associated myths off of a given &ldquo;memorable&rdquo; object,</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">adrastus</span><span class="o">.</span><span class="n">myths</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;Adrastus - The Prequel&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="n">adrastus</span><span class="o">.</span><span class="n">save</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">adrastus</span><span class="o">.</span><span class="n">myths</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;Adrastus IV - The Return&quot;</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Note, however, that we can&rsquo;t build a &ldquo;memorable&rdquo; object off of a given myth, since the type of object (hero, voyage, etc.) is ambiguous.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -1879,6 +1914,10 @@ let g:netrw_preview=1           " open previews vertically
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2018/01/06/follow-the-types/">Follow the Types</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2017/08/05/command-history-filter/">History: Filtered vs Unfiltered</a>
@@ -1896,10 +1935,6 @@ let g:netrw_preview=1           " open previews vertically
         <a href="/blog/2015/06/06/karabiner/">Karabiner</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2014/11/04/unix-know-how/">Unix Know-how</a>
-      </li>
-    
   </ul>
 </section>
 
@@ -1909,7 +1944,7 @@ let g:netrw_preview=1           " open previews vertically
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2017 - Ivan Brennan -
+  Copyright &copy; 2018 - Ivan Brennan -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

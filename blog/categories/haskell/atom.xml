@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Haskell | codemachine]]></title>
+  <link href="http://ivanbrennan.github.io/blog/categories/haskell/atom.xml" rel="self"/>
+  <link href="http://ivanbrennan.github.io/"/>
+  <updated>2018-01-06T13:51:46-05:00</updated>
+  <id>http://ivanbrennan.github.io/</id>
+  <author>
+    <name><![CDATA[Ivan Brennan]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[follow the types]]></title>
+    <link href="http://ivanbrennan.github.io/blog/2018/01/06/follow-the-types/"/>
+    <updated>2018-01-06T13:18:00-05:00</updated>
+    <id>http://ivanbrennan.github.io/blog/2018/01/06/follow-the-types</id>
+    <content type="html"><![CDATA[<p>Time for some Haskell. The following expression evaluates to <code>Just 6</code>:
+<code>haskell
+fmap sum $ Just [1, 2, 3]
+</code></p>
+
+<p>So does this one:
+<code>haskell
+(fmap . fmap) sum Just $ [1, 2, 3]
+</code></p>
+
+<p>How does the second one work? How do the type signatures line up?</p>
+
+<p>First consider <code>fmap . fmap</code>:
+```haskell
+(.) :: (b &ndash;> c) &ndash;> (a &ndash;> b) &ndash;> a &ndash;> c</p>
+
+<p>fmap :: Functor f => (a &ndash;> b) &ndash;> (f a &ndash;> f b)</p>
+
+<p>(.) fmap :: Functor f => (a1 &ndash;> (a &ndash;> b))</p>
+
+<pre><code>                  -&gt; a1
+                  -&gt; (f a -&gt; f b)
+</code></pre>
+
+<p>fmap . fmap :: (Functor f, Functor f1) => (a &ndash;> b)</p>
+
+<pre><code>                                   -&gt; f1 (f a)
+                                   -&gt; f1 (f b)
+</code></pre>
+
+<p>```</p>
+
+<p>Then <code>sum</code>:
+<code>haskell
+sum :: (Num a, Foldable t) =&gt; t a -&gt; a
+</code></p>
+
+<p>Now apply <code>fmap . fmap</code> to <code>sum</code>:
+```haskell
+(fmap . fmap) sum :: (Num b,</p>
+
+<pre><code>                  Foldable t,
+                  Functor f,
+                  Functor f1) =&gt; f1 (f (t b))
+                              -&gt; f1 (f b)
+</code></pre>
+
+<p>```</p>
+
+<p>Next, the tricky bit.
+Note that <code>(a -&gt; b) ~ ((-&gt;) a b)</code>.
+So the signature of <code>Just</code>, which we&rsquo;d usually write:
+<code>haskell
+Just :: a -&gt; Maybe a
+</code>
+can also be expressed as:
+<code>haskell
+Just :: (-&gt;) a (Maybe a)
+</code></p>
+
+<p>We want the type signature for <code>(fmap . fmap) sum Just</code>.</p>
+
+<p>Consider the signature of <code>(fmap . fmap) sum</code>.
+```
+&hellip;
+Functor f,
+Functor f1) => f1 (f (t b))</p>
+
+<pre><code>        -&gt; f1 (f b)
+</code></pre>
+
+<p>```</p>
+
+<p><code>f1</code> must have a Functor instance.</p>
+
+<p><code>((-&gt;) a)</code> has a <a href="https://github.com/ghc/packages-base/blob/52c0b09036c36f1ed928663abb2f295fd36a88bb/GHC/Base.lhs#L234">Functor instance</a> for all a.</p>
+
+<p><code>((-&gt;) (t b))</code>, therefore, has a Functor instance.</p>
+
+<p>If we replace <code>f1</code> with <code>((-&gt;) (t b))</code>, we produce a more specific type signature, expressing a specialization of <code>(fmap . fmap) sum</code>
+```</p>
+
+<pre><code>    ... =&gt; ((-&gt;) (t b)) (f (t b))
+        -&gt; ((-&gt;) (t b)) (f b)
+</code></pre>
+
+<p>```</p>
+
+<p>We can further specialize it by replacing <code>f</code> with Maybe.
+```</p>
+
+<pre><code>    ... =&gt; ((-&gt;) (t b)) (Maybe (t b))
+        -&gt; ((-&gt;) (t b)) (Maybe b)
+</code></pre>
+
+<p>```</p>
+
+<p>Now consider a specialization of <code>Just</code> where <code>a ~ (t b)</code>
+<code>
+Just :: (-&gt;) (t b) (Maybe (t b))
+</code></p>
+
+<p>If we apply the specialized <code>(fmap . fmap) sum</code> to this specialization of <code>Just</code>, we get:
+```</p>
+
+<pre><code>    ... =&gt; ((-&gt;) (t b)) (Maybe b)
+</code></pre>
+
+<p><code>
+which can be rewritten idiomatically as:
+</code></p>
+
+<pre><code>    ... =&gt; t b -&gt; Maybe b
+</code></pre>
+
+<p>```</p>
+
+<p>This leaves us with:
+<code>haskell
+(fmap . fmap) sum Just :: (Num b, Foldable t) =&gt; t b -&gt; Maybe b
+</code></p>
+]]></content>
+  </entry>
+  
+</feed>
