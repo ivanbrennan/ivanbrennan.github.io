@@ -70,7 +70,7 @@ Functor f1) => f1 (f (t b))
 
 `f1` must have a Functor instance.
 
-`((->) a)` has a [Functor instance](https://github.com/ghc/packages-base/blob/52c0b09036c36f1ed928663abb2f295fd36a88bb/GHC/Base.lhs#L234) for all a.
+`((->) a)` has a [Functor instance](https://github.com/ghc/packages-base/blob/52c0b09036c36f1ed928663abb2f295fd36a88bb/GHC/Base.lhs#L234) for all `a`.
 
 `((->) (t b))`, therefore, has a Functor instance.
 
