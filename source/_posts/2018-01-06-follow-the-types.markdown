@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "follow the types"
+title: "type tetris"
 date: 2018-01-06 13:18
 comments: true
 categories: Haskell
