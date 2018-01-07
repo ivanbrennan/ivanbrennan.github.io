@@ -4,7 +4,7 @@
   <title><![CDATA[codemachine]]></title>
   <link href="http://ivanbrennan.github.io/atom.xml" rel="self"/>
   <link href="http://ivanbrennan.github.io/"/>
-  <updated>2018-01-06T19:01:59-05:00</updated>
+  <updated>2018-01-06T19:08:42-05:00</updated>
   <id>http://ivanbrennan.github.io/</id>
   <author>
     <name><![CDATA[Ivan Brennan]]></name>
@@ -116,7 +116,7 @@ So the signature of <code>Just</code>, which we&rsquo;d usually write:</p>
 
 <p><code>f1</code> must have a Functor instance.</p>
 
-<p><code>((-&gt;) a)</code> has a <a href="https://github.com/ghc/packages-base/blob/52c0b09036c36f1ed928663abb2f295fd36a88bb/GHC/Base.lhs#L234">Functor instance</a> for all a.</p>
+<p><code>((-&gt;) a)</code> has a <a href="https://github.com/ghc/packages-base/blob/52c0b09036c36f1ed928663abb2f295fd36a88bb/GHC/Base.lhs#L234">Functor instance</a> for all <code>a</code>.</p>
 
 <p><code>((-&gt;) (t b))</code>, therefore, has a Functor instance.</p>
 
