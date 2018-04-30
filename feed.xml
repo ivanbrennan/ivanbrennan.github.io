@@ -1,0 +1,1036 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2018-04-30T00:44:13-04:00</updated><id>http://localhost:4000/</id><title type="html">glob</title><subtitle>blog</subtitle><entry><title type="html">type tetris</title><link href="http://localhost:4000/haskell/2018/01/06/follow-the-types.html" rel="alternate" type="text/html" title="type tetris" /><published>2018-01-06T13:18:00-05:00</published><updated>2018-01-06T13:18:00-05:00</updated><id>http://localhost:4000/haskell/2018/01/06/follow-the-types</id><content type="html" xml:base="http://localhost:4000/haskell/2018/01/06/follow-the-types.html">&lt;p&gt;Time for some Haskell. The following expression evaluates to &lt;code class=&quot;highlighter-rouge&quot;&gt;Just 6&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&quot;language-haskell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;fmap&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;$&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Just&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;So does this one:&lt;/p&gt;
+&lt;div class=&quot;language-haskell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fmap&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fmap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Just&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;$&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;How does the second one work? How do the type signatures line up?&lt;/p&gt;
+
+&lt;p&gt;First consider &lt;code class=&quot;highlighter-rouge&quot;&gt;fmap . fmap&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&quot;language-haskell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;::&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;b&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;fmap&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;::&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Functor&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fmap&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;::&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Functor&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+                      &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a1&lt;/span&gt;
+                      &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;fmap&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fmap&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;::&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Functor&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Functor&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                                       &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                                       &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Then &lt;code class=&quot;highlighter-rouge&quot;&gt;sum&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&quot;language-haskell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;::&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Num&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Foldable&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now apply &lt;code class=&quot;highlighter-rouge&quot;&gt;fmap . fmap&lt;/code&gt; to &lt;code class=&quot;highlighter-rouge&quot;&gt;sum&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&quot;language-haskell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fmap&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fmap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;::&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Num&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                      &lt;span class=&quot;kt&quot;&gt;Foldable&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                      &lt;span class=&quot;kt&quot;&gt;Functor&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                      &lt;span class=&quot;kt&quot;&gt;Functor&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+                                  &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Next, the tricky bit.
+Note that &lt;code class=&quot;highlighter-rouge&quot;&gt;(a -&amp;gt; b) ~ ((-&amp;gt;) a b)&lt;/code&gt;.
+So the signature of &lt;code class=&quot;highlighter-rouge&quot;&gt;Just&lt;/code&gt;, which we’d usually write:&lt;/p&gt;
+&lt;div class=&quot;language-haskell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;Just&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;::&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Maybe&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;can also be expressed as:&lt;/p&gt;
+&lt;div class=&quot;language-haskell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;Just&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;::&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Maybe&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We want the type signature for &lt;code class=&quot;highlighter-rouge&quot;&gt;(fmap . fmap) sum Just&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Consider the signature of &lt;code class=&quot;highlighter-rouge&quot;&gt;(fmap . fmap) sum&lt;/code&gt;.&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;...
+Functor f,
+Functor f1) =&amp;gt; f1 (f (t b))
+            -&amp;gt; f1 (f b)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;f1&lt;/code&gt; must have a Functor instance.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;((-&amp;gt;) a)&lt;/code&gt; has a &lt;a href=&quot;https://github.com/ghc/packages-base/blob/52c0b09036c36f1ed928663abb2f295fd36a88bb/GHC/Base.lhs#L234&quot;&gt;Functor instance&lt;/a&gt; for all &lt;code class=&quot;highlighter-rouge&quot;&gt;a&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;((-&amp;gt;) (t b))&lt;/code&gt;, therefore, has a Functor instance.&lt;/p&gt;
+
+&lt;p&gt;If we replace &lt;code class=&quot;highlighter-rouge&quot;&gt;f1&lt;/code&gt; with &lt;code class=&quot;highlighter-rouge&quot;&gt;((-&amp;gt;) (t b))&lt;/code&gt;, we produce a more specific type signature, expressing a specialization of &lt;code class=&quot;highlighter-rouge&quot;&gt;(fmap . fmap) sum&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;        ... =&amp;gt; ((-&amp;gt;) (t b)) (f (t b))
+            -&amp;gt; ((-&amp;gt;) (t b)) (f b)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We can further specialize it by replacing &lt;code class=&quot;highlighter-rouge&quot;&gt;f&lt;/code&gt; with Maybe.&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;        ... =&amp;gt; ((-&amp;gt;) (t b)) (Maybe (t b))
+            -&amp;gt; ((-&amp;gt;) (t b)) (Maybe b)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now consider a specialization of &lt;code class=&quot;highlighter-rouge&quot;&gt;Just&lt;/code&gt; where &lt;code class=&quot;highlighter-rouge&quot;&gt;a ~ (t b)&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Just :: (-&amp;gt;) (t b) (Maybe (t b))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If we apply the specialized &lt;code class=&quot;highlighter-rouge&quot;&gt;(fmap . fmap) sum&lt;/code&gt; to this specialization of &lt;code class=&quot;highlighter-rouge&quot;&gt;Just&lt;/code&gt;, we get:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;        ... =&amp;gt; ((-&amp;gt;) (t b)) (Maybe b)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;which can be rewritten idiomatically as:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;        ... =&amp;gt; t b -&amp;gt; Maybe b
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This leaves us with:&lt;/p&gt;
+&lt;div class=&quot;language-haskell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fmap&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fmap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Just&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;::&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Num&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Foldable&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Maybe&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name></name></author><summary type="html">Time for some Haskell. The following expression evaluates to Just 6: fmap sum $ Just [1, 2, 3]</summary></entry><entry><title type="html">History: filtered vs unfiltered</title><link href="http://localhost:4000/shell,/awk/2017/08/05/command-history-filter.html" rel="alternate" type="text/html" title="History: filtered vs unfiltered" /><published>2017-08-05T08:49:00-04:00</published><updated>2017-08-05T08:49:00-04:00</updated><id>http://localhost:4000/shell,/awk/2017/08/05/command-history-filter</id><content type="html" xml:base="http://localhost:4000/shell,/awk/2017/08/05/command-history-filter.html">&lt;p&gt;I get a lot of use out of shell history. At its simplest, tapping &lt;code class=&quot;highlighter-rouge&quot;&gt;↑&lt;/code&gt; cycles through previous commands. Incremental search (&lt;code class=&quot;highlighter-rouge&quot;&gt;C-r&lt;/code&gt;) will retrieve matching history entries, updating as you type. There are more ways you can access history, but these two in particular have become ingrained in my workflow.&lt;/p&gt;
+
+&lt;p&gt;I’m running Bash (for now), and have it configured to save a good deal of history:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;HISTSIZE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;10000
+&lt;span class=&quot;nb&quot;&gt;shopt&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; histappend
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;When you start a shell, Bash reads &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_history&lt;/code&gt; (or &lt;code class=&quot;highlighter-rouge&quot;&gt;$HISTFILE&lt;/code&gt; if that’s been set), initializing the in-memory history your session will interact with. When exiting the shell, new history is written to disk, making it available to future sessions. With &lt;code class=&quot;highlighter-rouge&quot;&gt;histappend&lt;/code&gt; set, the history file is appended to rather than overwritten.&lt;/p&gt;
+
+&lt;p&gt;I’ve also configured it to save multiline commands with embedded newlines, separated by timestamps. This makes it easy to recall and modify more complex commands, like loops and functions.&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;HISTTIMEFORMAT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'%F %T '&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;shopt&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; cmdhist lithist
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Bash has a &lt;code class=&quot;highlighter-rouge&quot;&gt;HISTIGNORE&lt;/code&gt; variable that can hold patterns you want to exclude from history. The patterns are colon-separated and treated as shell globs that must match the entire line. Multiline entries are decided based on the first line.&lt;/p&gt;
+
+&lt;p&gt;If, for example, you wanted to ignore the &lt;code class=&quot;highlighter-rouge&quot;&gt;jobs&lt;/code&gt; builtin and any &lt;code class=&quot;highlighter-rouge&quot;&gt;ls&lt;/code&gt; commands, you could set:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;HISTIGNORE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'jobs:ls[ ]*'&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;I tried this out but quickly realized I prefer an unfiltered recent history. If I run,&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ls /path/to/some/directory
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I want to be able to repeat &lt;code class=&quot;highlighter-rouge&quot;&gt;ls&lt;/code&gt; on a subdirectory by tapping &lt;code class=&quot;highlighter-rouge&quot;&gt;↑&lt;/code&gt; and appending to the path.&lt;/p&gt;
+
+&lt;p&gt;More distant history, on the other hand, could benefit from filtering. I don’t see much value in persisting &lt;code class=&quot;highlighter-rouge&quot;&gt;ls&lt;/code&gt; or &lt;code class=&quot;highlighter-rouge&quot;&gt;man&lt;/code&gt; commands from one session to the next. I’m not likely to search for them, and when I’m reaching back into a previous session’s history it’s nearly always via search – either &lt;em&gt;reverse-search-history&lt;/em&gt; (&lt;code class=&quot;highlighter-rouge&quot;&gt;C-r&lt;/code&gt;) or the less well-known &lt;em&gt;history-search-backward&lt;/em&gt;, which retrieves the previous command matching what you’ve already typed, and which I’ve bound to &lt;code class=&quot;highlighter-rouge&quot;&gt;M-p&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The only things I’m using &lt;code class=&quot;highlighter-rouge&quot;&gt;HISTIGNORE&lt;/code&gt; for are commands like &lt;code class=&quot;highlighter-rouge&quot;&gt;jobs&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;fg&lt;/code&gt;, which I tend to just retype.&lt;/p&gt;
+
+&lt;h3 id=&quot;filtering-persisted-history&quot;&gt;Filtering persisted history&lt;/h3&gt;
+
+&lt;p&gt;To keep commands like &lt;code class=&quot;highlighter-rouge&quot;&gt;ls&lt;/code&gt; from polluting the history of future shell sessions, I’ve written a script to filter my &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_history&lt;/code&gt; when exiting the shell. The script is triggered by an &lt;code class=&quot;highlighter-rouge&quot;&gt;EXIT&lt;/code&gt; trap in my &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bashrc&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[[&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$-&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;i&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then
+  &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;trap&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'$HOME/.bash_history_filter &amp;gt;/dev/null 2&amp;gt;&amp;amp;1 &amp;amp;'&lt;/span&gt; EXIT
+&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;The cryptic &lt;code class=&quot;highlighter-rouge&quot;&gt;$-&lt;/code&gt; variable holds flags indicating which shell options are in effect, and I’m using it to restrict the trap to interactive shells (indicated by the &lt;code class=&quot;highlighter-rouge&quot;&gt;i&lt;/code&gt; flag). The script it runs is as follows:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;#!/bin/sh&lt;/span&gt;
+
+&lt;span class=&quot;nv&quot;&gt;tmpfile&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;mktemp&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;trap&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'rm -f &quot;$tmpfile&quot;'&lt;/span&gt; EXIT
+
+&lt;span class=&quot;nv&quot;&gt;awk_script&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/.bash_history_filter.awk&quot;&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;persisted_history&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;HISTFILE&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:-&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;/.bash_history&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[[&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$awk_script&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$persisted_history&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then
+  &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$awk_script&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$persisted_history&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$tmpfile&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+
+  &lt;span class=&quot;nb&quot;&gt;mv&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$tmpfile&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$persisted_history&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;The actual filtering logic lives in an Awk script. The shell history is run through that filter and output to a temporary file, which subsequently replaces the original history file. An exit trap will remove the temporary file if something goes wrong and the script exits before executing the &lt;code class=&quot;highlighter-rouge&quot;&gt;mv&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Awk processes input one line at a time, splitting the line into individual fields (space-delimited by default). The fields are referenceable as &lt;code class=&quot;highlighter-rouge&quot;&gt;$1&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;$2&lt;/code&gt;, etc. and the entire line is available in &lt;code class=&quot;highlighter-rouge&quot;&gt;$0&lt;/code&gt;. Each line is run through the set of Awk commands you define. A common idiom, in pseudocode is:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/pattern/ {
+  # commands to run on any line matching pattern 
+}
+
+$1 ~ /word/ {
+  # commands to run on any line whose first field matches word 
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You can call &lt;code class=&quot;highlighter-rouge&quot;&gt;next&lt;/code&gt; to skip any subsequent commands and jump to the next line of input. You can also set and manipulate variables to track state, accumulate text, etc. and &lt;code class=&quot;highlighter-rouge&quot;&gt;print&lt;/code&gt; to write output. My filter is:&lt;/p&gt;
+&lt;div class=&quot;language-awk highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;/^&lt;/span&gt;&lt;span class=&quot;c1&quot;&gt;#[[:digit:]]{10}$/ {&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;timestamp&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$0&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;histentry&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;next&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;~&lt;/span&gt; &lt;span class=&quot;sr&quot;&gt;/^&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;ls&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;?&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;|man|cat&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;$/&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;sr&quot;&gt;/^&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;[:alpha:&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;]$/&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;timestamp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;histentry&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$0&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;next&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;timestamp&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;timestamp&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;timestamp&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;histentry&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;histentry&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;histentry&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;It’s essentially a state-machine.&lt;/p&gt;
+
+&lt;p&gt;&lt;img class=&quot;state-machine&quot; src=&quot;/images/history-filter/state-machine.png&quot; alt=&quot;'state-machine'&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Getting the Awk script just right took some work, and I found it helpful to have some &lt;a href=&quot;https://github.com/ivanbrennan/dotfiles/blob/master/shell/filter_test&quot;&gt;automated tests&lt;/a&gt; at my back as I fiddled with it.&lt;/p&gt;
+
+&lt;p&gt;When processing multiline entries, I decided that if a command is complex enough to warrant mutliple lines, it’s worth remembering, even if its first line matches an “uninteresting” pattern. The “uninteresting” predicate ended up as:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;($1 ~ /^(ls?|man|cat)$/) || /^[[:alpha:]]$/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This matches some commands that are uninteresting with or without arguments, any line that consists of a single letter. I have some functions/aliases I use – &lt;code class=&quot;highlighter-rouge&quot;&gt;v&lt;/code&gt; for (neo)vim, &lt;code class=&quot;highlighter-rouge&quot;&gt;e&lt;/code&gt; for emacs, &lt;code class=&quot;highlighter-rouge&quot;&gt;t&lt;/code&gt; for tmux – which aren’t very interesting by themselves, but could have interesting arguments. I frequently use &lt;code class=&quot;highlighter-rouge&quot;&gt;C-r&lt;/code&gt;, for example, to recall/reuse a previous &lt;code class=&quot;highlighter-rouge&quot;&gt;tmux new-session&lt;/code&gt; command:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;t new-session -s ruby-project -c /path/to/ruby-project
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I tried out Sed as an alternative to Awk for this use, but decided against it. Sed has an extremely terse syntax and fought me most of the way. I finally found a couple ways to make it work, but they’re pretty gnarly. If you install GNU Sed, you can tell Sed to treat lines as separated by NULL bytes. The entire file will be slurped into a single “line” on which you can apply substitution:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;gsed --null-data \
+     --regexp-extended \
+     's/(#[0-9]{10}\n((cat|ls?|man)([^[:alnum:]][^\n]*)?|[[:alpha:]])\n)+(#[0-9]{10}\n|$)/\5/g' \
+     &quot;$infile&quot; &amp;gt;&quot;$outfile&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Sed implementations that don’t have the NULL byte trick up their sleeve (e.g. BSD Sed), will instead have to juggle data back and forth between the “hold-space” and “pattern-space”. I scripted this out of morbid curiosity, but I wouldn’t wish it on anyone:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sed -E -f horrendous.sed &quot;$infile&quot; &amp;gt;&quot;$outfile&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;with the following &lt;code class=&quot;highlighter-rouge&quot;&gt;horrendous.sed&lt;/code&gt; script:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ {
+  1 h
+  1!H
+  x
+  /^#[[:digit:]]{10}\n((ls?|cat|man)([^[:alnum:]][[:print:]]*)?|[[:alpha:]])$/ d
+  p
+}
+
+/^#[[:digit:]]{10}$/ !{
+  1 h
+  1!H
+  d
+}
+
+x
+/^$/ d
+/^#[[:digit:]]{10}$/ d
+/^#[[:digit:]]{10}\n((ls?|cat|man)([^[:alnum:]][[:print:]]*)?|[[:alpha:]])$/ d
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Benchmarking the Awk, GNU Sed, and Sed solutions on a 50,000 line file:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;awk  0.070s
+gsed 0.060s
+sed  0.080s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Awk is the best choice, I think. GNU Sed can shave 10 milliseconds off the run time, but the extra dependency and the 80+ character regex aren’t worth it.&lt;/p&gt;</content><author><name></name></author><summary type="html">I get a lot of use out of shell history. At its simplest, tapping ↑ cycles through previous commands. Incremental search (C-r) will retrieve matching history entries, updating as you type. There are more ways you can access history, but these two in particular have become ingrained in my workflow.</summary></entry><entry><title type="html">Shell: while loops and variables</title><link href="http://localhost:4000/shell/2017/06/03/shell-while-loops-and-variables.html" rel="alternate" type="text/html" title="Shell: while loops and variables" /><published>2017-06-03T11:22:00-04:00</published><updated>2017-06-03T11:22:00-04:00</updated><id>http://localhost:4000/shell/2017/06/03/shell-while-loops-and-variables</id><content type="html" xml:base="http://localhost:4000/shell/2017/06/03/shell-while-loops-and-variables.html">&lt;p&gt;A common idiom in shell scripting is to tweak the value of &lt;code class=&quot;highlighter-rouge&quot;&gt;IFS&lt;/code&gt; (internal field separator) while reading lines of input:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;while &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;IFS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;read&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; line
+&lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;# ...&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;done&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;This leads to questions about &lt;code class=&quot;highlighter-rouge&quot;&gt;IFS&lt;/code&gt; itself and the &lt;code class=&quot;highlighter-rouge&quot;&gt;-r&lt;/code&gt; flag, and there are plenty of good answers out there. I’d like to focus, however, on the &lt;em&gt;syntax&lt;/em&gt; of &lt;code class=&quot;highlighter-rouge&quot;&gt;IFS=&lt;/code&gt; and it’s location in the above line.&lt;/p&gt;
+
+&lt;p&gt;Shell variables can be assigned and referenced:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;A
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$var&lt;/span&gt;
+A
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Sometimes you want to set a variable for the duration of a single command:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Bob bash &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'echo $name'&lt;/span&gt;
+Bob
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$name&lt;/span&gt;
+ 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;At first glance, you might expect the first line of our &lt;code class=&quot;highlighter-rouge&quot;&gt;while&lt;/code&gt; loop to look like:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;IFS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;while &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;read&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; line
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;but this causes a syntax error. In the &lt;code class=&quot;highlighter-rouge&quot;&gt;name=Bob&lt;/code&gt; example, our entire line consisted of a single &lt;a href=&quot;http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_01&quot;&gt;simple command&lt;/a&gt;, defined as&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;a sequence of optional variable assignments and redirections, in any sequence, optionally followed by words and redirections, terminated by a control operator.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;while&lt;/code&gt; loop, however, is a &lt;a href=&quot;http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_04&quot;&gt;compound command&lt;/a&gt;, with the format:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;while compound-list-1
+do
+    compound-list-2
+done
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;with &lt;code class=&quot;highlighter-rouge&quot;&gt;compound-list-1&lt;/code&gt; being a sequence of &lt;a href=&quot;http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_03&quot;&gt;lists&lt;/a&gt;. A list is defined as&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;a sequence of one or more AND-OR lists separated by the operators ‘;’ and ‘&amp;amp;’.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;with an &lt;code class=&quot;highlighter-rouge&quot;&gt;AND-OR&lt;/code&gt; list being&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;table&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;
+        &lt;td&gt;a sequence of one or more pipelines separated by the operators “&amp;amp;&amp;amp;” and “&lt;/td&gt;
+        &lt;td&gt; &lt;/td&gt;
+        &lt;td&gt;” .&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;A &lt;a href=&quot;http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_02&quot;&gt;pipeline&lt;/a&gt;, in turn, has the format:&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;table&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;
+        &lt;td&gt;[!] command1 [&lt;/td&gt;
+        &lt;td&gt;command2 …]&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;It feels like we’re going in circles, but the long and short of it is that we can view&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;while &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;IFS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;read&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; line
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;as&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;while simple-command
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Note that this means we’re setting &lt;code class=&quot;highlighter-rouge&quot;&gt;IFS&lt;/code&gt; to a temporary value only during the &lt;code class=&quot;highlighter-rouge&quot;&gt;read&lt;/code&gt; command, not during the body of the loop.&lt;/p&gt;
+
+&lt;p&gt;To make this a little more concrete, here’s a script I’ve called &lt;code class=&quot;highlighter-rouge&quot;&gt;while-vars.sh&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;A
+&lt;span class=&quot;nv&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1
+
+tester&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;var in tester: &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$var&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;((&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; 0 &lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;var before loop: &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$var&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;while &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;B tester&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do
+  &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;let &lt;/span&gt;i-&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1
+  &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;var in loop: &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$var&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;done
+
+&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;var after loop: &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$var&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The result:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; bash &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;-vars&lt;/span&gt;.sh
+var before loop: A
+
+var &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;tester: B
+var &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;loop: A
+var &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;tester: B
+
+var after loop: A
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name></name></author><summary type="html">A common idiom in shell scripting is to tweak the value of IFS (internal field separator) while reading lines of input: while IFS= read -r line do # ... done This leads to questions about IFS itself and the -r flag, and there are plenty of good answers out there. I’d like to focus, however, on the syntax of IFS= and it’s location in the above line.</summary></entry><entry><title type="html">Debugging etags</title><link href="http://localhost:4000/2016/12/20/debugging-etags.html" rel="alternate" type="text/html" title="Debugging etags" /><published>2016-12-20T07:52:00-05:00</published><updated>2016-12-20T07:52:00-05:00</updated><id>http://localhost:4000/2016/12/20/debugging-etags</id><content type="html" xml:base="http://localhost:4000/2016/12/20/debugging-etags.html">&lt;p&gt;I’ve been using ctags to navigate the codebases I work with in Vim for a couple years, largely thanks to a &lt;a href=&quot;http://tbaggery.com/2011/08/08/effortless-ctags-with-git.html&quot;&gt;blog post&lt;/a&gt; by Tim Pope where he describes how to use git hooks to keep your tags up-to-date. Omitting a few details, the script I use boils down to this:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git ls-files | ctags -L - -o &quot;.git/tags&quot; --tag-relative=yes --languages=-javascript,sql
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;On a large Rails app I’ve been working with, it takes 1 second and generates a 7MB tags file.&lt;/p&gt;
+
+&lt;p&gt;More recently, I started playing around with Emacs, and I’ve been looking for a way to port my tagging strategy over to &lt;em&gt;e&lt;/em&gt;tags. There are a few ways you can generate etags. Emacs comes with its own &lt;code class=&quot;highlighter-rouge&quot;&gt;etags&lt;/code&gt; executable, but the more featureful implementations of ctags can also generate them.&lt;/p&gt;
+
+&lt;p&gt;I’ve been using &lt;a href=&quot;https://github.com/universal-ctags/ctags&quot;&gt;universal-ctags&lt;/a&gt;, which picked up where &lt;a href=&quot;http://ctags.sourceforge.net&quot;&gt;exuberant-ctags&lt;/a&gt; left off a few years ago, so I added &lt;code class=&quot;highlighter-rouge&quot;&gt;-e&lt;/code&gt; to my tagging command and gave it a whirl. 90 seconds later it handed me an &lt;strong&gt;&lt;em&gt;8GB&lt;/em&gt;&lt;/strong&gt; tags file.&lt;/p&gt;
+
+&lt;p&gt;At first, I thought this must be a problem with the etags format itself, but when I tried Emacs’ own &lt;code class=&quot;highlighter-rouge&quot;&gt;etags&lt;/code&gt; executable, it took 13 seconds and produced a 3MB file. Next, I tried exuberant-ctags, which took 2 seconds and produced a 1MB file.&lt;/p&gt;
+
+&lt;p&gt;Narrowing in on the problem further was an interesting process that called on several shell-scripting concepts and tools, including I/O redirection, sub-shells, and &lt;code class=&quot;highlighter-rouge&quot;&gt;awk&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;benchmarking&quot;&gt;Benchmarking&lt;/h2&gt;
+
+&lt;p&gt;First, I needed to gather some data profiling each file’s contribution to execution time and tags-size. I wanted something like,&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;some_file.rb &amp;lt;- source-file
+0.004        &amp;lt;- processing time (seconds)
+8159         &amp;lt;- source file-size (bytes)
+13389        &amp;lt;- tags file-size (bytes)
+
+another_file.rb
+0.002
+345
+4859
+
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I wrote a shell script to iterate through the files, generating tags for each and recording the time taken and resulting tags size, appending these stats to a log file.&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;#!/bin/sh&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;f &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;git ls-files&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$f&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;TIMEFORMAT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'%R'&lt;/span&gt;
+      &lt;span class=&quot;nb&quot;&gt;time &lt;/span&gt;ctags &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; tmp.TAGS &lt;span class=&quot;nt&quot;&gt;--tag-relative&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;yes&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--languages&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;-javascript&lt;/span&gt;,sql &lt;span class=&quot;nv&quot;&gt;$f&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;ls&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$f&lt;/span&gt;
+      &lt;span class=&quot;nb&quot;&gt;ls&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; tmp.TAGS &lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'{ print $5 }'&lt;/span&gt;
+    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; etagging.log 2&amp;gt;&amp;amp;1
+  &lt;span class=&quot;nb&quot;&gt;rm &lt;/span&gt;tmp.TAGS
+&lt;span class=&quot;k&quot;&gt;done&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;I’ll break this down a bit. First, we run &lt;code class=&quot;highlighter-rouge&quot;&gt;git ls-files&lt;/code&gt; in a sub-shell to generate a list of files to loop through.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;for f in $(git ls-files)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;For each file, we run some commands (&lt;code class=&quot;highlighter-rouge&quot;&gt;echo&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;time&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;ctags&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;ls&lt;/code&gt;) and redirect their output to a log file. This could be done like,&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;run a command &amp;gt;&amp;gt; etagging.log
+run another command &amp;gt;&amp;gt; etagging.log
+run one more command &amp;gt;&amp;gt; etagging.log
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;but using a sub-shell lets us capture it all in one go:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;( run a command
+  run another command
+  run one more command ) &amp;gt;&amp;gt; etagging.log
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;time-and-redirection&quot;&gt;Time and redirection&lt;/h3&gt;
+
+&lt;p&gt;Using the &lt;code class=&quot;highlighter-rouge&quot;&gt;time&lt;/code&gt; &lt;a href=&quot;https://en.wikipedia.org/wiki/Shell_builtin&quot;&gt;builtin&lt;/a&gt; to benchmark tags creation introduces a little more complexity. We only want the real (perceived) time, so we need to set the &lt;code class=&quot;highlighter-rouge&quot;&gt;TIMEFORMAT&lt;/code&gt; shell variable accordingly.&lt;/p&gt;
+
+&lt;p&gt;Since &lt;code class=&quot;highlighter-rouge&quot;&gt;time&lt;/code&gt; broadcasts its results through stderr rather than stdout, we can’t rely on just &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;gt;&amp;gt;&lt;/code&gt;, which redirects stdout, or our time data would print to screen rather than being recorded. So once we’ve redirected stdout to the log-file, we need to redirect stderr there as well.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;( run a command
+  run another command
+  run one more command ) &amp;gt;&amp;gt; etagging.log 2&amp;gt;&amp;amp;1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You could read this as,&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;run commands in a sub-shell, send the sub-shell’s standard output to the log-file, and send its standard error data to the same location you’re sending the standard output (i.e. the log-file)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The digits in &lt;code class=&quot;highlighter-rouge&quot;&gt;2&amp;gt;&amp;amp;1&lt;/code&gt; are &lt;a href=&quot;https://en.wikipedia.org/wiki/File_descriptor&quot;&gt;file descriptors&lt;/a&gt;, indicating stderr (&lt;code class=&quot;highlighter-rouge&quot;&gt;2&lt;/code&gt;) and stdout (&lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt;). A running process has 3 standard I/O streams through which to communicate. As a source of input, it has stdin (&lt;code class=&quot;highlighter-rouge&quot;&gt;0&lt;/code&gt;); when it’s ready to broadcast some output, it &lt;em&gt;generally&lt;/em&gt; sends that to stdout (&lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt;), but &lt;em&gt;some&lt;/em&gt; output is semantically different (e.g. error messages), and it’s useful to have a separate stream for such data. This is where stderr (&lt;code class=&quot;highlighter-rouge&quot;&gt;2&lt;/code&gt;) comes in.&lt;/p&gt;
+
+&lt;p&gt;If you’re familiar with pointers in C, you could think of &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;amp;1&lt;/code&gt; as the location of stdout, so &lt;code class=&quot;highlighter-rouge&quot;&gt;2&amp;gt;&amp;amp;1&lt;/code&gt; says to redirect stderr to the same place that stdout is headed. The order of redirection operations is significant. If we’d written,&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;( run some commands ) 2&amp;gt;&amp;amp;1 &amp;gt;&amp;gt; etagging.log
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;we’d be directing stderr to the same location as stdout and then directing stdout elsewhere. It would be like saying,&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;Hey stderr, ask stdout where it’s currently headed. Go there.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Hey stdout, change of plans: I want you to go to this log-file.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;space-and-a-little-awk&quot;&gt;Space and a little awk&lt;/h3&gt;
+
+&lt;p&gt;We also want to record the size of the source-file and the size of the tags-file. We use &lt;code class=&quot;highlighter-rouge&quot;&gt;awk&lt;/code&gt; to extract these sizes (in bytes) from the 5th field of long-format &lt;code class=&quot;highlighter-rouge&quot;&gt;ls&lt;/code&gt; file-listings:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;( ls -l $f
+  ls -l tmp.TAGS ) | awk '{ print $5 }'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;sorting-the-results&quot;&gt;Sorting the results&lt;/h2&gt;
+
+&lt;p&gt;Once I had the profiling data, I wanted to sort it by time and tag-size to see which files were causing the big slowdown and eating up my diskspace. The &lt;code class=&quot;highlighter-rouge&quot;&gt;sort&lt;/code&gt; command expects newline-separated records with whitespace-separated fields. I used &lt;code class=&quot;highlighter-rouge&quot;&gt;awk&lt;/code&gt; to translate the results to the horizontal format &lt;code class=&quot;highlighter-rouge&quot;&gt;sort&lt;/code&gt; expects.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;awk 'BEGIN { RS=&quot;&quot;; FS=&quot;\n&quot; } { print $1, $2, $3, $4 }' etagging.log
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;BEGIN&lt;/code&gt; block to sets up awk’s &lt;code class=&quot;highlighter-rouge&quot;&gt;RS&lt;/code&gt; (record-separator) and &lt;code class=&quot;highlighter-rouge&quot;&gt;FS&lt;/code&gt; (field-separator) variables, allowing it to correctly identify each record. The next block defines the actions to take on each record. In this case I just want to print each of its fields on a single line. Piping this into &lt;code class=&quot;highlighter-rouge&quot;&gt;sort&lt;/code&gt; generates results sorted by time:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;awk 'BEGIN { RS=&quot;&quot;; FS=&quot;\n&quot; } { print $1, $2, $3, $4 }' etagging.log | sort -nrk2 &amp;gt; etagging-time
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Here I’m telling &lt;code class=&quot;highlighter-rouge&quot;&gt;sort&lt;/code&gt; to sort numerically, in reverse order, treating the 2nd field as the sort-key. I did the same for tag file size, the 4th field:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;awk 'BEGIN { RS=&quot;&quot;; FS=&quot;\n&quot; } { print $1, $2, $3, $4 }' etagging.log | sort -nrk4 &amp;gt; etagging-size
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;identifying-the-culprit&quot;&gt;Identifying the Culprit&lt;/h2&gt;
+
+&lt;p&gt;Here’s what floated to the top:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ head -n 3 etagging-time
+app/models/something_big.json 108.024 273517 8084569921
+vendor/assets/stylesheets/bootstrap/bootstrap.min.css 2.159 118153 288792277
+app/models/appointment.rb 0.252 10096 2481
+
+$ head -n 3 etagging-size
+app/models/something_big.json 108.024 273517 8084569921
+vendor/assets/stylesheets/bootstrap/bootstrap.min.css 2.159 118153 288792277
+vendor/assets/stylesheets/intlTelInput.css 0.051 18194 5464144
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The two top offenders, by both time and by size, were a large JSON file and a minified bootstrap stylesheet, neither of which I had much interest in tagging. The JSON file outshadowed everything else by miles, and that shed some light on the performance disparity between universal-ctags and the other tagging libraries: only universal-ctags had JSON support, so it was the only one tagging JSON at all.&lt;/p&gt;
+
+&lt;p&gt;A quick fix was to add JSON to the languages I exclude from tagging, but it begged the question, why didn’t &lt;em&gt;c&lt;/em&gt;tags exhibit the same problem as &lt;em&gt;e&lt;/em&gt;tags?&lt;/p&gt;
+
+&lt;p&gt;The hint was hiding in that &lt;em&gt;minified&lt;/em&gt; stylesheet. The JSON file and the stylesheet had extremely long lines. Both ctags and etags include source line references, and these references get truncated to a reasonable length when generating &lt;em&gt;c&lt;/em&gt;tags, but not when generating &lt;em&gt;e&lt;/em&gt;tags.&lt;/p&gt;
+
+&lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;The team at &lt;a href=&quot;https://github.com/universal-ctags/ctags&quot;&gt;universal-ctags&lt;/a&gt; was incredibly helpful in debugging this and helped turn a source of frustration into a learning experience. They were quick to respond and are looking into resolving the underlying issue. In the meantime, I’ve adjusted my command for generating &lt;em&gt;e&lt;/em&gt;tags.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git ls-files | ctags -L - -e -o &quot;.git/etags&quot; --tag-relative=yes --languages=-javascript,sql,json,css
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name></name></author><summary type="html">I’ve been using ctags to navigate the codebases I work with in Vim for a couple years, largely thanks to a blog post by Tim Pope where he describes how to use git hooks to keep your tags up-to-date. Omitting a few details, the script I use boils down to this:</summary></entry><entry><title type="html">karabiner</title><link href="http://localhost:4000/ergonomics,/keyboard/2015/06/06/karabiner.html" rel="alternate" type="text/html" title="karabiner" /><published>2015-06-06T14:45:00-04:00</published><updated>2015-06-06T14:45:00-04:00</updated><id>http://localhost:4000/ergonomics,/keyboard/2015/06/06/karabiner</id><content type="html" xml:base="http://localhost:4000/ergonomics,/keyboard/2015/06/06/karabiner.html">&lt;p&gt;A while back I stopped using “jk” to exit Vim’s insert-mode, turning instead to the mostly-useless &lt;code class=&quot;highlighter-rouge&quot;&gt;Caps Lock&lt;/code&gt;. I set it to be &lt;code class=&quot;highlighter-rouge&quot;&gt;Control&lt;/code&gt;, then used &lt;a href=&quot;https://pqrs.org/osx/karabiner/&quot;&gt;Karabiner&lt;/a&gt; to turn it into a dual-purpose &lt;code class=&quot;highlighter-rouge&quot;&gt;Control&lt;/code&gt;/&lt;code class=&quot;highlighter-rouge&quot;&gt;Escape&lt;/code&gt;. Typed by itself, it’s &lt;code class=&quot;highlighter-rouge&quot;&gt;Escape&lt;/code&gt;; in concert with another key it’s &lt;code class=&quot;highlighter-rouge&quot;&gt;Control&lt;/code&gt;. The boost in comfort and productivity has been huge.&lt;/p&gt;
+
+&lt;p&gt;Bringing &lt;code class=&quot;highlighter-rouge&quot;&gt;Escape&lt;/code&gt; closer to home feels like a more sensible solution, and I’m no longer typing “jk” all over the place when my fingers forget they’re not in Vim. The productivity gains, however, are largely the result of having a &lt;code class=&quot;highlighter-rouge&quot;&gt;Control&lt;/code&gt; key that’s so accessible. It’s opened up my use of control-modified commands like Vim’s autocompletion and the shell’s reverse-incremental-search quite a bit.&lt;/p&gt;
+
+&lt;p&gt;To set this up on OS X, first go to the Keyboard pane of System Preferences and change &lt;code class=&quot;highlighter-rouge&quot;&gt;Caps Lock&lt;/code&gt; to &lt;code class=&quot;highlighter-rouge&quot;&gt;Control&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img class=&quot;caps-lock&quot; src=&quot;/images/karabiner/caps-lock.png&quot; alt=&quot;'caps-lock'&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Then use Karabiner to send &lt;code class=&quot;highlighter-rouge&quot;&gt;Escape&lt;/code&gt; when you type &lt;code class=&quot;highlighter-rouge&quot;&gt;Control&lt;/code&gt; by itself.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;* karabiner preferences -&amp;gt; &quot;Change Key&quot; tab
+* scroll down to &quot;Change Control_L Key (Left Control)&quot;
+* check &quot;Control_L to Control_L (+ When you type Control_L only, send Escape)&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img class=&quot;escape&quot; src=&quot;/images/karabiner/escape.png&quot; alt=&quot;'escape'&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;more-control&quot;&gt;More Control&lt;/h2&gt;
+
+&lt;p&gt;I recently took this one step further and turned my &lt;code class=&quot;highlighter-rouge&quot;&gt;Return&lt;/code&gt; key into a dual-purpose &lt;code class=&quot;highlighter-rouge&quot;&gt;Control&lt;/code&gt;/&lt;code class=&quot;highlighter-rouge&quot;&gt;Return&lt;/code&gt;, giving me easy access to a &lt;code class=&quot;highlighter-rouge&quot;&gt;Control&lt;/code&gt; key on either side of the keyboard.&lt;/p&gt;
+
+&lt;p&gt;&lt;img class=&quot;return&quot; src=&quot;/images/karabiner/return.png&quot; alt=&quot;'return'&quot; /&gt;&lt;/p&gt;</content><author><name></name></author><summary type="html">A while back I stopped using “jk” to exit Vim’s insert-mode, turning instead to the mostly-useless Caps Lock. I set it to be Control, then used Karabiner to turn it into a dual-purpose Control/Escape. Typed by itself, it’s Escape; in concert with another key it’s Control. The boost in comfort and productivity has been huge.</summary></entry><entry><title type="html">unix know-how</title><link href="http://localhost:4000/unix,/sql/2014/11/04/unix-know-how.html" rel="alternate" type="text/html" title="unix know-how" /><published>2014-11-04T22:48:00-05:00</published><updated>2014-11-04T22:48:00-05:00</updated><id>http://localhost:4000/unix,/sql/2014/11/04/unix-know-how</id><content type="html" xml:base="http://localhost:4000/unix,/sql/2014/11/04/unix-know-how.html">&lt;p&gt;I was working with MySQL queries that involved timezone conversion when I noticed that my local instance of MySQL didn’t recognize named timezones. Queries with named timezones were returning &lt;code class=&quot;highlighter-rouge&quot;&gt;null&lt;/code&gt;, while those with numeric offsets from UTC were returning correct conversions:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;gt; SELECT CONVERT_TZ('2014-01-01 12:00:00', 'America/New_York', 'UTC');
+=&amp;gt; null
+
+&amp;gt; SELECT CONVERT_TZ('2014-01-01 12:00:00', '-5:00', '+00:00');
+=&amp;gt; 2014-01-01 17:00:00
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I hadn’t loaded my system’s zoneinfo files into the &lt;code class=&quot;highlighter-rouge&quot;&gt;mysql&lt;/code&gt; database. As per the &lt;a href=&quot;http://dev.mysql.com/doc/refman/5.5/en/time-zone-support.html&quot;&gt;docs&lt;/a&gt;, I used the &lt;code class=&quot;highlighter-rouge&quot;&gt;mysql_tzinfo_to_sql&lt;/code&gt; utility to load them from &lt;code class=&quot;highlighter-rouge&quot;&gt;/usr/share/zoneinfo&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root mysql
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The process failed before loading all the tables:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ERROR 1406 (22001) at line 38408: Data too long for column 'Abbreviation' at row 1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now I could reference &lt;code class=&quot;highlighter-rouge&quot;&gt;America/New_York&lt;/code&gt;, but not &lt;code class=&quot;highlighter-rouge&quot;&gt;UTC&lt;/code&gt;, since the process had failed before loading that table. A coworker suggested I write the command’s output to a file so I could debug:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ mysql_tzinfo_to_sql /usr/share/zoneinfo &amp;gt; debuggingfile
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;debuggingfile&lt;/code&gt; contained many insert statements, and line 38408 revealed the problem:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;INSERT INTO time_zone_transition_type (Time_zone_id, Transition_type_id, Offset, Is_DST, Abbreviation) VALUES (@time_zone_id, 0, 0, 0, 'Local time zone must be set--see zic manual page');
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;'Local time zone must be set--see zic manual page'&lt;/code&gt; value was too long for the Abbreviation column. I shortened it to &lt;code class=&quot;highlighter-rouge&quot;&gt;'unset'&lt;/code&gt;, fed the file into mysql, and all was well.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ mysql -u root mysql &amp;lt; debuggingfile
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I was struck by the simplicity of this solution, and how a little unix know-how can demystify a problem.&lt;/p&gt;</content><author><name></name></author><summary type="html">I was working with MySQL queries that involved timezone conversion when I noticed that my local instance of MySQL didn’t recognize named timezones. Queries with named timezones were returning null, while those with numeric offsets from UTC were returning correct conversions:</summary></entry><entry><title type="html">search &amp;amp; replace</title><link href="http://localhost:4000/unix/2014/11/04/search-and-replace.html" rel="alternate" type="text/html" title="search &amp; replace" /><published>2014-11-04T08:05:00-05:00</published><updated>2014-11-04T08:05:00-05:00</updated><id>http://localhost:4000/unix/2014/11/04/search-and-replace</id><content type="html" xml:base="http://localhost:4000/unix/2014/11/04/search-and-replace.html">&lt;p&gt;Performing a project-wide search-and-replace is a common task, and yet I still forget how to do it in Vim. While there’s not that much to it (build an argument list of relevant files and run a global substitution across them), I’ve had to look it up enough times to start wondering if there’s a better way. I ended up writing a shell function, as well as a Ruby-specific wrapper for it.&lt;/p&gt;
+
+&lt;p&gt;Now if I want to rename a function across my project’s javascript files, I can drop onto the command-line and run:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ greplace **.js uglyFunctionName nicerFunctionName
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Or, if I’m renaming a Ruby method:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ rupl bad_method_name good_method_name
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;the-sauce&quot;&gt;The Sauce&lt;/h2&gt;
+&lt;p&gt;Using &lt;code class=&quot;highlighter-rouge&quot;&gt;find&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;grep&lt;/code&gt;, and &lt;code class=&quot;highlighter-rouge&quot;&gt;sed&lt;/code&gt; in concert, we declare which files to search, what to search for, and what to do with those files that contain a match.&lt;/p&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;greplace&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;$#&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; 3 &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then
+    &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Usage: greplace file_pattern search_pattern replacement&quot;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return &lt;/span&gt;1
+  &lt;span class=&quot;k&quot;&gt;else
+    &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;file_pattern&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;search_pattern&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$2&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;replacement&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$3&lt;/span&gt;
+
+    &lt;span class=&quot;c&quot;&gt;# This is built for BSD grep and the sed bundled with OS X.&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;# GNU grep takes -Z instead of --null, and other versions of sed may not support the -i '' syntax.&lt;/span&gt;
+
+    find &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-name&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$file_pattern&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-exec&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-lw&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--null&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$search_pattern&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{}&lt;/span&gt; + |
+    xargs &lt;span class=&quot;nt&quot;&gt;-0&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;''&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/[[:&amp;lt;:]]&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$search_pattern&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;[[:&amp;gt;:]]/&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$replacement&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/g&quot;&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+rupl&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;$#&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; 2 &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then
+    &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Usage: rupl search_pattern replacement&quot;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return &lt;/span&gt;1
+  &lt;span class=&quot;k&quot;&gt;else
+    &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;search_pattern&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;replacement&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$2&lt;/span&gt;
+
+    greplace &lt;span class=&quot;s1&quot;&gt;'**.rb'&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$search_pattern&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$replacement&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;ingredients&quot;&gt;Ingredients&lt;/h2&gt;
+&lt;p&gt;The first thing &lt;code class=&quot;highlighter-rouge&quot;&gt;greplace&lt;/code&gt; does is test whether it received the wrong number of arguments: &lt;code class=&quot;highlighter-rouge&quot;&gt;[ &quot;$#&quot; != 3 ]&lt;/code&gt;. If so, we print a usage message and return an error code. Otherwise, we set some local variables with more memorable names than &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;2&lt;/code&gt;, and &lt;code class=&quot;highlighter-rouge&quot;&gt;3&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Next, we &lt;code class=&quot;highlighter-rouge&quot;&gt;find&lt;/code&gt; pathnames in the current directory (and subdirectories) that match &lt;code class=&quot;highlighter-rouge&quot;&gt;file_pattern&lt;/code&gt;. Using &lt;code class=&quot;highlighter-rouge&quot;&gt;find ... --exec &amp;lt;command&amp;gt; {};&lt;/code&gt; lets us run a command on each found path, expanding &lt;code class=&quot;highlighter-rouge&quot;&gt;{}&lt;/code&gt; to the pathname. Replacing &lt;code class=&quot;highlighter-rouge&quot;&gt;;&lt;/code&gt; with &lt;code class=&quot;highlighter-rouge&quot;&gt;+&lt;/code&gt; will instead expand &lt;code class=&quot;highlighter-rouge&quot;&gt;{}&lt;/code&gt; to as many of the found pathnames as possible, which allows us to feed all the found files as arguments to a single &lt;code class=&quot;highlighter-rouge&quot;&gt;grep&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;We &lt;code class=&quot;highlighter-rouge&quot;&gt;grep&lt;/code&gt; the relevant files for &lt;code class=&quot;highlighter-rouge&quot;&gt;search_pattern&lt;/code&gt;, restricting results to the names of files (&lt;code class=&quot;highlighter-rouge&quot;&gt;-l&lt;/code&gt;) that contain a whole-word (&lt;code class=&quot;highlighter-rouge&quot;&gt;-w&lt;/code&gt;) match. We also print a &lt;a href=&quot;http://en.wikipedia.org/wiki/Null_character&quot;&gt;null-character&lt;/a&gt; after each filename in the results (&lt;code class=&quot;highlighter-rouge&quot;&gt;--null&lt;/code&gt;), which will be useful as a delimiter in the next step.&lt;/p&gt;
+
+&lt;p&gt;The results of &lt;code class=&quot;highlighter-rouge&quot;&gt;grep&lt;/code&gt; are piped into &lt;code class=&quot;highlighter-rouge&quot;&gt;xargs -0&lt;/code&gt;, which constructs an argument list (recognizing the null-character delimiter) and feeds this list to &lt;code class=&quot;highlighter-rouge&quot;&gt;sed&lt;/code&gt; for further processing.&lt;/p&gt;
+
+&lt;p&gt;We then use &lt;code class=&quot;highlighter-rouge&quot;&gt;sed -i&lt;/code&gt; to edit each file “in place” (rather than writing results to stdout) without creating any backup files (&lt;code class=&quot;highlighter-rouge&quot;&gt;''&lt;/code&gt;), which could be risky, but since I’m working with Git this seems reasonable.&lt;/p&gt;
+
+&lt;p&gt;The actual search-and-replace is simply a pattern substitution. The &lt;code class=&quot;highlighter-rouge&quot;&gt;[[:&amp;lt;:]]&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;[[:&amp;gt;:]]&lt;/code&gt; delimiters restrict it to whole-word matches.&lt;/p&gt;
+
+&lt;h2 id=&quot;caveats&quot;&gt;Caveats&lt;/h2&gt;
+&lt;p&gt;A few things limit this function’s portability. For one, not all versions of &lt;code class=&quot;highlighter-rouge&quot;&gt;grep&lt;/code&gt; recognize the &lt;code class=&quot;highlighter-rouge&quot;&gt;--null&lt;/code&gt; flag. GNU grep uses &lt;code class=&quot;highlighter-rouge&quot;&gt;-Z&lt;/code&gt; instead. Also, the &lt;code class=&quot;highlighter-rouge&quot;&gt;-i ''&lt;/code&gt; syntax may not be recognized by all versions of &lt;code class=&quot;highlighter-rouge&quot;&gt;sed&lt;/code&gt; (actually, from what I was able to gather, that syntax might be unique to the version bundled with OSX).&lt;/p&gt;
+
+&lt;p&gt;That being said, it would only take a few minor tweaks to get this working on a different system.&lt;/p&gt;</content><author><name></name></author><summary type="html">Performing a project-wide search-and-replace is a common task, and yet I still forget how to do it in Vim. While there’s not that much to it (build an argument list of relevant files and run a global substitution across them), I’ve had to look it up enough times to start wondering if there’s a better way. I ended up writing a shell function, as well as a Ruby-specific wrapper for it.</summary></entry><entry><title type="html">Faster Specs</title><link href="http://localhost:4000/tdd,/ruby/2014/10/27/faster-specs.html" rel="alternate" type="text/html" title="Faster Specs" /><published>2014-10-27T22:23:00-04:00</published><updated>2014-10-27T22:23:00-04:00</updated><id>http://localhost:4000/tdd,/ruby/2014/10/27/faster-specs</id><content type="html" xml:base="http://localhost:4000/tdd,/ruby/2014/10/27/faster-specs.html">&lt;p&gt;Getting the full benefits of &lt;a href=&quot;http://en.wikipedia.org/wiki/Test-driven_development&quot;&gt;TDD&lt;/a&gt; requires fast-running specs. The feedback cycle is what makes the difference between a pleasurable “red-green-refactor” flow and an eternity of testing-tedium where the only reason you’re &lt;em&gt;writing&lt;/em&gt; tests is so you be &lt;em&gt;done&lt;/em&gt; writing them. While TDD is lauded in the Rails community, many large Rails apps suffer from slow-running test suites.&lt;/p&gt;
+
+&lt;p&gt;I’ve been working with a Rails app that has a couple of bloated, callback-ridden models. Much of the test-suite uses FactoryGirl, and generating test objects for those big models and their associations can slow things down to a crawl. So when a new feature came along, I took the opportunity to write some fast unit-tests in a different style.&lt;/p&gt;
+
+&lt;h3 id=&quot;couch-surfer&quot;&gt;Couch-Surfer&lt;/h3&gt;
+&lt;p&gt;Imagine an app that logs the journeys of world-travellers (lots of them) as they couch-surf around the globe visiting homebody friends. Each traveller periodically sends a postcard to their next host to let them know how far off they are. We have a few persisted models: Traveller, Homebody, CouchCrash, and Postcard.&lt;/p&gt;
+
+&lt;p&gt;The Traveller and Homebody models are rather large, so I’ve abbreviated them here:&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Traveller&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;ActiveRecord&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;Base&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;has_many&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:couch_crashes&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;has_many&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:homebodies&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;through: :couch_crashes&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;# and many more associations, validations, callbacks...&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Homebody&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;ActiveRecord&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;Base&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;has_many&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:couch_crashes&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;# and many more associations, validations, callbacks...&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;CouchCrash and Postcard are pretty small, despite their associations with the larger models:&lt;/p&gt;
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;CouchCrash&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;ActiveRecord&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;Base&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;belongs_to&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:traveller&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;belongs_to&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:homebody&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;has_many&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:postcards&lt;/span&gt;
+
+  &lt;span class=&quot;n&quot;&gt;validates_presence_of&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:traveller&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:homebody&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:arrival_date&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Postcard&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;ActiveRecord&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;Base&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;belongs_to&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:traveller&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;belongs_to&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:couch_crash&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;belongs_to&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:homebody&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;through: :couch_crash&lt;/span&gt;
+
+  &lt;span class=&quot;n&quot;&gt;validates_presence_of&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:traveller&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:couch_crash&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:distance&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Each visit, or &lt;code class=&quot;highlighter-rouge&quot;&gt;couch_crash&lt;/code&gt;, is scheduled with an &lt;code class=&quot;highlighter-rouge&quot;&gt;arrival_date&lt;/code&gt;. But these aren’t always accurate, as it’s hard to know exactly when the traveller will reach their destination. We’d like to add a feature that assesses the status of a visit as “far off”, “approaching”, or “in progress” based on the arrival date and available postcards. We won’t bother with a “completed” status since couch-crashers have been known to stick around forever.&lt;/p&gt;
+
+&lt;p&gt;For simplicity’s sake, we’ll say any visit whose arrival date is more than a week away is “far off”. Within a week of the arrival date, an “approaching” status requires a postcard from within 100 miles and “in Progress” requires one within 5 miles (I know, that’s a waste of a stamp). Otherwise, with either no postcards or only those over 100 miles away, the visit remains “far off”.&lt;/p&gt;
+
+&lt;h3 id=&quot;approaching-the-spec&quot;&gt;Approaching the spec&lt;/h3&gt;
+&lt;p&gt;A spec for the “approaching” status using FactoryGirl might look like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;describe&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;CouchCrash&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;describe&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'#status'&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'within 1 week of arrival date'&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'with a postcard from 100 miles away'&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+
+        &lt;span class=&quot;n&quot;&gt;it&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'is &quot;approaching&quot;'&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+          &lt;span class=&quot;n&quot;&gt;visit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;FactoryGirl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:couch_crash&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;arrival_date: &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;week&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;from_now&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+          &lt;span class=&quot;n&quot;&gt;postcard_100&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;FactoryGirl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:postcard&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;distance: &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;100&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+          &lt;span class=&quot;n&quot;&gt;visit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;stub&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:postcards&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;and_return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;postcard_100&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+
+          &lt;span class=&quot;n&quot;&gt;expect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;visit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;status&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;to&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;eq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:approaching&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+
+      &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+
+  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Using &lt;code class=&quot;highlighter-rouge&quot;&gt;build&lt;/code&gt; rather than &lt;code class=&quot;highlighter-rouge&quot;&gt;create&lt;/code&gt; should keep us from hitting the database. Stubbing the association between &lt;code class=&quot;highlighter-rouge&quot;&gt;visit&lt;/code&gt; and its postcards should do the same. On the surface, this looks like a well-isolated, fast unit-test, but let’s take a closer look at the factories we’re using:&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# spec/factories/couch_crashes.rb&lt;/span&gt;
+&lt;span class=&quot;no&quot;&gt;FactoryGirl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;factory&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:couch_crash&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;traveller&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;homebody&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;arrival_date&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;weeks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;from_now&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;# spec/factories/post_cards.rb&lt;/span&gt;
+&lt;span class=&quot;no&quot;&gt;FactoryGirl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;factory&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:post_card&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;traveller&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;couch_crash&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;distance&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;300&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;It’s best practice to define your factories with the minimum set of attributes necessary for a valid object. You don’t want to set land-mines for the next developer that comes along and calls &lt;code class=&quot;highlighter-rouge&quot;&gt;create&lt;/code&gt;. So the couch_crashes factory generates associated traveller and homebody objects. In doing so, it involves two of our most bloated models. Take a look at their factories:&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# spec/factories/travellers.rb&lt;/span&gt;
+&lt;span class=&quot;no&quot;&gt;FactoryGirl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;factory&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:traveller&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;first_name&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Yngwie&quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;last_name&lt;/span&gt;  &lt;span class=&quot;s2&quot;&gt;&quot;Malmsteen&quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;association&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:hometown&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;factory: :city&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;luggage&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;bicycle&lt;/span&gt;
+    
+    &lt;span class=&quot;n&quot;&gt;after&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;traveller&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;pump&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;FactoryGirl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:bicycle_pump&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;traveller&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bike_pump&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pump&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;traveller&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;inflate_tires&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;traveller&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;pack_luggage&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;traveller&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;buy_stamps&lt;/span&gt;
+      &lt;span class=&quot;c1&quot;&gt;# etc.&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;# spec/factories/homebodies.rb&lt;/span&gt;
+&lt;span class=&quot;no&quot;&gt;FactoryGirl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;factory&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:homebody&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;first_name&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Joe&quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;last_name&lt;/span&gt;  &lt;span class=&quot;s2&quot;&gt;&quot;Stumps&quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;spouse&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;credit_score&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;400&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;house&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;couch&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;car&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;dog&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# etc.&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We’re also unintentionally hitting the database, as FactoryGirl saves both traveller and homebody in order to build the association. You can avoid this by specifying a build-strategy for the association:&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;factory&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:couch_crash&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;association&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:traveller&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;strategy: :build&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;association&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:homebody&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;ss&quot;&gt;strategy: :build&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You’d also have to change the syntax in the associated factories:&lt;/p&gt;
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;factory&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:traveller&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;association&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:luggage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;strategy: :build&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;association&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:bicycle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;strategy: :build&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;factory&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:homebody&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;association&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:house&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;strategy: :build&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;association&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:couch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;strategy: :build&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;association&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:car&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;   &lt;span class=&quot;ss&quot;&gt;strategy: :build&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;association&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:dog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;   &lt;span class=&quot;ss&quot;&gt;strategy: :build&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;It would be nice to avoid involving these large models any more than necessary, so let’s rewrite the spec with a different technique. Instead of using factories to generate complex test objects, we’ll use test doubles to stub out the context.&lt;/p&gt;
+
+&lt;h3 id=&quot;test-doubles&quot;&gt;Test-doubles&lt;/h3&gt;
+&lt;p&gt;Rspec’s &lt;code class=&quot;highlighter-rouge&quot;&gt;double&lt;/code&gt; method returns a test-double – a dummy object that stands in for a more complex object from your production code. The double can be told how to respond to various method calls:&lt;/p&gt;
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;red_thing&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;double&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;thing&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# The argument (ie. &quot;thing&quot;) is optional.&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# It provides a name that test output can make use of.&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;red_thing&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;stub&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;and_return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;red&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# equivalent form:&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;red_thing&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;stub&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;red&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;# Or, more concisely:&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;red_house&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;double&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;thing&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;color: &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;red&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The double only knows what it’s been told explicitly, and will raise an error upon receiving any unexpected method call. If you’re using Rspec 3, you can also use “&lt;a href=&quot;https://www.relishapp.com/rspec/rspec-mocks/v/3-1/docs/verifying-doubles&quot;&gt;verifying doubles&lt;/a&gt;”, which know what class of object they’re standing in for and will ensure that any methods being stubbed are actually present in the code.&lt;/p&gt;
+
+&lt;h3 id=&quot;rewrite&quot;&gt;Rewrite&lt;/h3&gt;
+&lt;p&gt;While our spec should still read from the ground up, beginning with the context and arriving at an expectation, it can be helpful when &lt;em&gt;writing&lt;/em&gt; to start with the expectation and work backwards. This is especially true when the context is complex. It also helps clarify what needs to be stubbed out, so let’s give it a shot.&lt;/p&gt;
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;expect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;visit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;status&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;to&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;eq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:approaching&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;What is &lt;code class=&quot;highlighter-rouge&quot;&gt;visit&lt;/code&gt;? Just a test double with the right attributes:&lt;/p&gt;
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;visit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;double&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;visit&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;arrival_date: &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;week&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;from_now&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;postcards: &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;postcard_100&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;What about &lt;code class=&quot;highlighter-rouge&quot;&gt;postcard_100&lt;/code&gt;? Just another test double.&lt;/p&gt;
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;postcard_100&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;double&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;postcard&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;distance: &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;100&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Putting it all together, we have:&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'within 1 week of arrival date'&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'with a postcard from 100 miles away'&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;it&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'is &quot;approaching&quot;'&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;postcard_100&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;double&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;postcard&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;distance: &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;100&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;visit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;double&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;visit&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;arrival_date: &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;week&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;from_now&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;postcards: &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;postcard_100&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+
+      &lt;span class=&quot;n&quot;&gt;expect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;visit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;status&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;to&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;eq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:approaching&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+
+  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I initially wanted faster specs to enable a better TDD flow. A nice side benefit of writing these stubbed tests is that it illuminates the dependencies and coupling in the production code you’re working with and encourages better composition overall. FactoryGirl is still a wonderful tool, but it shouldn’t be the only one in your belt.&lt;/p&gt;</content><author><name></name></author><summary type="html">Getting the full benefits of TDD requires fast-running specs. The feedback cycle is what makes the difference between a pleasurable “red-green-refactor” flow and an eternity of testing-tedium where the only reason you’re writing tests is so you be done writing them. While TDD is lauded in the Rails community, many large Rails apps suffer from slow-running test suites.</summary></entry><entry><title type="html">vim key-mappings</title><link href="http://localhost:4000/vim/2014/10/26/vim-key-mappings.html" rel="alternate" type="text/html" title="vim key-mappings" /><published>2014-10-26T12:04:00-04:00</published><updated>2014-10-26T12:04:00-04:00</updated><id>http://localhost:4000/vim/2014/10/26/vim-key-mappings</id><content type="html" xml:base="http://localhost:4000/vim/2014/10/26/vim-key-mappings.html">&lt;h3 id=&quot;map&quot;&gt;:map&lt;/h3&gt;
+&lt;p&gt;In the land of Vim, most key sequences can easily be mapped to others. The basic syntax is &lt;code class=&quot;highlighter-rouge&quot;&gt;map a b&lt;/code&gt;, which tells Vim that when you type &lt;code class=&quot;highlighter-rouge&quot;&gt;a&lt;/code&gt;, it should act like &lt;code class=&quot;highlighter-rouge&quot;&gt;b&lt;/code&gt;. Similarly, &lt;code class=&quot;highlighter-rouge&quot;&gt;map abc wxyz&lt;/code&gt; would process &lt;code class=&quot;highlighter-rouge&quot;&gt;wxyz&lt;/code&gt; when you typed &lt;code class=&quot;highlighter-rouge&quot;&gt;abc&lt;/code&gt;, but let’s look at a more useful example.&lt;/p&gt;
+
+&lt;p&gt;You can use &lt;code class=&quot;highlighter-rouge&quot;&gt;m&lt;/code&gt; to set a mark at the current cursor position, then jump to it later using the backtick (&lt;code class=&quot;highlighter-rouge&quot;&gt;`&lt;/code&gt;) key. Take this buffer for example:&lt;/p&gt;
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;penguify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;being&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;no&quot;&gt;Penguin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;being&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;mass&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;rescue&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;NameError&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Can't penguify massless being.&quot;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;I’ll put my cursor on the &lt;em&gt;N&lt;/em&gt; in &lt;code class=&quot;highlighter-rouge&quot;&gt;NameError&lt;/code&gt; and type (in normal mode) &lt;code class=&quot;highlighter-rouge&quot;&gt;mx&lt;/code&gt;. This sets a mark we can jump to by typing ```x``. This is nice, but the backtick isn’t the most comfortable key to reach for.&lt;/p&gt;
+
+&lt;p&gt;There’s a similar command using the single-quote. Typing &lt;code class=&quot;highlighter-rouge&quot;&gt;'x&lt;/code&gt; jumps to the first non-whitespace character on the marked line. Probably not as useful. Let’s map the more reachable &lt;code class=&quot;highlighter-rouge&quot;&gt;'&lt;/code&gt; to the more useful &lt;code class=&quot;highlighter-rouge&quot;&gt;`&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;On Vim’s command-line, enter: &lt;code class=&quot;highlighter-rouge&quot;&gt;map ' `&lt;/code&gt;. Now both &lt;code class=&quot;highlighter-rouge&quot;&gt;`&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;'&lt;/code&gt; will take us directly to our mark. Instead of ditching the single-quote’s original command entirely, let’s map the backtick to it with &lt;code class=&quot;highlighter-rouge&quot;&gt;map ` '&lt;/code&gt;. But this causes a problem. Hit either &lt;code class=&quot;highlighter-rouge&quot;&gt;`&lt;/code&gt; or &lt;code class=&quot;highlighter-rouge&quot;&gt;'&lt;/code&gt; and you’ll get an error (&lt;code class=&quot;highlighter-rouge&quot;&gt;E223: recursive mapping&lt;/code&gt;). We’ve mapped &lt;code class=&quot;highlighter-rouge&quot;&gt;`&lt;/code&gt; to &lt;code class=&quot;highlighter-rouge&quot;&gt;'&lt;/code&gt;, which triggers &lt;code class=&quot;highlighter-rouge&quot;&gt;`&lt;/code&gt;, which triggers &lt;code class=&quot;highlighter-rouge&quot;&gt;'&lt;/code&gt;, and on and on.&lt;/p&gt;
+
+&lt;h3 id=&quot;noremap&quot;&gt;:noremap&lt;/h3&gt;
+&lt;p&gt;To recover, let’s remove both mappings with &lt;code class=&quot;highlighter-rouge&quot;&gt;unmap `&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;unmap '&lt;/code&gt;, to start fresh. Now instead of using &lt;code class=&quot;highlighter-rouge&quot;&gt;map&lt;/code&gt; we’ll use &lt;code class=&quot;highlighter-rouge&quot;&gt;noremap&lt;/code&gt;. Running &lt;code class=&quot;highlighter-rouge&quot;&gt;noremap a b&lt;/code&gt; will map &lt;code class=&quot;highlighter-rouge&quot;&gt;a&lt;/code&gt; to &lt;code class=&quot;highlighter-rouge&quot;&gt;b&lt;/code&gt; but avoid triggering anything &lt;code class=&quot;highlighter-rouge&quot;&gt;b&lt;/code&gt; is mapped to. So we can enter &lt;code class=&quot;highlighter-rouge&quot;&gt;noremap ' `&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;noremap ` '&lt;/code&gt; to swap our keys without falling into a recursive pit.&lt;/p&gt;
+
+&lt;h3 id=&quot;map-modes&quot;&gt;map-modes&lt;/h3&gt;
+&lt;p&gt;Depending on how you define them, your key-mappings will only apply in certain modes. The mappings we created with &lt;code class=&quot;highlighter-rouge&quot;&gt;map&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;noremap&lt;/code&gt; apply in Normal, Visual, Select, and Operator-pending modes. Note the absence of Insert mode in that list – we’re not in danger of inserting &lt;code class=&quot;highlighter-rouge&quot;&gt;doesn`t&lt;/code&gt; when we wanted &lt;code class=&quot;highlighter-rouge&quot;&gt;doesn't&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;map&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;noremap&lt;/code&gt;, and &lt;code class=&quot;highlighter-rouge&quot;&gt;unmap&lt;/code&gt; commands each have mode-specific variations. My .vimrc, for instance, has a mapping for line-completion in Insert mode:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;inoremap &amp;lt;C-L&amp;gt; &amp;lt;C-X&amp;gt;&amp;lt;C-L&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-L&amp;gt;&lt;/code&gt; represents Control-L, and is case-insensitive (same as &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;c-l&amp;gt;&lt;/code&gt;). This makes line-completion less cumbersome without polluting modes other than Insert with the mapping. For more on map-modes, check out &lt;code class=&quot;highlighter-rouge&quot;&gt;:help :map-modes&lt;/code&gt;. The map-overview (&lt;code class=&quot;highlighter-rouge&quot;&gt;:help map-overview&lt;/code&gt;) is a good place to start.&lt;/p&gt;
+
+&lt;h3 id=&quot;key-notation&quot;&gt;key-notation&lt;/h3&gt;
+&lt;p&gt;Vim uses a special notation for some keys. We saw &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-L&amp;gt;&lt;/code&gt; already. There’s also &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;Left&amp;gt;&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;S-Left&amp;gt;&lt;/code&gt; (shift-left), &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;Space&amp;gt;&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;CR&amp;gt;&lt;/code&gt; (carriage return / enter), and many more (see &lt;code class=&quot;highlighter-rouge&quot;&gt;:help key-notation&lt;/code&gt;). We can use these to expand our key-mapping vocabulary.&lt;/p&gt;
+
+&lt;h3 id=&quot;editor-envy&quot;&gt;editor-envy&lt;/h3&gt;
+&lt;p&gt;I noticed a feature in Sublime Text that I wanted to simulate in Vim: &lt;code class=&quot;highlighter-rouge&quot;&gt;⌘Enter&lt;/code&gt; adds a newline to the &lt;em&gt;end&lt;/em&gt; of the current line rather than inserting it at the cursor position. This is handy if you’re in the middle of a line and want to open a new line beneath it without breaking the text the cursor’s on.&lt;/p&gt;
+
+&lt;p&gt;To similate this, I needed to &lt;code class=&quot;highlighter-rouge&quot;&gt;inoremap&lt;/code&gt; something to &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-O&amp;gt;o&lt;/code&gt;. From Insert mode, &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-O&amp;gt;&lt;/code&gt; pops you into Normal mode for a single command. Once there, &lt;code class=&quot;highlighter-rouge&quot;&gt;o&lt;/code&gt; opens a new line beneath the current one and drops you onto it in Insert mode. In the interest of portability, I decided against using the &lt;code class=&quot;highlighter-rouge&quot;&gt;⌘&lt;/code&gt; key, since it’s Mac-specific, and went with Control instead:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;inoremap &amp;lt;C-CR&amp;gt; &amp;lt;C-O&amp;gt;o
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now I can hit Control-Enter from Insert mode to drop down to a new line without disrupting the one I’m on. Actually no, I can’t. I can if I’m using MacVim, but terminal Vim doesn’t recognize the &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-CR&amp;gt;&lt;/code&gt; key-combo. This is where things get interesting.&lt;/p&gt;
+
+&lt;h3 id=&quot;terminal-keycodes&quot;&gt;terminal keycodes&lt;/h3&gt;
+&lt;p&gt;To get the &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-CR&amp;gt;&lt;/code&gt; key-mapping to work in terminal Vim, I needed to first tell iTerm what to send when I hit Control-Enter, then tell Vim what to listen for and how to interpret it. Let’s start with iTerm. The steps for Terminal.app are similar, though the menus and appearance will differ.&lt;/p&gt;
+
+&lt;p&gt;In iTerm’s &lt;em&gt;Preferences&lt;/em&gt; (&lt;code class=&quot;highlighter-rouge&quot;&gt;⌘,&lt;/code&gt;), the &lt;em&gt;Profiles&lt;/em&gt; tab has a &lt;em&gt;Keys&lt;/em&gt; subtab. From there, you can define custom actions to trigger with any number of key-combinations. Clicking the ‘&lt;strong&gt;+&lt;/strong&gt;’ at the bottom of the list reveals a dialog to add a new combination.&lt;/p&gt;
+
+&lt;p&gt;&lt;img class=&quot;screenshot&quot; src=&quot;/images/iterm/keys.png&quot; alt=&quot;'keys'&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;I hit Control-Enter to enter &lt;code class=&quot;highlighter-rouge&quot;&gt;^↩&lt;/code&gt; in the &lt;em&gt;Keyboard Shortcut&lt;/em&gt; field and selected &lt;em&gt;Send Escape Sequence&lt;/em&gt; from the &lt;em&gt;Action&lt;/em&gt; drop-down, revealing a field labeled “Esc+”. Here I entered &lt;code class=&quot;highlighter-rouge&quot;&gt;[25~&lt;/code&gt;, telling iTerm to send Esc + &lt;code class=&quot;highlighter-rouge&quot;&gt;[25~&lt;/code&gt; when Control-Enter is typed.&lt;/p&gt;
+
+&lt;p&gt;“Why &lt;code class=&quot;highlighter-rouge&quot;&gt;[25~&lt;/code&gt;? Where did that come from?” I was hoping you wouldn’t ask. Figuring out what codes to use, what wouldn’t conflict with anything, and what would be interpretted consistently across xterm, GNU screen, and tmux was not a straightforward process. Lots of googling and trial and error, and recounting it is probably best saved for another post. For now, I’ll stay focused on getting it wired up with Vim.&lt;/p&gt;
+
+&lt;p&gt;Next, I needed to tell Vim how to interpret the &lt;code class=&quot;highlighter-rouge&quot;&gt;^[[25~&lt;/code&gt; escape sequence that iTerm would be sending its way. (Note that the initial &lt;code class=&quot;highlighter-rouge&quot;&gt;^[&lt;/code&gt; is the Escape character itself.) I set an unused Function key to the escape sequence:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;set &amp;lt;F13&amp;gt;=^[[25~
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;To enter that command correctly, you need to type &lt;code class=&quot;highlighter-rouge&quot;&gt;set &amp;lt;F13&amp;gt;=&lt;/code&gt;, hit Control-V, hit Escape, then finish with &lt;code class=&quot;highlighter-rouge&quot;&gt;[25~&lt;/code&gt;. Control-V followed by Escape enters the actual terminal code for the Escape key (which &lt;em&gt;appears&lt;/em&gt; as the single character &lt;code class=&quot;highlighter-rouge&quot;&gt;^[&lt;/code&gt;). The same is true whether you’re entering it on Vim’s command-line or inserting it in your .vimrc.&lt;/p&gt;
+
+&lt;p&gt;With Vim listening for the escape sequence and associating it with a key, I mapped that key to &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-CR&amp;gt;&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;map  &amp;lt;F13&amp;gt; &amp;lt;C-Cr&amp;gt;  
+map! &amp;lt;F13&amp;gt; &amp;lt;C-Cr&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The call to &lt;code class=&quot;highlighter-rouge&quot;&gt;map&lt;/code&gt; applies the mapping in Normal, Visual, Select, and Operator-pending mappings, while &lt;code class=&quot;highlighter-rouge&quot;&gt;map!&lt;/code&gt; applies to Insert and Command-line mappings. With all this in place, terminal Vim can recognize Control-Enter and the &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-CR&amp;gt;&lt;/code&gt; key-notation.&lt;/p&gt;
+
+&lt;p&gt;You can apply this approach to a lot of other key’s that would otherwise be off-limits. A section of my &lt;a href=&quot;https://github.com/ivanbrennan/vim/blob/master/vimrc&quot;&gt;vimrc&lt;/a&gt; wires up a bunch of them. I’m cutting down on the mappings these days, but it’s nice to know you can do this:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;if &amp;amp;term =~ &quot;xterm&quot; || &amp;amp;term =~ &quot;screen&quot; || &amp;amp;term =~ &quot;builtin_gui&quot;
+  &quot; Ctrl-Enter
+  set  &amp;lt;F13&amp;gt;=[25~
+  map  &amp;lt;F13&amp;gt; &amp;lt;C-CR&amp;gt;
+  map! &amp;lt;F13&amp;gt; &amp;lt;C-CR&amp;gt;
+
+  &quot; Shift-Enter
+  set  &amp;lt;F14&amp;gt;=[27~
+  map  &amp;lt;F14&amp;gt; &amp;lt;S-CR&amp;gt;
+  map! &amp;lt;F14&amp;gt; &amp;lt;S-CR&amp;gt;
+
+  &quot; Ctrl-Space
+  set  &amp;lt;F15&amp;gt;=[29~
+  map  &amp;lt;F15&amp;gt; &amp;lt;C-Space&amp;gt;
+  map! &amp;lt;F15&amp;gt; &amp;lt;C-Space&amp;gt;
+
+  &quot; Shift-Space
+  set  &amp;lt;F16&amp;gt;=[30~
+  map  &amp;lt;F16&amp;gt; &amp;lt;S-Space&amp;gt;
+  map! &amp;lt;F16&amp;gt; &amp;lt;S-Space&amp;gt;
+
+  &quot; Ctrl-Backspace
+  set  &amp;lt;F17&amp;gt;=[1;5P
+  map  &amp;lt;F17&amp;gt; &amp;lt;C-BS&amp;gt;
+  map! &amp;lt;F17&amp;gt; &amp;lt;C-BS&amp;gt;
+
+  &quot; Alt-Tab
+  set  &amp;lt;F18&amp;gt;=[1;5Q
+  map  &amp;lt;F18&amp;gt; &amp;lt;M-Tab&amp;gt;
+  map! &amp;lt;F18&amp;gt; &amp;lt;M-Tab&amp;gt;
+
+  &quot; Alt-Shift-Tab
+  set  &amp;lt;F19&amp;gt;=[1;5R
+  map  &amp;lt;F19&amp;gt; &amp;lt;M-S-Tab&amp;gt;
+  map! &amp;lt;F19&amp;gt; &amp;lt;M-S-Tab&amp;gt;
+
+  &quot; Ctrl-Up
+  set  &amp;lt;F20&amp;gt;=[1;5A
+  map  &amp;lt;F20&amp;gt; &amp;lt;C-Up&amp;gt;
+  map! &amp;lt;F20&amp;gt; &amp;lt;C-Up&amp;gt;
+
+  &quot; Ctrl-Down
+  set  &amp;lt;F21&amp;gt;=[1;5B
+  map  &amp;lt;F21&amp;gt; &amp;lt;C-Down&amp;gt;
+  map! &amp;lt;F21&amp;gt; &amp;lt;C-Down&amp;gt;
+
+  &quot; Ctrl-Right
+  set  &amp;lt;F22&amp;gt;=[1;5C
+  map  &amp;lt;F22&amp;gt; &amp;lt;C-Right&amp;gt;
+  map! &amp;lt;F22&amp;gt; &amp;lt;C-Right&amp;gt;
+
+  &quot; Ctrl-Left
+  set  &amp;lt;F23&amp;gt;=[1;5D
+  map  &amp;lt;F23&amp;gt; &amp;lt;C-Left&amp;gt;
+  map! &amp;lt;F23&amp;gt; &amp;lt;C-Left&amp;gt;
+
+  &quot; Ctrl-Tab
+  set  &amp;lt;F24&amp;gt;=[31~
+  map  &amp;lt;F24&amp;gt; &amp;lt;C-Tab&amp;gt;
+  map! &amp;lt;F24&amp;gt; &amp;lt;C-Tab&amp;gt;
+
+  &quot; Ctrl-Shift-Tab
+  set  &amp;lt;F25&amp;gt;=[32~
+  map  &amp;lt;F25&amp;gt; &amp;lt;C-S-Tab&amp;gt;
+  map! &amp;lt;F25&amp;gt; &amp;lt;C-S-Tab&amp;gt;
+
+  &quot; Ctrl-Comma
+  set  &amp;lt;F26&amp;gt;=[33~
+  map  &amp;lt;F26&amp;gt; &amp;lt;C-,&amp;gt;
+  map! &amp;lt;F26&amp;gt; &amp;lt;C-,&amp;gt;
+
+  &quot; Ctrl-Shift-Space
+  set  &amp;lt;F27&amp;gt;=[34~
+  map  &amp;lt;F27&amp;gt; &amp;lt;C-S-Space&amp;gt;
+  map! &amp;lt;F27&amp;gt; &amp;lt;C-S-Space&amp;gt;
+endif
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name></name></author><summary type="html">:map In the land of Vim, most key sequences can easily be mapped to others. The basic syntax is map a b, which tells Vim that when you type a, it should act like b. Similarly, map abc wxyz would process wxyz when you typed abc, but let’s look at a more useful example.</summary></entry><entry><title type="html">Rigging Vim’s Netrw</title><link href="http://localhost:4000/vim/2014/01/16/rigging-vims-netrw.html" rel="alternate" type="text/html" title="Rigging Vim's Netrw" /><published>2014-01-16T01:00:00-05:00</published><updated>2014-01-16T01:00:00-05:00</updated><id>http://localhost:4000/vim/2014/01/16/rigging-vims-netrw</id><content type="html" xml:base="http://localhost:4000/vim/2014/01/16/rigging-vims-netrw.html">&lt;p&gt;If you’re a Vim user, you’re probably familiar with the &lt;a href=&quot;http://www.vim.org/scripts/script.php?script_id=1075&quot;&gt;NERDTree&lt;/a&gt;, a plugin that provides a sidebar for navigating the filesystem, much like you get with a more graphical editor such as Sublime Text. It’s a nice feature, but you don’t necessarily need to install another plugin to get it. Most distributions of Vim come with &lt;a href=&quot;http://www.vim.org/scripts/script.php?script_id=1075&quot;&gt;Netrw&lt;/a&gt; already built in. Built by &lt;a href=&quot;http://www.drchip.org/astronaut/index.html&quot;&gt;Charles CampBell&lt;/a&gt;, Netrw is a plugin for browsing, reading, and writing files both locally and across networks.&lt;/p&gt;
+
+&lt;p&gt;Netrw is not NERDTree. It does much more, but the flip side is that NERDTree focuses on doing one thing well. That being said, at some point I got interested in reproducing what I liked about NERDTree using the built-in capabilities of Netrw. It took a bit of configuration and some dirty language (vimscript) but if you’re not averse to any of that, read on.&lt;/p&gt;
+
+&lt;p&gt;&lt;img class=&quot;screenshot&quot; src=&quot;/images/vextoggle/4.png&quot; alt=&quot;'vim'&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;My first goal was to toggle a sidebar navigator open/closed with a keystroke or two. The &lt;code class=&quot;highlighter-rouge&quot;&gt;:Vexplore&lt;/code&gt; command opens a Netrw browser in a vertical split. If you pass the command a directory, it will open into that location, otherwise it opens in the current file’s parent directory. There’s a distinction between the current file’s parent directory and the “current working directory” that Vim keeps track of. Say you start Vim from within ~/Development. You can &lt;code class=&quot;highlighter-rouge&quot;&gt;:edit&lt;/code&gt; files anywhere you like (~/Development/resources, ~, /usr/local, etc.), and until you explicitly tell Vim to &lt;code class=&quot;highlighter-rouge&quot;&gt;:cd&lt;/code&gt; to a new location, the current working directory will remain where it started, at ~/Development. You can use this as a home-base to work from in the current Vim session. With this in mind, I composed a small set of functions to toggle the sidebar in either the current file’s directory (to access neighboring files), or the “current working directory” (which I tend to leave at the project root), and mapped them to a couple keystrokes I find convenient.&lt;/p&gt;
+
+&lt;div class=&quot;language-vim highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;fun&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;!&lt;/span&gt; VexToggle&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;dir&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; exists&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;t:vex_buf_nr&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;call&lt;/span&gt; VexClose&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;call&lt;/span&gt; VexOpen&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;a:dir&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;endif&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;endf&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I’m using &lt;code class=&quot;highlighter-rouge&quot;&gt;t:vex_buf_nr&lt;/code&gt; to track whether the sidebar is currently open. The &lt;code class=&quot;highlighter-rouge&quot;&gt;t:&lt;/code&gt; is scoping the variable to the current tab. That’s so each tab can have its own sidebar. If you’re not familiar with Vim’s tabs, don’t worry about it. It’s a minor detail here. In the else clause, we pass &lt;code class=&quot;highlighter-rouge&quot;&gt;a:dir&lt;/code&gt; (the &lt;code class=&quot;highlighter-rouge&quot;&gt;dir&lt;/code&gt; argument that was passed into &lt;code class=&quot;highlighter-rouge&quot;&gt;VexToggle()&lt;/code&gt;) to &lt;code class=&quot;highlighter-rouge&quot;&gt;VexOpen()&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;language-vim highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;fun&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;!&lt;/span&gt; VexOpen&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;dir&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;g:netrw_browse_split&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;    &quot; open &lt;span class=&quot;k&quot;&gt;files&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;previous&lt;/span&gt; window
+  &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; vex_width &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;25&lt;/span&gt;
+
+  execute &lt;span class=&quot;s2&quot;&gt;&quot;Vexplore &quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;a:dir&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;vex_buf_nr &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; bufnr&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;%&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;wincmd&lt;/span&gt; H
+
+  &lt;span class=&quot;k&quot;&gt;call&lt;/span&gt; VexSize&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;vex_width&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;endf&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;VexOpen()&lt;/code&gt; starts by setting some options. “Open files in previous window” ensures that when we select a file to open, it opens in the window (split) we were in before entering the browser. We’re also setting the desired window width for later use.&lt;/p&gt;
+
+&lt;p&gt;Next, we use vimscript’s string concatenation operator (&lt;code class=&quot;highlighter-rouge&quot;&gt;.&lt;/code&gt;) to compose the &lt;code class=&quot;highlighter-rouge&quot;&gt;Vexplore&lt;/code&gt; call. It’s a little ugly, but sometimes vimscript paints you into a corner like that. Now that we have an explorer open, let’s remember it (the next line). The &lt;code class=&quot;highlighter-rouge&quot;&gt;&quot;%&quot;&lt;/code&gt; expands to the current file name, and we store the associated buffer number for later reference.&lt;/p&gt;
+
+&lt;p&gt;If you have several splits open, calling &lt;code class=&quot;highlighter-rouge&quot;&gt;:Vexplore&lt;/code&gt; will open a Netrw explorer in a vertical split next to &lt;em&gt;the current split&lt;/em&gt;, so there’s no guarantee it will sit on the far left of the screen or even occupy the full height of Vim. Calling &lt;code class=&quot;highlighter-rouge&quot;&gt;wincmd H&lt;/code&gt; fixes that. Finally, calling &lt;code class=&quot;highlighter-rouge&quot;&gt;VexSize()&lt;/code&gt; will set the sidebar’s width.&lt;/p&gt;
+
+&lt;p&gt;I made a couple mappings to call &lt;code class=&quot;highlighter-rouge&quot;&gt;VexToggle()&lt;/code&gt;. The first passes it Vim’s “current working directory” as an argument, while the second passes an empty string. That way, I can use the first mapping to toggle an explorer sidebar from the project root and the second to toggle an explorer from whichever directory houses the file I’m currently editing.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;noremap &amp;lt;Leader&amp;gt;&amp;lt;Tab&amp;gt; :call VexToggle(getcwd())&amp;lt;CR&amp;gt;
+noremap &amp;lt;Leader&amp;gt;` :call VexToggle(&quot;&quot;)&amp;lt;CR&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img class=&quot;screenshot&quot; src=&quot;/images/vextoggle/8.png&quot; alt=&quot;'vim'&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;When the sidebar is open, either mapping can be used to close it. &lt;code class=&quot;highlighter-rouge&quot;&gt;VexClose()&lt;/code&gt; starts by noting which window it was called from, so it can return the cursor to that window after the sidebar has closed. The exception is when the cursor was &lt;em&gt;in&lt;/em&gt; the sidebar when &lt;code class=&quot;highlighter-rouge&quot;&gt;VexClose()&lt;/code&gt; was called, in which case the cursor will land in the previous window (whichever window holds the alternate file &lt;code class=&quot;highlighter-rouge&quot;&gt;&quot;#&quot;&lt;/code&gt;). The middle section switches to the sidebar, closes it, and removes the internal variable that was tracking its presence. Finally, we switch to the appropriate destination window and call &lt;code class=&quot;highlighter-rouge&quot;&gt;NormalizeWidths()&lt;/code&gt; to normalize the widths of all open windows. Note that we have to subtract 1 from the original window number that was stored, since closing the sidebar window decremented all the remaining window numbers.&lt;/p&gt;
+
+&lt;div class=&quot;language-vim highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;fun&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;!&lt;/span&gt; VexClose&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; cur_win_nr &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; winnr&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; target_nr &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; cur_win_nr &lt;span class=&quot;p&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt; ? winnr&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;#&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; cur_win_nr &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+  &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;wincmd&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;w&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;close&lt;/span&gt;
+  unlet &lt;span class=&quot;k&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;vex_buf_nr
+
+  execute &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;target_nr &lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;wincmd w&quot;&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;call&lt;/span&gt; NormalizeWidths&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;endf&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img class=&quot;screenshot&quot; src=&quot;/images/vextoggle/10.png&quot; alt=&quot;'vim'&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;All that’s left are the final touches to window sizing, which occur in &lt;code class=&quot;highlighter-rouge&quot;&gt;VexSize()&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;NormalizeWidths()&lt;/code&gt;. The first function sets and locks the sidebar width, then calls the second to normalize the widths off all other windows. &lt;code class=&quot;highlighter-rouge&quot;&gt;NormalizeWidths()&lt;/code&gt; is a little hacky, but as far as I can tell it’s the only native vimscript way to normalize window widths without affecting their heights. &lt;code class=&quot;highlighter-rouge&quot;&gt;'eadirection'&lt;/code&gt; controls which dimensions are affected when &lt;code class=&quot;highlighter-rouge&quot;&gt;'equal always'&lt;/code&gt; is set. We set it to &lt;code class=&quot;highlighter-rouge&quot;&gt;hor&lt;/code&gt; (horizontal), toggle &lt;code class=&quot;highlighter-rouge&quot;&gt;'equal always'&lt;/code&gt; off and back on (it’s on by default), triggering the width normalization, and finally restore &lt;code class=&quot;highlighter-rouge&quot;&gt;'eadirection'&lt;/code&gt; to it’s original value.&lt;/p&gt;
+
+&lt;div class=&quot;language-vim highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;fun&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;!&lt;/span&gt; VexSize&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;vex_width&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  execute &lt;span class=&quot;s2&quot;&gt;&quot;vertical resize&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;a:vex_width&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;set&lt;/span&gt; winfixwidth
+  &lt;span class=&quot;k&quot;&gt;call&lt;/span&gt; NormalizeWidths&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;endf&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;fun&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;!&lt;/span&gt; NormalizeWidths&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; eadir_pref &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &amp;amp;eadirection
+  &lt;span class=&quot;k&quot;&gt;set&lt;/span&gt; eadirection&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;hor
+  &lt;span class=&quot;k&quot;&gt;set&lt;/span&gt; equalalways&lt;span class=&quot;p&quot;&gt;!&lt;/span&gt; equalalways&lt;span class=&quot;p&quot;&gt;!&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &amp;amp;eadirection &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; eadir_pref
+&lt;span class=&quot;k&quot;&gt;endf&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Netrw lets you open a selected file in a vertical split with the &lt;code class=&quot;highlighter-rouge&quot;&gt;v&lt;/code&gt; key, and I wanted to normalize window widths when such a split was added so things would remain evenly sized. The following autocommand makes it so.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;augroup NetrwGroup
+  autocmd! BufEnter * call NormalizeWidths()
+augroup END
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img class=&quot;screenshot&quot; src=&quot;/images/vextoggle/12.png&quot; alt=&quot;'vim'&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Closing Notes&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;I ran into a couple minor bugs in Netrw during all of this, and turned to the &lt;a href=&quot;https://groups.google.com/forum/#!topic/vim_use/XNOcLYsgk8Y&quot;&gt;vim_use&lt;/a&gt; mailing list for help. Netrw’s author (Dr. Chip) was quick to respond with a fix and point me toward the &lt;a href=&quot;http://www.drchip.org/astronaut/vim/index.html#NETRW&quot;&gt;newest version&lt;/a&gt;. Big thanks Dr. Chip!&lt;/p&gt;
+
+&lt;p&gt;I find myself mostly using Netrw’s “thin” liststyle rather than the “tree” style I originally liked, but both work equally well in the sidebar. Finally, my &lt;a href=&quot;https://github.com/ivanbrennan/vim/blob/master/vimrc&quot;&gt;vimrc&lt;/a&gt; is available for reference, though the relevant Netrw settings I’m using are pasted below:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let g:netrw_liststyle=0         &quot; thin (change to 3 for tree)
+let g:netrw_banner=0            &quot; no banner
+let g:netrw_altv=1              &quot; open files on right
+let g:netrw_preview=1           &quot; open previews vertically
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name></name></author><summary type="html">If you’re a Vim user, you’re probably familiar with the NERDTree, a plugin that provides a sidebar for navigating the filesystem, much like you get with a more graphical editor such as Sublime Text. It’s a nice feature, but you don’t necessarily need to install another plugin to get it. Most distributions of Vim come with Netrw already built in. Built by Charles CampBell, Netrw is a plugin for browsing, reading, and writing files both locally and across networks.</summary></entry></feed>

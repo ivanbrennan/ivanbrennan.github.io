@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.4.0 -->
+<title>Rigging Vim’s Netrw | glob</title>
+<meta name="generator" content="Jekyll v3.8.0" />
+<meta property="og:title" content="Rigging Vim’s Netrw" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="If you’re a Vim user, you’re probably familiar with the NERDTree, a plugin that provides a sidebar for navigating the filesystem, much like you get with a more graphical editor such as Sublime Text. It’s a nice feature, but you don’t necessarily need to install another plugin to get it. Most distributions of Vim come with Netrw already built in. Built by Charles CampBell, Netrw is a plugin for browsing, reading, and writing files both locally and across networks." />
+<meta property="og:description" content="If you’re a Vim user, you’re probably familiar with the NERDTree, a plugin that provides a sidebar for navigating the filesystem, much like you get with a more graphical editor such as Sublime Text. It’s a nice feature, but you don’t necessarily need to install another plugin to get it. Most distributions of Vim come with Netrw already built in. Built by Charles CampBell, Netrw is a plugin for browsing, reading, and writing files both locally and across networks." />
+<link rel="canonical" href="http://localhost:4000/vim/2014/01/16/rigging-vims-netrw.html" />
+<meta property="og:url" content="http://localhost:4000/vim/2014/01/16/rigging-vims-netrw.html" />
+<meta property="og:site_name" content="glob" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2014-01-16T01:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"If you’re a Vim user, you’re probably familiar with the NERDTree, a plugin that provides a sidebar for navigating the filesystem, much like you get with a more graphical editor such as Sublime Text. It’s a nice feature, but you don’t necessarily need to install another plugin to get it. Most distributions of Vim come with Netrw already built in. Built by Charles CampBell, Netrw is a plugin for browsing, reading, and writing files both locally and across networks.","@type":"BlogPosting","url":"http://localhost:4000/vim/2014/01/16/rigging-vims-netrw.html","headline":"Rigging Vim’s Netrw","dateModified":"2014-01-16T01:00:00-05:00","datePublished":"2014-01-16T01:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/vim/2014/01/16/rigging-vims-netrw.html"},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="glob" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">glob</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Rigging Vim&#39;s Netrw</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2014-01-16T01:00:00-05:00" itemprop="datePublished">Jan 16, 2014
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>If you’re a Vim user, you’re probably familiar with the <a href="http://www.vim.org/scripts/script.php?script_id=1075">NERDTree</a>, a plugin that provides a sidebar for navigating the filesystem, much like you get with a more graphical editor such as Sublime Text. It’s a nice feature, but you don’t necessarily need to install another plugin to get it. Most distributions of Vim come with <a href="http://www.vim.org/scripts/script.php?script_id=1075">Netrw</a> already built in. Built by <a href="http://www.drchip.org/astronaut/index.html">Charles CampBell</a>, Netrw is a plugin for browsing, reading, and writing files both locally and across networks.</p>
+
+<p>Netrw is not NERDTree. It does much more, but the flip side is that NERDTree focuses on doing one thing well. That being said, at some point I got interested in reproducing what I liked about NERDTree using the built-in capabilities of Netrw. It took a bit of configuration and some dirty language (vimscript) but if you’re not averse to any of that, read on.</p>
+
+<p><img class="screenshot" src="/images/vextoggle/4.png" alt="'vim'" /></p>
+
+<p>My first goal was to toggle a sidebar navigator open/closed with a keystroke or two. The <code class="highlighter-rouge">:Vexplore</code> command opens a Netrw browser in a vertical split. If you pass the command a directory, it will open into that location, otherwise it opens in the current file’s parent directory. There’s a distinction between the current file’s parent directory and the “current working directory” that Vim keeps track of. Say you start Vim from within ~/Development. You can <code class="highlighter-rouge">:edit</code> files anywhere you like (~/Development/resources, ~, /usr/local, etc.), and until you explicitly tell Vim to <code class="highlighter-rouge">:cd</code> to a new location, the current working directory will remain where it started, at ~/Development. You can use this as a home-base to work from in the current Vim session. With this in mind, I composed a small set of functions to toggle the sidebar in either the current file’s directory (to access neighboring files), or the “current working directory” (which I tend to leave at the project root), and mapped them to a couple keystrokes I find convenient.</p>
+
+<div class="language-vim highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span><span class="p">!</span> VexToggle<span class="p">(</span><span class="k">dir</span><span class="p">)</span>
+  <span class="k">if</span> exists<span class="p">(</span><span class="s2">"t:vex_buf_nr"</span><span class="p">)</span>
+    <span class="k">call</span> VexClose<span class="p">()</span>
+  <span class="k">else</span>
+    <span class="k">call</span> VexOpen<span class="p">(</span><span class="nv">a:dir</span><span class="p">)</span>
+  <span class="k">endif</span>
+<span class="k">endf</span>
+</code></pre></div></div>
+
+<p>I’m using <code class="highlighter-rouge">t:vex_buf_nr</code> to track whether the sidebar is currently open. The <code class="highlighter-rouge">t:</code> is scoping the variable to the current tab. That’s so each tab can have its own sidebar. If you’re not familiar with Vim’s tabs, don’t worry about it. It’s a minor detail here. In the else clause, we pass <code class="highlighter-rouge">a:dir</code> (the <code class="highlighter-rouge">dir</code> argument that was passed into <code class="highlighter-rouge">VexToggle()</code>) to <code class="highlighter-rouge">VexOpen()</code>.</p>
+
+<div class="language-vim highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span><span class="p">!</span> VexOpen<span class="p">(</span><span class="k">dir</span><span class="p">)</span>
+  <span class="k">let</span> <span class="nv">g:netrw_browse_split</span><span class="p">=</span><span class="m">4</span>    " open <span class="k">files</span> <span class="k">in</span> <span class="k">previous</span> window
+  <span class="k">let</span> vex_width <span class="p">=</span> <span class="m">25</span>
+
+  execute <span class="s2">"Vexplore "</span> <span class="p">.</span> <span class="nv">a:dir</span>
+  <span class="k">let</span> <span class="k">t</span><span class="p">:</span>vex_buf_nr <span class="p">=</span> bufnr<span class="p">(</span><span class="s2">"%"</span><span class="p">)</span>
+  <span class="k">wincmd</span> H
+
+  <span class="k">call</span> VexSize<span class="p">(</span>vex_width<span class="p">)</span>
+<span class="k">endf</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">VexOpen()</code> starts by setting some options. “Open files in previous window” ensures that when we select a file to open, it opens in the window (split) we were in before entering the browser. We’re also setting the desired window width for later use.</p>
+
+<p>Next, we use vimscript’s string concatenation operator (<code class="highlighter-rouge">.</code>) to compose the <code class="highlighter-rouge">Vexplore</code> call. It’s a little ugly, but sometimes vimscript paints you into a corner like that. Now that we have an explorer open, let’s remember it (the next line). The <code class="highlighter-rouge">"%"</code> expands to the current file name, and we store the associated buffer number for later reference.</p>
+
+<p>If you have several splits open, calling <code class="highlighter-rouge">:Vexplore</code> will open a Netrw explorer in a vertical split next to <em>the current split</em>, so there’s no guarantee it will sit on the far left of the screen or even occupy the full height of Vim. Calling <code class="highlighter-rouge">wincmd H</code> fixes that. Finally, calling <code class="highlighter-rouge">VexSize()</code> will set the sidebar’s width.</p>
+
+<p>I made a couple mappings to call <code class="highlighter-rouge">VexToggle()</code>. The first passes it Vim’s “current working directory” as an argument, while the second passes an empty string. That way, I can use the first mapping to toggle an explorer sidebar from the project root and the second to toggle an explorer from whichever directory houses the file I’m currently editing.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>noremap &lt;Leader&gt;&lt;Tab&gt; :call VexToggle(getcwd())&lt;CR&gt;
+noremap &lt;Leader&gt;` :call VexToggle("")&lt;CR&gt;
+</code></pre></div></div>
+
+<p><img class="screenshot" src="/images/vextoggle/8.png" alt="'vim'" /></p>
+
+<p>When the sidebar is open, either mapping can be used to close it. <code class="highlighter-rouge">VexClose()</code> starts by noting which window it was called from, so it can return the cursor to that window after the sidebar has closed. The exception is when the cursor was <em>in</em> the sidebar when <code class="highlighter-rouge">VexClose()</code> was called, in which case the cursor will land in the previous window (whichever window holds the alternate file <code class="highlighter-rouge">"#"</code>). The middle section switches to the sidebar, closes it, and removes the internal variable that was tracking its presence. Finally, we switch to the appropriate destination window and call <code class="highlighter-rouge">NormalizeWidths()</code> to normalize the widths of all open windows. Note that we have to subtract 1 from the original window number that was stored, since closing the sidebar window decremented all the remaining window numbers.</p>
+
+<div class="language-vim highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span><span class="p">!</span> VexClose<span class="p">()</span>
+  <span class="k">let</span> cur_win_nr <span class="p">=</span> winnr<span class="p">()</span>
+  <span class="k">let</span> target_nr <span class="p">=</span> <span class="p">(</span> cur_win_nr <span class="p">==</span> <span class="m">1</span> ? winnr<span class="p">(</span><span class="s2">"#"</span><span class="p">)</span> <span class="p">:</span> cur_win_nr <span class="p">)</span>
+
+  <span class="m">1</span><span class="k">wincmd</span> <span class="k">w</span>
+  <span class="k">close</span>
+  unlet <span class="k">t</span><span class="p">:</span>vex_buf_nr
+
+  execute <span class="p">(</span>target_nr <span class="p">-</span> <span class="m">1</span><span class="p">)</span> <span class="p">.</span> <span class="s2">"wincmd w"</span>
+  <span class="k">call</span> NormalizeWidths<span class="p">()</span>
+<span class="k">endf</span>
+</code></pre></div></div>
+
+<p><img class="screenshot" src="/images/vextoggle/10.png" alt="'vim'" /></p>
+
+<p>All that’s left are the final touches to window sizing, which occur in <code class="highlighter-rouge">VexSize()</code> and <code class="highlighter-rouge">NormalizeWidths()</code>. The first function sets and locks the sidebar width, then calls the second to normalize the widths off all other windows. <code class="highlighter-rouge">NormalizeWidths()</code> is a little hacky, but as far as I can tell it’s the only native vimscript way to normalize window widths without affecting their heights. <code class="highlighter-rouge">'eadirection'</code> controls which dimensions are affected when <code class="highlighter-rouge">'equal always'</code> is set. We set it to <code class="highlighter-rouge">hor</code> (horizontal), toggle <code class="highlighter-rouge">'equal always'</code> off and back on (it’s on by default), triggering the width normalization, and finally restore <code class="highlighter-rouge">'eadirection'</code> to it’s original value.</p>
+
+<div class="language-vim highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span><span class="p">!</span> VexSize<span class="p">(</span>vex_width<span class="p">)</span>
+  execute <span class="s2">"vertical resize"</span> <span class="p">.</span> <span class="nv">a:vex_width</span>
+  <span class="k">set</span> winfixwidth
+  <span class="k">call</span> NormalizeWidths<span class="p">()</span>
+<span class="k">endf</span>
+
+<span class="k">fun</span><span class="p">!</span> NormalizeWidths<span class="p">()</span>
+  <span class="k">let</span> eadir_pref <span class="p">=</span> &amp;eadirection
+  <span class="k">set</span> eadirection<span class="p">=</span>hor
+  <span class="k">set</span> equalalways<span class="p">!</span> equalalways<span class="p">!</span>
+  <span class="k">let</span> &amp;eadirection <span class="p">=</span> eadir_pref
+<span class="k">endf</span>
+</code></pre></div></div>
+
+<p>Netrw lets you open a selected file in a vertical split with the <code class="highlighter-rouge">v</code> key, and I wanted to normalize window widths when such a split was added so things would remain evenly sized. The following autocommand makes it so.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>augroup NetrwGroup
+  autocmd! BufEnter * call NormalizeWidths()
+augroup END
+</code></pre></div></div>
+
+<p><img class="screenshot" src="/images/vextoggle/12.png" alt="'vim'" /></p>
+
+<p><strong><em>Closing Notes</em></strong></p>
+
+<p>I ran into a couple minor bugs in Netrw during all of this, and turned to the <a href="https://groups.google.com/forum/#!topic/vim_use/XNOcLYsgk8Y">vim_use</a> mailing list for help. Netrw’s author (Dr. Chip) was quick to respond with a fix and point me toward the <a href="http://www.drchip.org/astronaut/vim/index.html#NETRW">newest version</a>. Big thanks Dr. Chip!</p>
+
+<p>I find myself mostly using Netrw’s “thin” liststyle rather than the “tree” style I originally liked, but both work equally well in the sidebar. Finally, my <a href="https://github.com/ivanbrennan/vim/blob/master/vimrc">vimrc</a> is available for reference, though the relevant Netrw settings I’m using are pasted below:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let g:netrw_liststyle=0         " thin (change to 3 for tree)
+let g:netrw_banner=0            " no banner
+let g:netrw_altv=1              " open files on right
+let g:netrw_preview=1           " open previews vertically
+</code></pre></div></div>
+
+  </div><a class="u-url" href="/vim/2014/01/16/rigging-vims-netrw.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">glob</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">glob</li><li><a class="u-email" href="mailto:"></a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/ivanbrennan"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">ivanbrennan</span></a></li><li><a href="https://www.twitter.com/"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username"></span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>blog</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.4.0 -->
+<title>Faster Specs | glob</title>
+<meta name="generator" content="Jekyll v3.8.0" />
+<meta property="og:title" content="Faster Specs" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Getting the full benefits of TDD requires fast-running specs. The feedback cycle is what makes the difference between a pleasurable “red-green-refactor” flow and an eternity of testing-tedium where the only reason you’re writing tests is so you be done writing them. While TDD is lauded in the Rails community, many large Rails apps suffer from slow-running test suites." />
+<meta property="og:description" content="Getting the full benefits of TDD requires fast-running specs. The feedback cycle is what makes the difference between a pleasurable “red-green-refactor” flow and an eternity of testing-tedium where the only reason you’re writing tests is so you be done writing them. While TDD is lauded in the Rails community, many large Rails apps suffer from slow-running test suites." />
+<link rel="canonical" href="http://localhost:4000/tdd,/ruby/2014/10/27/faster-specs.html" />
+<meta property="og:url" content="http://localhost:4000/tdd,/ruby/2014/10/27/faster-specs.html" />
+<meta property="og:site_name" content="glob" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2014-10-27T22:23:00-04:00" />
+<script type="application/ld+json">
+{"description":"Getting the full benefits of TDD requires fast-running specs. The feedback cycle is what makes the difference between a pleasurable “red-green-refactor” flow and an eternity of testing-tedium where the only reason you’re writing tests is so you be done writing them. While TDD is lauded in the Rails community, many large Rails apps suffer from slow-running test suites.","@type":"BlogPosting","url":"http://localhost:4000/tdd,/ruby/2014/10/27/faster-specs.html","headline":"Faster Specs","dateModified":"2014-10-27T22:23:00-04:00","datePublished":"2014-10-27T22:23:00-04:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/tdd,/ruby/2014/10/27/faster-specs.html"},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="glob" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">glob</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Faster Specs</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2014-10-27T22:23:00-04:00" itemprop="datePublished">Oct 27, 2014
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>Getting the full benefits of <a href="http://en.wikipedia.org/wiki/Test-driven_development">TDD</a> requires fast-running specs. The feedback cycle is what makes the difference between a pleasurable “red-green-refactor” flow and an eternity of testing-tedium where the only reason you’re <em>writing</em> tests is so you be <em>done</em> writing them. While TDD is lauded in the Rails community, many large Rails apps suffer from slow-running test suites.</p>
+
+<p>I’ve been working with a Rails app that has a couple of bloated, callback-ridden models. Much of the test-suite uses FactoryGirl, and generating test objects for those big models and their associations can slow things down to a crawl. So when a new feature came along, I took the opportunity to write some fast unit-tests in a different style.</p>
+
+<h3 id="couch-surfer">Couch-Surfer</h3>
+<p>Imagine an app that logs the journeys of world-travellers (lots of them) as they couch-surf around the globe visiting homebody friends. Each traveller periodically sends a postcard to their next host to let them know how far off they are. We have a few persisted models: Traveller, Homebody, CouchCrash, and Postcard.</p>
+
+<p>The Traveller and Homebody models are rather large, so I’ve abbreviated them here:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Traveller</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">has_many</span> <span class="ss">:couch_crashes</span>
+  <span class="n">has_many</span> <span class="ss">:homebodies</span><span class="p">,</span> <span class="ss">through: :couch_crashes</span>
+  <span class="c1"># and many more associations, validations, callbacks...</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Homebody</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">has_many</span> <span class="ss">:couch_crashes</span>
+  <span class="c1"># and many more associations, validations, callbacks...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>CouchCrash and Postcard are pretty small, despite their associations with the larger models:</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CouchCrash</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">belongs_to</span> <span class="ss">:traveller</span>
+  <span class="n">belongs_to</span> <span class="ss">:homebody</span>
+  <span class="n">has_many</span> <span class="ss">:postcards</span>
+
+  <span class="n">validates_presence_of</span> <span class="ss">:traveller</span><span class="p">,</span> <span class="ss">:homebody</span><span class="p">,</span> <span class="ss">:arrival_date</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Postcard</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">belongs_to</span> <span class="ss">:traveller</span>
+  <span class="n">belongs_to</span> <span class="ss">:couch_crash</span>
+  <span class="n">belongs_to</span> <span class="ss">:homebody</span><span class="p">,</span> <span class="ss">through: :couch_crash</span>
+
+  <span class="n">validates_presence_of</span> <span class="ss">:traveller</span><span class="p">,</span> <span class="ss">:couch_crash</span><span class="p">,</span> <span class="ss">:distance</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Each visit, or <code class="highlighter-rouge">couch_crash</code>, is scheduled with an <code class="highlighter-rouge">arrival_date</code>. But these aren’t always accurate, as it’s hard to know exactly when the traveller will reach their destination. We’d like to add a feature that assesses the status of a visit as “far off”, “approaching”, or “in progress” based on the arrival date and available postcards. We won’t bother with a “completed” status since couch-crashers have been known to stick around forever.</p>
+
+<p>For simplicity’s sake, we’ll say any visit whose arrival date is more than a week away is “far off”. Within a week of the arrival date, an “approaching” status requires a postcard from within 100 miles and “in Progress” requires one within 5 miles (I know, that’s a waste of a stamp). Otherwise, with either no postcards or only those over 100 miles away, the visit remains “far off”.</p>
+
+<h3 id="approaching-the-spec">Approaching the spec</h3>
+<p>A spec for the “approaching” status using FactoryGirl might look like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">describe</span> <span class="no">CouchCrash</span> <span class="k">do</span>
+  <span class="n">describe</span> <span class="s1">'#status'</span> <span class="k">do</span>
+
+    <span class="n">context</span> <span class="s1">'within 1 week of arrival date'</span> <span class="k">do</span>
+      <span class="n">context</span> <span class="s1">'with a postcard from 100 miles away'</span> <span class="k">do</span>
+
+        <span class="n">it</span> <span class="s1">'is "approaching"'</span> <span class="k">do</span>
+          <span class="n">visit</span> <span class="o">=</span> <span class="no">FactoryGirl</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="ss">:couch_crash</span><span class="p">,</span> <span class="ss">arrival_date: </span><span class="mi">1</span><span class="p">.</span><span class="nf">week</span><span class="p">.</span><span class="nf">from_now</span><span class="p">)</span>
+          <span class="n">postcard_100</span> <span class="o">=</span> <span class="no">FactoryGirl</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="ss">:postcard</span><span class="p">,</span> <span class="ss">distance: </span><span class="mi">100</span><span class="p">)</span>
+
+          <span class="n">visit</span><span class="p">.</span><span class="nf">stub</span><span class="p">(</span><span class="ss">:postcards</span><span class="p">).</span><span class="nf">and_return</span><span class="p">([</span><span class="n">postcard_100</span><span class="p">])</span>
+
+          <span class="n">expect</span><span class="p">(</span><span class="n">visit</span><span class="p">.</span><span class="nf">status</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="ss">:approaching</span><span class="p">)</span>
+        <span class="k">end</span>
+
+      <span class="k">end</span>
+    <span class="k">end</span>
+
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Using <code class="highlighter-rouge">build</code> rather than <code class="highlighter-rouge">create</code> should keep us from hitting the database. Stubbing the association between <code class="highlighter-rouge">visit</code> and its postcards should do the same. On the surface, this looks like a well-isolated, fast unit-test, but let’s take a closer look at the factories we’re using:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># spec/factories/couch_crashes.rb</span>
+<span class="no">FactoryGirl</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">factory</span> <span class="ss">:couch_crash</span> <span class="k">do</span>
+    <span class="n">traveller</span>
+    <span class="n">homebody</span>
+    <span class="n">arrival_date</span> <span class="mi">2</span><span class="p">.</span><span class="nf">weeks</span><span class="p">.</span><span class="nf">from_now</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># spec/factories/post_cards.rb</span>
+<span class="no">FactoryGirl</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">factory</span> <span class="ss">:post_card</span> <span class="k">do</span>
+    <span class="n">traveller</span>
+    <span class="n">couch_crash</span>
+    <span class="n">distance</span> <span class="mi">300</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>It’s best practice to define your factories with the minimum set of attributes necessary for a valid object. You don’t want to set land-mines for the next developer that comes along and calls <code class="highlighter-rouge">create</code>. So the couch_crashes factory generates associated traveller and homebody objects. In doing so, it involves two of our most bloated models. Take a look at their factories:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># spec/factories/travellers.rb</span>
+<span class="no">FactoryGirl</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">factory</span> <span class="ss">:traveller</span> <span class="k">do</span>
+    <span class="n">first_name</span> <span class="s2">"Yngwie"</span>
+    <span class="n">last_name</span>  <span class="s2">"Malmsteen"</span>
+    <span class="n">association</span> <span class="ss">:hometown</span><span class="p">,</span> <span class="ss">factory: :city</span>
+    <span class="n">luggage</span>
+    <span class="n">bicycle</span>
+    
+    <span class="n">after</span><span class="p">(</span><span class="ss">:build</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">traveller</span><span class="o">|</span>
+      <span class="n">pump</span> <span class="o">=</span> <span class="no">FactoryGirl</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="ss">:bicycle_pump</span><span class="p">)</span>
+      <span class="n">traveller</span><span class="p">.</span><span class="nf">bike_pump</span> <span class="o">=</span> <span class="n">pump</span>
+      <span class="n">traveller</span><span class="p">.</span><span class="nf">inflate_tires</span>
+      <span class="n">traveller</span><span class="p">.</span><span class="nf">pack_luggage</span>
+      <span class="n">traveller</span><span class="p">.</span><span class="nf">buy_stamps</span>
+      <span class="c1"># etc.</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># spec/factories/homebodies.rb</span>
+<span class="no">FactoryGirl</span><span class="p">.</span><span class="nf">define</span> <span class="k">do</span>
+  <span class="n">factory</span> <span class="ss">:homebody</span> <span class="k">do</span>
+    <span class="n">first_name</span> <span class="s2">"Joe"</span>
+    <span class="n">last_name</span>  <span class="s2">"Stumps"</span>
+    <span class="n">spouse</span>
+    <span class="n">credit_score</span> <span class="mi">400</span>
+    <span class="n">house</span>
+    <span class="n">couch</span>
+    <span class="n">car</span>
+    <span class="n">dog</span>
+    <span class="c1"># etc.</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>We’re also unintentionally hitting the database, as FactoryGirl saves both traveller and homebody in order to build the association. You can avoid this by specifying a build-strategy for the association:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">factory</span> <span class="ss">:couch_crash</span> <span class="k">do</span>
+  <span class="n">association</span> <span class="ss">:traveller</span><span class="p">,</span> <span class="ss">strategy: :build</span>
+  <span class="n">association</span> <span class="ss">:homebody</span><span class="p">,</span>  <span class="ss">strategy: :build</span>
+  <span class="o">...</span>
+</code></pre></div></div>
+
+<p>You’d also have to change the syntax in the associated factories:</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">factory</span> <span class="ss">:traveller</span> <span class="k">do</span>
+  <span class="o">...</span>
+  <span class="n">association</span> <span class="ss">:luggage</span><span class="p">,</span> <span class="ss">strategy: :build</span>
+  <span class="n">association</span> <span class="ss">:bicycle</span><span class="p">,</span> <span class="ss">strategy: :build</span>
+  <span class="o">...</span>
+<span class="k">end</span>
+
+<span class="n">factory</span> <span class="ss">:homebody</span> <span class="k">do</span>
+  <span class="o">...</span>
+  <span class="n">association</span> <span class="ss">:house</span><span class="p">,</span> <span class="ss">strategy: :build</span>
+  <span class="n">association</span> <span class="ss">:couch</span><span class="p">,</span> <span class="ss">strategy: :build</span>
+  <span class="n">association</span> <span class="ss">:car</span><span class="p">,</span>   <span class="ss">strategy: :build</span>
+  <span class="n">association</span> <span class="ss">:dog</span><span class="p">,</span>   <span class="ss">strategy: :build</span>
+  <span class="o">...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>It would be nice to avoid involving these large models any more than necessary, so let’s rewrite the spec with a different technique. Instead of using factories to generate complex test objects, we’ll use test doubles to stub out the context.</p>
+
+<h3 id="test-doubles">Test-doubles</h3>
+<p>Rspec’s <code class="highlighter-rouge">double</code> method returns a test-double – a dummy object that stands in for a more complex object from your production code. The double can be told how to respond to various method calls:</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">red_thing</span> <span class="o">=</span> <span class="n">double</span><span class="p">(</span><span class="s2">"thing"</span><span class="p">)</span>
+<span class="c1"># The argument (ie. "thing") is optional.</span>
+<span class="c1"># It provides a name that test output can make use of.</span>
+
+<span class="n">red_thing</span><span class="p">.</span><span class="nf">stub</span><span class="p">(</span><span class="ss">:color</span><span class="p">).</span><span class="nf">and_return</span><span class="p">(</span><span class="s2">"red"</span><span class="p">)</span>
+<span class="c1"># equivalent form:</span>
+<span class="n">red_thing</span><span class="p">.</span><span class="nf">stub</span><span class="p">(</span><span class="ss">:color</span><span class="p">)</span> <span class="p">{</span> <span class="s2">"red"</span> <span class="p">}</span>
+
+<span class="c1"># Or, more concisely:</span>
+<span class="n">red_house</span> <span class="o">=</span> <span class="n">double</span><span class="p">(</span><span class="s2">"thing"</span><span class="p">,</span> <span class="ss">color: </span><span class="s2">"red"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The double only knows what it’s been told explicitly, and will raise an error upon receiving any unexpected method call. If you’re using Rspec 3, you can also use “<a href="https://www.relishapp.com/rspec/rspec-mocks/v/3-1/docs/verifying-doubles">verifying doubles</a>”, which know what class of object they’re standing in for and will ensure that any methods being stubbed are actually present in the code.</p>
+
+<h3 id="rewrite">Rewrite</h3>
+<p>While our spec should still read from the ground up, beginning with the context and arriving at an expectation, it can be helpful when <em>writing</em> to start with the expectation and work backwards. This is especially true when the context is complex. It also helps clarify what needs to be stubbed out, so let’s give it a shot.</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">expect</span><span class="p">(</span><span class="n">visit</span><span class="p">.</span><span class="nf">status</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="ss">:approaching</span><span class="p">)</span>
+</code></pre></div></div>
+<p>What is <code class="highlighter-rouge">visit</code>? Just a test double with the right attributes:</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">visit</span> <span class="o">=</span> <span class="n">double</span><span class="p">(</span><span class="s2">"visit"</span><span class="p">,</span> <span class="ss">arrival_date: </span><span class="mi">1</span><span class="p">.</span><span class="nf">week</span><span class="p">.</span><span class="nf">from_now</span><span class="p">,</span> <span class="ss">postcards: </span><span class="p">[</span><span class="n">postcard_100</span><span class="p">])</span>
+</code></pre></div></div>
+<p>What about <code class="highlighter-rouge">postcard_100</code>? Just another test double.</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">postcard_100</span> <span class="o">=</span> <span class="n">double</span><span class="p">(</span><span class="s2">"postcard"</span><span class="p">,</span> <span class="ss">distance: </span><span class="mi">100</span><span class="p">)</span>
+</code></pre></div></div>
+<p>Putting it all together, we have:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">context</span> <span class="s1">'within 1 week of arrival date'</span> <span class="k">do</span>
+  <span class="n">context</span> <span class="s1">'with a postcard from 100 miles away'</span> <span class="k">do</span>
+
+    <span class="n">it</span> <span class="s1">'is "approaching"'</span> <span class="k">do</span>
+      <span class="n">postcard_100</span> <span class="o">=</span> <span class="n">double</span><span class="p">(</span><span class="s2">"postcard"</span><span class="p">,</span> <span class="ss">distance: </span><span class="mi">100</span><span class="p">)</span>
+      <span class="n">visit</span> <span class="o">=</span> <span class="n">double</span><span class="p">(</span><span class="s2">"visit"</span><span class="p">,</span> <span class="ss">arrival_date: </span><span class="mi">1</span><span class="p">.</span><span class="nf">week</span><span class="p">.</span><span class="nf">from_now</span><span class="p">,</span> <span class="ss">postcards: </span><span class="p">[</span><span class="n">postcard_100</span><span class="p">])</span>
+
+      <span class="n">expect</span><span class="p">(</span><span class="n">visit</span><span class="p">.</span><span class="nf">status</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="ss">:approaching</span><span class="p">)</span>
+    <span class="k">end</span>
+
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>I initially wanted faster specs to enable a better TDD flow. A nice side benefit of writing these stubbed tests is that it illuminates the dependencies and coupling in the production code you’re working with and encourages better composition overall. FactoryGirl is still a wonderful tool, but it shouldn’t be the only one in your belt.</p>
+
+  </div><a class="u-url" href="/tdd,/ruby/2014/10/27/faster-specs.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">glob</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">glob</li><li><a class="u-email" href="mailto:"></a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/ivanbrennan"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">ivanbrennan</span></a></li><li><a href="https://www.twitter.com/"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username"></span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>blog</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
