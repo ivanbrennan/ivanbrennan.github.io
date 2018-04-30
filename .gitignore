@@ -4,6 +4,8 @@
 .gist-cache
 .pygments-cache
 _deploy
+_site
+.jekyll-metadata
 public
 sass.old
 source.old
