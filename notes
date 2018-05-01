@@ -1,0 +1,56 @@
+╭~/Development/code/glob/ivanbrennan.github.io (master)
+╰(ivan)• rake new_post["Can I Nix it?"]
+The program ‘rake’ is currently not installed. It is provided by
+several packages. You can install it by typing one of the following:
+...
+
+nix-shell
+[nix-shell:~/Development/code/glob/ivanbrennan.github.io]$ rake new_post["Can I Nix it?"]
+rake aborted!
+No Rakefile found (looking for: rakefile, Rakefile, rakefile.rb, Rakefile.rb)
+
+git branch --remotes
+git checkout source
+
+pushd ~/Development/code/bundix-sandbox
+cat <<EOF >Gemfile
+source 'https://gems.ruby-china.org'
+gem 'github-pages'
+EOF
+nix-shell -p bundix zlib libiconv --run 'bundix --magic'
+sed -i 's/gems\.ruby-china/rubygems/' Gemfile gemset.nix
+chmod 644 gemset.nix
+
+sudo bash -c '
+    mkdir /etc/nixos/overlays/core/github-pages &&
+        cp /home/ivan/Development/code/bundix-sandbox/github-pages/{Gemfile{,.lock},gemset.nix} \
+           /etc/nixos/overlays/core/github-pages/ &&
+        cat <<"EOF" > /etc/nixos/overlays/core/github-pages/default.nix
+{ lib, bundlerEnv, ruby, zlib, libiconv }:
+
+bundlerEnv rec {
+  name = "github-pages-${version}";
+
+  version = (import gemset).github-pages.version;
+  inherit ruby;
+  # expects Gemfile, Gemfile.lock and gemset.nix in the same directory
+  gemdir = ./.;
+
+  meta = with lib; {
+    description = "Bootstrap the GitHub Pages Jekyll environment locally";
+    homepage    = https://github.com/github/pages-gem;
+    license     = with licenses; mit;
+    platforms   = platforms.unix;
+  };
+}
+EOF
+'
+
+## Take 2
+use the existing Gemfile.lock
+(well, no -- it seems some of these gems are too old to work)
+
+sed -i 's/rubygems\.org/gems.ruby-china.org/' Gemfile{,.lock}
+nix-shell -p bundix --run 'bundix --magic && bundix --init'
+sed -i 's/gems\.ruby-china\.org/rubygems.org/' Gemfile{,.lock} gemset.nix
+chmod 644 gemset.nix
