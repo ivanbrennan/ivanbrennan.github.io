@@ -100,7 +100,8 @@ EOF
 
 <p>We want the <code class="highlighter-rouge">${version}</code> to be inserted literally (it’s a Nix variable, not a Bash variable).
 This is made all the more confusing by the fact that the heredoc is already inside a single-quoted block.
-We’re using the single-quotes to wrap a block of code we want Bash to interpret (<code class="highlighter-rouge">bash -c '...'</code>).</p>
+We’re using the single-quotes to wrap a block of code we want Bash to interpret (<code class="highlighter-rouge">bash -c '...'</code>).
+This way, <code class="highlighter-rouge">sudo</code> runs <code class="highlighter-rouge">mkdir</code>, <code class="highlighter-rouge">cp</code>, and <code class="highlighter-rouge">cat</code> all with elevated privileges.</p>
 
 <p>With the derivation in place, I added it to my <a href="https://github.com/ivanbrennan/nixbox/blob/91f8f3b12f167fbae1643ee8ba559dffc556e089/overlays/core/default.nix#L4">overlay</a>:</p>
 <div class="language-nix highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">self</span><span class="p">:</span> <span class="nv">super</span><span class="p">:</span> <span class="p">{</span>
