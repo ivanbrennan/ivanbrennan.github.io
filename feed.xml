@@ -1,4 +1,73 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2018-05-02T23:37:09-04:00</updated><id>http://localhost:4000/</id><title type="html">glob</title><subtitle>blog</subtitle><entry><title type="html">Can I Nix It?</title><link href="http://localhost:4000/2018/04/30/can-i-nix-it.html" rel="alternate" type="text/html" title="Can I Nix It?" /><published>2018-04-30T23:05:18-04:00</published><updated>2018-04-30T23:05:18-04:00</updated><id>http://localhost:4000/2018/04/30/can-i-nix-it</id><content type="html" xml:base="http://localhost:4000/2018/04/30/can-i-nix-it.html">&lt;p&gt;I’ve been using NixOS lately, and wanted to get octopress &amp;amp; jekyll set up so I could start writing about NixOS from within NixOS.
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2018-05-03T08:34:44-04:00</updated><id>http://localhost:4000/</id><title type="html">glob</title><subtitle>blog</subtitle><entry><title type="html">Nirb</title><link href="http://localhost:4000/2018/05/02/nirb.html" rel="alternate" type="text/html" title="Nirb" /><published>2018-05-02T23:39:11-04:00</published><updated>2018-05-02T23:39:11-04:00</updated><id>http://localhost:4000/2018/05/02/nirb</id><content type="html" xml:base="http://localhost:4000/2018/05/02/nirb.html">&lt;p&gt;The &lt;a href=&quot;https://github.com/jberkel/interactive_editor&quot;&gt;interactive_editor&lt;/a&gt; gem lets you launch an instance of Vim within an IRB session.&lt;/p&gt;
+
+&lt;p&gt;It brings up a scratch buffer, and when you &lt;code class=&quot;highlighter-rouge&quot;&gt;:wq&lt;/code&gt; (save+quit) Vim, you’re back in IRB, with any methods/classes you defined now available.
+Even better, if you relaunch Vim it will load the code you were editing previously, make it easy to work incrementally and try ideas out in the repl.&lt;/p&gt;
+
+&lt;p&gt;To use this on NixOS, I needed to write a nix derivation for it.
+So I created a simple Gemfile:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;mkdir &lt;/span&gt;interactive-editor &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+    &lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;interactive-editor &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+    &lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; Gemfile
+source 'https://rubygems.org'
+gem 'interactive_editor'
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Then I used &lt;code class=&quot;highlighter-rouge&quot;&gt;bundix&lt;/code&gt; to generate a gemset.nix describing interactive_editor and its dependencies.&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;nix-shell &lt;span class=&quot;nt&quot;&gt;--packages&lt;/span&gt; bundix &lt;span class=&quot;nt&quot;&gt;--run&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'bundix --magic'&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;chmod &lt;/span&gt;644 gemset.nix
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;chmod&lt;/code&gt; is a workaround for a small bug in &lt;code class=&quot;highlighter-rouge&quot;&gt;bundix&lt;/code&gt; that creates gemset.nix with 0600 permissions, preventing read access for users other than the file owner.
+Since I want a root-owned copy of this file incorporated into my nixos configuration, setting 0644 permissions ensures non-root users can still use it.&lt;/p&gt;
+
+&lt;p&gt;I submitted &lt;a href=&quot;https://github.com/manveru/bundix/pull/29&quot;&gt;a fix&lt;/a&gt; to bundix for the permissions issue, but until the fixed version makes it into the nixpkgs tree, &lt;code class=&quot;highlighter-rouge&quot;&gt;chmod&lt;/code&gt; does the trick.&lt;/p&gt;
+
+&lt;p&gt;Next, I copied Gemfile, Gemfile.lock, and gemset.nix into an overlay in my nixos confg.
+I keep most of my custom packages in an overlay under &lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/nixos/overlays/core/&lt;/code&gt;.
+I copied the relevant files to an &lt;code class=&quot;highlighter-rouge&quot;&gt;interactive-editor/&lt;/code&gt; subdirectory, and wrote a derivation with &lt;code class=&quot;highlighter-rouge&quot;&gt;bundlerEnv&lt;/code&gt; in &lt;code class=&quot;highlighter-rouge&quot;&gt;interactive-editor/default.nix&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;bash &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'
+    mkdir /etc/nixos/overlays/core/interactive-editor &amp;amp;&amp;amp;
+        cp /home/ivan/path/to/interactive-editor/{Gemfile{,.lock},gemset.nix} \
+           /etc/nixos/overlays/interactive-editor/
+        cat &amp;lt;&amp;lt;&quot;EOF&quot; &amp;gt; /etc/nixos/overlays/interactive-editor/default.nix
+{ lib, bundlerEnv, ruby }:
+
+bundlerEnv rec {
+  name = &quot;interactive-editor-${version}&quot;;
+
+  version = (import gemset).interactive-editor.version;
+  inherit ruby;
+  # expects Gemfile, Gemfile.lock and gemset.nix in the same directory
+  gemdir = ./.;
+
+  meta = with lib; {
+    description = &quot;Interactive editing in irb&quot;;
+    homepage    = http://github.com/jberkel/interactive_editor;
+    license     = with licenses; mit;
+    platforms   = platforms.unix;
+  };
+}
+EOF
+'&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;I should call out a small gotcha in the above bash snippet. The opening heredoc delimiter needs to be quoted (&lt;code class=&quot;highlighter-rouge&quot;&gt;&quot;EOF&quot;&lt;/code&gt;), otherwise Bash will try to expand &lt;code class=&quot;highlighter-rouge&quot;&gt;${version}&lt;/code&gt; and substitute the expansion (an empty string, since we haven’t defined any such variable in our shell) in the text we’re writing to default.nix.&lt;/p&gt;
+
+&lt;p&gt;We want the &lt;code class=&quot;highlighter-rouge&quot;&gt;${version}&lt;/code&gt; to be inserted literally (it’s a Nix variable, not a Bash variable).
+This is made all the more confusing by the fact that the heredoc is already inside a single-quoted block
+We’re using the single-quotes to wrap a block of code we want Bash to interpret (&lt;code class=&quot;highlighter-rouge&quot;&gt;bash -c '...'&lt;/code&gt;).&lt;/p&gt;
+
+&lt;p&gt;With the derivation in place, I added it to my &lt;a href=&quot;https://github.com/ivanbrennan/nixbox/blob/91f8f3b12f167fbae1643ee8ba559dffc556e089/overlays/core/default.nix#L4&quot;&gt;overlay&lt;/a&gt;:&lt;/p&gt;
+&lt;div class=&quot;language-nix highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;super&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# ...&lt;/span&gt;
+
+  &lt;span class=&quot;nv&quot;&gt;interactive-editor&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;super&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;callPackage&lt;/span&gt; &lt;span class=&quot;sx&quot;&gt;./interactive-editor&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+
+  &lt;span class=&quot;c&quot;&gt;# ...&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;I &lt;a href=&quot;https://github.com/ivanbrennan/nixbox/commit/f63c0a6c873958bef9e13b5c117ada60e4e92442&quot;&gt;aliased&lt;/a&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;nirb&lt;/code&gt; to launch IRB with interactive_editor available:&lt;/p&gt;
+&lt;div class=&quot;language-nix highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;nix-shell&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;--&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;packages&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;ruby&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;interactive-editor&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;--&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;command&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;irb&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Finally, in order for &lt;code class=&quot;highlighter-rouge&quot;&gt;nix-shell&lt;/code&gt; to find packages in my overlay, I &lt;a href=&quot;https://github.com/ivanbrennan/nixbox/blob/91f8f3b12f167fbae1643ee8ba559dffc556e089/configuration.nix#L46&quot;&gt;added a nixpkgs-overlays&lt;/a&gt; entry to my NIX_PATH.&lt;/p&gt;</content><author><name></name></author><summary type="html">The interactive_editor gem lets you launch an instance of Vim within an IRB session.</summary></entry><entry><title type="html">Can I Nix It?</title><link href="http://localhost:4000/2018/04/30/can-i-nix-it.html" rel="alternate" type="text/html" title="Can I Nix It?" /><published>2018-04-30T23:05:18-04:00</published><updated>2018-04-30T23:05:18-04:00</updated><id>http://localhost:4000/2018/04/30/can-i-nix-it</id><content type="html" xml:base="http://localhost:4000/2018/04/30/can-i-nix-it.html">&lt;p&gt;I’ve been using NixOS lately, and wanted to get octopress &amp;amp; jekyll set up so I could start writing about NixOS from within NixOS.
 I’m still finding my way around the nix ecosystem, and I took a couple wrong turns along the way, but once I found my bearings it was pretty simple.&lt;/p&gt;
 
 &lt;p&gt;Since I’m using &lt;a href=&quot;https://github.com/octopress/octopress&quot;&gt;octopress&lt;/a&gt; and &lt;a href=&quot;https://jekyllrb.com/&quot;&gt;jekyll&lt;/a&gt;, my blog is a Ruby project and dependencies are listed in Gemfile and Gemfile.lock.
@@ -833,150 +902,4 @@ rupl&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;
 &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;I initially wanted faster specs to enable a better TDD flow. A nice side benefit of writing these stubbed tests is that it illuminates the dependencies and coupling in the production code you’re working with and encourages better composition overall. FactoryGirl is still a wonderful tool, but it shouldn’t be the only one in your belt.&lt;/p&gt;</content><author><name></name></author><summary type="html">Getting the full benefits of TDD requires fast-running specs. The feedback cycle is what makes the difference between a pleasurable “red-green-refactor” flow and an eternity of testing-tedium where the only reason you’re writing tests is so you be done writing them. While TDD is lauded in the Rails community, many large Rails apps suffer from slow-running test suites.</summary></entry><entry><title type="html">vim key-mappings</title><link href="http://localhost:4000/vim/2014/10/26/vim-key-mappings.html" rel="alternate" type="text/html" title="vim key-mappings" /><published>2014-10-26T12:04:00-04:00</published><updated>2014-10-26T12:04:00-04:00</updated><id>http://localhost:4000/vim/2014/10/26/vim-key-mappings</id><content type="html" xml:base="http://localhost:4000/vim/2014/10/26/vim-key-mappings.html">&lt;h3 id=&quot;map&quot;&gt;:map&lt;/h3&gt;
-&lt;p&gt;In the land of Vim, most key sequences can easily be mapped to others. The basic syntax is &lt;code class=&quot;highlighter-rouge&quot;&gt;map a b&lt;/code&gt;, which tells Vim that when you type &lt;code class=&quot;highlighter-rouge&quot;&gt;a&lt;/code&gt;, it should act like &lt;code class=&quot;highlighter-rouge&quot;&gt;b&lt;/code&gt;. Similarly, &lt;code class=&quot;highlighter-rouge&quot;&gt;map abc wxyz&lt;/code&gt; would process &lt;code class=&quot;highlighter-rouge&quot;&gt;wxyz&lt;/code&gt; when you typed &lt;code class=&quot;highlighter-rouge&quot;&gt;abc&lt;/code&gt;, but let’s look at a more useful example.&lt;/p&gt;
-
-&lt;p&gt;You can use &lt;code class=&quot;highlighter-rouge&quot;&gt;m&lt;/code&gt; to set a mark at the current cursor position, then jump to it later using the backtick (&lt;code class=&quot;highlighter-rouge&quot;&gt;`&lt;/code&gt;) key. Take this buffer for example:&lt;/p&gt;
-&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;penguify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;being&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;no&quot;&gt;Penguin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;being&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;mass&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;rescue&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;NameError&lt;/span&gt;
-  &lt;span class=&quot;nb&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Can't penguify massless being.&quot;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;I’ll put my cursor on the &lt;em&gt;N&lt;/em&gt; in &lt;code class=&quot;highlighter-rouge&quot;&gt;NameError&lt;/code&gt; and type (in normal mode) &lt;code class=&quot;highlighter-rouge&quot;&gt;mx&lt;/code&gt;. This sets a mark we can jump to by typing ```x``. This is nice, but the backtick isn’t the most comfortable key to reach for.&lt;/p&gt;
-
-&lt;p&gt;There’s a similar command using the single-quote. Typing &lt;code class=&quot;highlighter-rouge&quot;&gt;'x&lt;/code&gt; jumps to the first non-whitespace character on the marked line. Probably not as useful. Let’s map the more reachable &lt;code class=&quot;highlighter-rouge&quot;&gt;'&lt;/code&gt; to the more useful &lt;code class=&quot;highlighter-rouge&quot;&gt;`&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;On Vim’s command-line, enter: &lt;code class=&quot;highlighter-rouge&quot;&gt;map ' `&lt;/code&gt;. Now both &lt;code class=&quot;highlighter-rouge&quot;&gt;`&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;'&lt;/code&gt; will take us directly to our mark. Instead of ditching the single-quote’s original command entirely, let’s map the backtick to it with &lt;code class=&quot;highlighter-rouge&quot;&gt;map ` '&lt;/code&gt;. But this causes a problem. Hit either &lt;code class=&quot;highlighter-rouge&quot;&gt;`&lt;/code&gt; or &lt;code class=&quot;highlighter-rouge&quot;&gt;'&lt;/code&gt; and you’ll get an error (&lt;code class=&quot;highlighter-rouge&quot;&gt;E223: recursive mapping&lt;/code&gt;). We’ve mapped &lt;code class=&quot;highlighter-rouge&quot;&gt;`&lt;/code&gt; to &lt;code class=&quot;highlighter-rouge&quot;&gt;'&lt;/code&gt;, which triggers &lt;code class=&quot;highlighter-rouge&quot;&gt;`&lt;/code&gt;, which triggers &lt;code class=&quot;highlighter-rouge&quot;&gt;'&lt;/code&gt;, and on and on.&lt;/p&gt;
-
-&lt;h3 id=&quot;noremap&quot;&gt;:noremap&lt;/h3&gt;
-&lt;p&gt;To recover, let’s remove both mappings with &lt;code class=&quot;highlighter-rouge&quot;&gt;unmap `&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;unmap '&lt;/code&gt;, to start fresh. Now instead of using &lt;code class=&quot;highlighter-rouge&quot;&gt;map&lt;/code&gt; we’ll use &lt;code class=&quot;highlighter-rouge&quot;&gt;noremap&lt;/code&gt;. Running &lt;code class=&quot;highlighter-rouge&quot;&gt;noremap a b&lt;/code&gt; will map &lt;code class=&quot;highlighter-rouge&quot;&gt;a&lt;/code&gt; to &lt;code class=&quot;highlighter-rouge&quot;&gt;b&lt;/code&gt; but avoid triggering anything &lt;code class=&quot;highlighter-rouge&quot;&gt;b&lt;/code&gt; is mapped to. So we can enter &lt;code class=&quot;highlighter-rouge&quot;&gt;noremap ' `&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;noremap ` '&lt;/code&gt; to swap our keys without falling into a recursive pit.&lt;/p&gt;
-
-&lt;h3 id=&quot;map-modes&quot;&gt;map-modes&lt;/h3&gt;
-&lt;p&gt;Depending on how you define them, your key-mappings will only apply in certain modes. The mappings we created with &lt;code class=&quot;highlighter-rouge&quot;&gt;map&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;noremap&lt;/code&gt; apply in Normal, Visual, Select, and Operator-pending modes. Note the absence of Insert mode in that list – we’re not in danger of inserting &lt;code class=&quot;highlighter-rouge&quot;&gt;doesn`t&lt;/code&gt; when we wanted &lt;code class=&quot;highlighter-rouge&quot;&gt;doesn't&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;map&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;noremap&lt;/code&gt;, and &lt;code class=&quot;highlighter-rouge&quot;&gt;unmap&lt;/code&gt; commands each have mode-specific variations. My .vimrc, for instance, has a mapping for line-completion in Insert mode:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;inoremap &amp;lt;C-L&amp;gt; &amp;lt;C-X&amp;gt;&amp;lt;C-L&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-L&amp;gt;&lt;/code&gt; represents Control-L, and is case-insensitive (same as &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;c-l&amp;gt;&lt;/code&gt;). This makes line-completion less cumbersome without polluting modes other than Insert with the mapping. For more on map-modes, check out &lt;code class=&quot;highlighter-rouge&quot;&gt;:help :map-modes&lt;/code&gt;. The map-overview (&lt;code class=&quot;highlighter-rouge&quot;&gt;:help map-overview&lt;/code&gt;) is a good place to start.&lt;/p&gt;
-
-&lt;h3 id=&quot;key-notation&quot;&gt;key-notation&lt;/h3&gt;
-&lt;p&gt;Vim uses a special notation for some keys. We saw &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-L&amp;gt;&lt;/code&gt; already. There’s also &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;Left&amp;gt;&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;S-Left&amp;gt;&lt;/code&gt; (shift-left), &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;Space&amp;gt;&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;CR&amp;gt;&lt;/code&gt; (carriage return / enter), and many more (see &lt;code class=&quot;highlighter-rouge&quot;&gt;:help key-notation&lt;/code&gt;). We can use these to expand our key-mapping vocabulary.&lt;/p&gt;
-
-&lt;h3 id=&quot;editor-envy&quot;&gt;editor-envy&lt;/h3&gt;
-&lt;p&gt;I noticed a feature in Sublime Text that I wanted to simulate in Vim: &lt;code class=&quot;highlighter-rouge&quot;&gt;⌘Enter&lt;/code&gt; adds a newline to the &lt;em&gt;end&lt;/em&gt; of the current line rather than inserting it at the cursor position. This is handy if you’re in the middle of a line and want to open a new line beneath it without breaking the text the cursor’s on.&lt;/p&gt;
-
-&lt;p&gt;To similate this, I needed to &lt;code class=&quot;highlighter-rouge&quot;&gt;inoremap&lt;/code&gt; something to &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-O&amp;gt;o&lt;/code&gt;. From Insert mode, &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-O&amp;gt;&lt;/code&gt; pops you into Normal mode for a single command. Once there, &lt;code class=&quot;highlighter-rouge&quot;&gt;o&lt;/code&gt; opens a new line beneath the current one and drops you onto it in Insert mode. In the interest of portability, I decided against using the &lt;code class=&quot;highlighter-rouge&quot;&gt;⌘&lt;/code&gt; key, since it’s Mac-specific, and went with Control instead:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;inoremap &amp;lt;C-CR&amp;gt; &amp;lt;C-O&amp;gt;o
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Now I can hit Control-Enter from Insert mode to drop down to a new line without disrupting the one I’m on. Actually no, I can’t. I can if I’m using MacVim, but terminal Vim doesn’t recognize the &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-CR&amp;gt;&lt;/code&gt; key-combo. This is where things get interesting.&lt;/p&gt;
-
-&lt;h3 id=&quot;terminal-keycodes&quot;&gt;terminal keycodes&lt;/h3&gt;
-&lt;p&gt;To get the &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-CR&amp;gt;&lt;/code&gt; key-mapping to work in terminal Vim, I needed to first tell iTerm what to send when I hit Control-Enter, then tell Vim what to listen for and how to interpret it. Let’s start with iTerm. The steps for Terminal.app are similar, though the menus and appearance will differ.&lt;/p&gt;
-
-&lt;p&gt;In iTerm’s &lt;em&gt;Preferences&lt;/em&gt; (&lt;code class=&quot;highlighter-rouge&quot;&gt;⌘,&lt;/code&gt;), the &lt;em&gt;Profiles&lt;/em&gt; tab has a &lt;em&gt;Keys&lt;/em&gt; subtab. From there, you can define custom actions to trigger with any number of key-combinations. Clicking the ‘&lt;strong&gt;+&lt;/strong&gt;’ at the bottom of the list reveals a dialog to add a new combination.&lt;/p&gt;
-
-&lt;p&gt;&lt;img class=&quot;screenshot&quot; src=&quot;/images/iterm/keys.png&quot; alt=&quot;'keys'&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;I hit Control-Enter to enter &lt;code class=&quot;highlighter-rouge&quot;&gt;^↩&lt;/code&gt; in the &lt;em&gt;Keyboard Shortcut&lt;/em&gt; field and selected &lt;em&gt;Send Escape Sequence&lt;/em&gt; from the &lt;em&gt;Action&lt;/em&gt; drop-down, revealing a field labeled “Esc+”. Here I entered &lt;code class=&quot;highlighter-rouge&quot;&gt;[25~&lt;/code&gt;, telling iTerm to send Esc + &lt;code class=&quot;highlighter-rouge&quot;&gt;[25~&lt;/code&gt; when Control-Enter is typed.&lt;/p&gt;
-
-&lt;p&gt;“Why &lt;code class=&quot;highlighter-rouge&quot;&gt;[25~&lt;/code&gt;? Where did that come from?” I was hoping you wouldn’t ask. Figuring out what codes to use, what wouldn’t conflict with anything, and what would be interpretted consistently across xterm, GNU screen, and tmux was not a straightforward process. Lots of googling and trial and error, and recounting it is probably best saved for another post. For now, I’ll stay focused on getting it wired up with Vim.&lt;/p&gt;
-
-&lt;p&gt;Next, I needed to tell Vim how to interpret the &lt;code class=&quot;highlighter-rouge&quot;&gt;^[[25~&lt;/code&gt; escape sequence that iTerm would be sending its way. (Note that the initial &lt;code class=&quot;highlighter-rouge&quot;&gt;^[&lt;/code&gt; is the Escape character itself.) I set an unused Function key to the escape sequence:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;set &amp;lt;F13&amp;gt;=^[[25~
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;To enter that command correctly, you need to type &lt;code class=&quot;highlighter-rouge&quot;&gt;set &amp;lt;F13&amp;gt;=&lt;/code&gt;, hit Control-V, hit Escape, then finish with &lt;code class=&quot;highlighter-rouge&quot;&gt;[25~&lt;/code&gt;. Control-V followed by Escape enters the actual terminal code for the Escape key (which &lt;em&gt;appears&lt;/em&gt; as the single character &lt;code class=&quot;highlighter-rouge&quot;&gt;^[&lt;/code&gt;). The same is true whether you’re entering it on Vim’s command-line or inserting it in your .vimrc.&lt;/p&gt;
-
-&lt;p&gt;With Vim listening for the escape sequence and associating it with a key, I mapped that key to &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-CR&amp;gt;&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;map  &amp;lt;F13&amp;gt; &amp;lt;C-Cr&amp;gt;  
-map! &amp;lt;F13&amp;gt; &amp;lt;C-Cr&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;The call to &lt;code class=&quot;highlighter-rouge&quot;&gt;map&lt;/code&gt; applies the mapping in Normal, Visual, Select, and Operator-pending mappings, while &lt;code class=&quot;highlighter-rouge&quot;&gt;map!&lt;/code&gt; applies to Insert and Command-line mappings. With all this in place, terminal Vim can recognize Control-Enter and the &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;C-CR&amp;gt;&lt;/code&gt; key-notation.&lt;/p&gt;
-
-&lt;p&gt;You can apply this approach to a lot of other key’s that would otherwise be off-limits. A section of my &lt;a href=&quot;https://github.com/ivanbrennan/vim/blob/master/vimrc&quot;&gt;vimrc&lt;/a&gt; wires up a bunch of them. I’m cutting down on the mappings these days, but it’s nice to know you can do this:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;if &amp;amp;term =~ &quot;xterm&quot; || &amp;amp;term =~ &quot;screen&quot; || &amp;amp;term =~ &quot;builtin_gui&quot;
-  &quot; Ctrl-Enter
-  set  &amp;lt;F13&amp;gt;=[25~
-  map  &amp;lt;F13&amp;gt; &amp;lt;C-CR&amp;gt;
-  map! &amp;lt;F13&amp;gt; &amp;lt;C-CR&amp;gt;
-
-  &quot; Shift-Enter
-  set  &amp;lt;F14&amp;gt;=[27~
-  map  &amp;lt;F14&amp;gt; &amp;lt;S-CR&amp;gt;
-  map! &amp;lt;F14&amp;gt; &amp;lt;S-CR&amp;gt;
-
-  &quot; Ctrl-Space
-  set  &amp;lt;F15&amp;gt;=[29~
-  map  &amp;lt;F15&amp;gt; &amp;lt;C-Space&amp;gt;
-  map! &amp;lt;F15&amp;gt; &amp;lt;C-Space&amp;gt;
-
-  &quot; Shift-Space
-  set  &amp;lt;F16&amp;gt;=[30~
-  map  &amp;lt;F16&amp;gt; &amp;lt;S-Space&amp;gt;
-  map! &amp;lt;F16&amp;gt; &amp;lt;S-Space&amp;gt;
-
-  &quot; Ctrl-Backspace
-  set  &amp;lt;F17&amp;gt;=[1;5P
-  map  &amp;lt;F17&amp;gt; &amp;lt;C-BS&amp;gt;
-  map! &amp;lt;F17&amp;gt; &amp;lt;C-BS&amp;gt;
-
-  &quot; Alt-Tab
-  set  &amp;lt;F18&amp;gt;=[1;5Q
-  map  &amp;lt;F18&amp;gt; &amp;lt;M-Tab&amp;gt;
-  map! &amp;lt;F18&amp;gt; &amp;lt;M-Tab&amp;gt;
-
-  &quot; Alt-Shift-Tab
-  set  &amp;lt;F19&amp;gt;=[1;5R
-  map  &amp;lt;F19&amp;gt; &amp;lt;M-S-Tab&amp;gt;
-  map! &amp;lt;F19&amp;gt; &amp;lt;M-S-Tab&amp;gt;
-
-  &quot; Ctrl-Up
-  set  &amp;lt;F20&amp;gt;=[1;5A
-  map  &amp;lt;F20&amp;gt; &amp;lt;C-Up&amp;gt;
-  map! &amp;lt;F20&amp;gt; &amp;lt;C-Up&amp;gt;
-
-  &quot; Ctrl-Down
-  set  &amp;lt;F21&amp;gt;=[1;5B
-  map  &amp;lt;F21&amp;gt; &amp;lt;C-Down&amp;gt;
-  map! &amp;lt;F21&amp;gt; &amp;lt;C-Down&amp;gt;
-
-  &quot; Ctrl-Right
-  set  &amp;lt;F22&amp;gt;=[1;5C
-  map  &amp;lt;F22&amp;gt; &amp;lt;C-Right&amp;gt;
-  map! &amp;lt;F22&amp;gt; &amp;lt;C-Right&amp;gt;
-
-  &quot; Ctrl-Left
-  set  &amp;lt;F23&amp;gt;=[1;5D
-  map  &amp;lt;F23&amp;gt; &amp;lt;C-Left&amp;gt;
-  map! &amp;lt;F23&amp;gt; &amp;lt;C-Left&amp;gt;
-
-  &quot; Ctrl-Tab
-  set  &amp;lt;F24&amp;gt;=[31~
-  map  &amp;lt;F24&amp;gt; &amp;lt;C-Tab&amp;gt;
-  map! &amp;lt;F24&amp;gt; &amp;lt;C-Tab&amp;gt;
-
-  &quot; Ctrl-Shift-Tab
-  set  &amp;lt;F25&amp;gt;=[32~
-  map  &amp;lt;F25&amp;gt; &amp;lt;C-S-Tab&amp;gt;
-  map! &amp;lt;F25&amp;gt; &amp;lt;C-S-Tab&amp;gt;
-
-  &quot; Ctrl-Comma
-  set  &amp;lt;F26&amp;gt;=[33~
-  map  &amp;lt;F26&amp;gt; &amp;lt;C-,&amp;gt;
-  map! &amp;lt;F26&amp;gt; &amp;lt;C-,&amp;gt;
-
-  &quot; Ctrl-Shift-Space
-  set  &amp;lt;F27&amp;gt;=[34~
-  map  &amp;lt;F27&amp;gt; &amp;lt;C-S-Space&amp;gt;
-  map! &amp;lt;F27&amp;gt; &amp;lt;C-S-Space&amp;gt;
-endif
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name></name></author><summary type="html">:map In the land of Vim, most key sequences can easily be mapped to others. The basic syntax is map a b, which tells Vim that when you type a, it should act like b. Similarly, map abc wxyz would process wxyz when you typed abc, but let’s look at a more useful example.</summary></entry></feed>
+&lt;p&gt;I initially wanted faster specs to enable a better TDD flow. A nice side benefit of writing these stubbed tests is that it illuminates the dependencies and coupling in the production code you’re working with and encourages better composition overall. FactoryGirl is still a wonderful tool, but it shouldn’t be the only one in your belt.&lt;/p&gt;</content><author><name></name></author><summary type="html">Getting the full benefits of TDD requires fast-running specs. The feedback cycle is what makes the difference between a pleasurable “red-green-refactor” flow and an eternity of testing-tedium where the only reason you’re writing tests is so you be done writing them. While TDD is lauded in the Rails community, many large Rails apps suffer from slow-running test suites.</summary></entry></feed>
