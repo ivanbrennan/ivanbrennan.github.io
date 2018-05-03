@@ -1,0 +1,81 @@
+---
+layout: post
+title: "Nirb"
+date: 2018-05-02T23:39:11-04:00
+---
+
+The [interactive\_editor](https://github.com/jberkel/interactive_editor) gem lets you launch an instance of Vim within an IRB session.
+
+It brings up a scratch buffer, and when you `:wq` (save+quit) Vim, you're back in IRB, with any methods/classes you defined now available.
+Even better, if you relaunch Vim it will load the code you were editing previously, make it easy to work incrementally and try ideas out in the repl.
+
+To use this on NixOS, I needed to write a nix derivation for it.
+So I created a simple Gemfile:
+``` sh
+mkdir interactive-editor &&
+    cd interactive-editor &&
+    cat <<EOF > Gemfile
+source 'https://rubygems.org'
+gem 'interactive_editor'
+EOF
+```
+Then I used `bundix` to generate a gemset.nix describing interactive\_editor and its dependencies.
+```sh
+nix-shell --packages bundix --run 'bundix --magic'
+chmod 644 gemset.nix
+```
+The `chmod` is a workaround for a small bug in `bundix` that creates gemset.nix with 0600 permissions, preventing read access for users other than the file owner.
+Since I want a root-owned copy of this file incorporated into my nixos configuration, setting 0644 permissions ensures non-root users can still use it.
+
+I submitted [a fix](https://github.com/manveru/bundix/pull/29) to bundix for the permissions issue, but until the fixed version makes it into the nixpkgs tree, `chmod` does the trick.
+
+Next, I copied Gemfile, Gemfile.lock, and gemset.nix into an overlay in my nixos confg.
+I keep most of my custom packages in an overlay under `/etc/nixos/overlays/core/`.
+I copied the relevant files to a `/etc/nixos/overlays/core/interactive-editor/` subdirectory, and wrote a derivation with `bundlerEnv` in a default.nix file:
+```sh
+sudo bash -c '
+    mkdir /etc/nixos/overlays/core/interactive-editor &&
+        cp /home/ivan/path/to/interactive-editor/{Gemfile{,.lock},gemset.nix} \
+           /etc/nixos/overlays/interactive-editor/
+        cat <<"EOF" > /etc/nixos/overlays/interactive-editor/default.nix
+{ lib, bundlerEnv, ruby }:
+
+bundlerEnv rec {
+  name = "interactive-editor-${version}";
+
+  version = (import gemset).interactive-editor.version;
+  inherit ruby;
+  # expects Gemfile, Gemfile.lock and gemset.nix in the same directory
+  gemdir = ./.;
+
+  meta = with lib; {
+    description = "Interactive editing in irb";
+    homepage    = http://github.com/jberkel/interactive_editor;
+    license     = with licenses; mit;
+    platforms   = platforms.unix;
+  };
+}
+EOF
+'
+```
+I should call out a small gotcha in the above bash snippet. The opening heredoc delimiter needs to be quoted (`"EOF"`), otherwise Bash will try to expand `${version}` and substitute the expansion (an empty string, since we haven't defined any such variable in our shell) in the text we're writing to default.nix.
+
+We want the `${version}` to be inserted literally (it's a Nix variable, not a Bash variable).
+This is made all the more confusing by the fact that the heredoc is already inside a single-quoted block
+We're using the single-quotes to wrap a block of code we want Bash to interpret (`bash -c '...'`).
+
+With the derivation in place, I added it to my [overlay](https://github.com/ivanbrennan/nixbox/blob/91f8f3b12f167fbae1643ee8ba559dffc556e089/overlays/core/default.nix#L4):
+```nix
+self: super: {
+  # ...
+
+  interactive-editor = super.callPackage ./interactive-editor { };
+
+  # ...
+}
+```
+I [aliased](https://github.com/ivanbrennan/nixbox/commit/f63c0a6c873958bef9e13b5c117ada60e4e92442) `nirb` to launch IRB with interactive\_editor available:
+```nix
+nix-shell --packages ruby interactive-editor --command irb
+```
+Finally, in order for `nix-shell` to find packages in my overlay, I [added a nixpkgs-overlays](https://github.com/ivanbrennan/nixbox/blob/91f8f3b12f167fbae1643ee8ba559dffc556e089/configuration.nix#L46) entry to my NIX_PATH.
