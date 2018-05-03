@@ -31,7 +31,7 @@ I submitted [a fix](https://github.com/manveru/bundix/pull/29) to bundix for the
 
 Next, I copied Gemfile, Gemfile.lock, and gemset.nix into an overlay in my nixos confg.
 I keep most of my custom packages in an overlay under `/etc/nixos/overlays/core/`.
-I copied the relevant files to a `/etc/nixos/overlays/core/interactive-editor/` subdirectory, and wrote a derivation with `bundlerEnv` in a default.nix file:
+I copied the relevant files to an `interactive-editor/` subdirectory, and wrote a derivation with `bundlerEnv` in default.nix:
 ```sh
 sudo bash -c '
     mkdir /etc/nixos/overlays/core/interactive-editor &&
