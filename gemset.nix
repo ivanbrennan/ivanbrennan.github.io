@@ -36,10 +36,10 @@
   eventmachine = {
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "075hdw0fgzldgss3xaqm2dk545736khcvv1fmzbf1sgdlkyh1v8z";
+      sha256 = "08477hl609rmmngwfy8dmsqz5zvsg8xrsrrk6xi70jf48majwli0";
       type = "gem";
     };
-    version = "1.2.5";
+    version = "1.2.6";
   };
   ffi = {
     source = {
@@ -78,10 +78,10 @@
     dependencies = ["addressable" "colorator" "em-websocket" "i18n" "jekyll-sass-converter" "jekyll-watch" "kramdown" "liquid" "mercenary" "pathutil" "rouge" "safe_yaml"];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "0fdb3qfbpjhlz5vlx4aw7kg9iy4bvaa5k1v82fxapyjghs2zg8as";
+      sha256 = "01s1r5pjfdvk5r1pz3j4smz42jsfv5vvp4q7fg0mrzxn9xk2nvi6";
       type = "gem";
     };
-    version = "3.8.0";
+    version = "3.8.1";
   };
   jekyll-feed = {
     dependencies = ["jekyll"];
@@ -92,6 +92,14 @@
     };
     version = "0.9.3";
   };
+  jekyll-paginate = {
+    source = {
+      remotes = ["https://rubygems.org"];
+      sha256 = "0r7bcs8fq98zldih4787zk5i9w24nz5wa26m84ssja95n3sas2l8";
+      type = "gem";
+    };
+    version = "1.1.0";
+  };
   jekyll-sass-converter = {
     dependencies = ["sass"];
     source = {
@@ -100,15 +108,6 @@
       type = "gem";
     };
     version = "1.5.2";
-  };
-  jekyll-seo-tag = {
-    dependencies = ["jekyll"];
-    source = {
-      remotes = ["https://rubygems.org"];
-      sha256 = "0f9b2mvmx57zj49afb3x8cmzdmb1kh4rbpbv3v7w5bh47g2c9big";
-      type = "gem";
-    };
-    version = "2.4.0";
   };
   jekyll-watch = {
     dependencies = ["listen"];
@@ -151,15 +150,6 @@
       type = "gem";
     };
     version = "0.3.6";
-  };
-  minima = {
-    dependencies = ["jekyll" "jekyll-feed" "jekyll-seo-tag"];
-    source = {
-      remotes = ["https://rubygems.org"];
-      sha256 = "0y03aygarzm2q975drp54wsjirqkac5valpddz2nmidp0r9w2f6i";
-      type = "gem";
-    };
-    version = "2.5.0";
   };
   octopress = {
     dependencies = ["jekyll" "mercenary" "octopress-deploy" "octopress-escape-code" "octopress-hooks" "redcarpet" "titlecase"];
@@ -289,6 +279,15 @@
       type = "gem";
     };
     version = "4.0.0";
+  };
+  tale = {
+    dependencies = ["jekyll" "jekyll-paginate"];
+    source = {
+      remotes = ["https://rubygems.org"];
+      sha256 = "047xxz8bfasjjy940h66k57w40l7zjzk5dswlhx7mwaqpmqry0h4";
+      type = "gem";
+    };
+    version = "0.1.2";
   };
   titlecase = {
     source = {
