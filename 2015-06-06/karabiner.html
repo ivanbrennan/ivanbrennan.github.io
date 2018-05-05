@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      karabiner &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2015-06-06 14:45:00 -0400">June 06, 2015</time>
+    
+  </div>
+
+  <h1 class="post-title">karabiner</h1>
+  <div class="post-line"></div>
+
+  <p>A while back I stopped using “jk” to exit Vim’s insert-mode, turning instead to the mostly-useless <code class="highlighter-rouge">Caps Lock</code>. I set it to be <code class="highlighter-rouge">Control</code>, then used <a href="https://pqrs.org/osx/karabiner/">Karabiner</a> to turn it into a dual-purpose <code class="highlighter-rouge">Control</code>/<code class="highlighter-rouge">Escape</code>. Typed by itself, it’s <code class="highlighter-rouge">Escape</code>; in concert with another key it’s <code class="highlighter-rouge">Control</code>. The boost in comfort and productivity has been huge.</p>
+
+<p>Bringing <code class="highlighter-rouge">Escape</code> closer to home feels like a more sensible solution, and I’m no longer typing “jk” all over the place when my fingers forget they’re not in Vim. The productivity gains, however, are largely the result of having a <code class="highlighter-rouge">Control</code> key that’s so accessible. It’s opened up my use of control-modified commands like Vim’s autocompletion and the shell’s reverse-incremental-search quite a bit.</p>
+
+<p>To set this up on OS X, first go to the Keyboard pane of System Preferences and change <code class="highlighter-rouge">Caps Lock</code> to <code class="highlighter-rouge">Control</code>.</p>
+
+<p><img class="caps-lock" src="/images/karabiner/caps-lock.png" alt="'caps-lock'" /></p>
+
+<p>Then use Karabiner to send <code class="highlighter-rouge">Escape</code> when you type <code class="highlighter-rouge">Control</code> by itself.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>* karabiner preferences -&gt; "Change Key" tab
+* scroll down to "Change Control_L Key (Left Control)"
+* check "Control_L to Control_L (+ When you type Control_L only, send Escape)"
+</code></pre></div></div>
+
+<p><img class="escape" src="/images/karabiner/escape.png" alt="'escape'" /></p>
+
+<h2 id="more-control">More Control</h2>
+
+<p>I recently took this one step further and turned my <code class="highlighter-rouge">Return</code> key into a dual-purpose <code class="highlighter-rouge">Control</code>/<code class="highlighter-rouge">Return</code>, giving me easy access to a <code class="highlighter-rouge">Control</code> key on either side of the keyboard.</p>
+
+<p><img class="return" src="/images/karabiner/return.png" alt="'return'" /></p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/2016-12-20/debugging-etags" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/2014-11-04/unix-know-how" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>

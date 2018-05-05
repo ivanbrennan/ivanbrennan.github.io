@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      enumerables &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2013-10-08 08:38:00 -0400">October 08, 2013</time>
+    
+  </div>
+
+  <h1 class="post-title">enumerables</h1>
+  <div class="post-line"></div>
+
+  <p>Ruby provides lots of built-in methods for working with arrays, but at first glance, some seem to be missing from the <a href="http://ruby-doc.org/core-2.0.0/Array.html">Array documentation</a>. A good example is the <code class="highlighter-rouge">#find</code> method, which returns the first element satisfying the criteria you provide in a block.</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">].</span><span class="nf">find</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="p">}</span>  <span class="c1"># =&gt; 3</span>
+</code></pre></div></div>
+<p>The fact is, these methods are mixed in from the <a href="http://ruby-doc.org/core-2.0.0/Enumerable.html">Enumerable module</a>, a collection of useful methods that can be applied to Arrays, Ranges, and Sets, among other Ruby classes. A simple check <code class="highlighter-rouge">whatever_object.is_a? Enumerable</code> will confirm whether whatever object your dealing with includes the Enumerable module.</p>
+
+<p>One of these methods, <code class="highlighter-rouge">#zip</code>, has been calling out to me since I started learning Ruby. It seemed like an alchemical process that merged arrays in a mysterious way. In practice, it simply merges the corresponding elements of each array, returning an array of arrays.</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">i_got</span>   <span class="o">=</span> <span class="p">[</span><span class="s2">"I got the style"</span><span class="p">,</span>
+           <span class="s2">"I got the clothes"</span><span class="p">,</span>
+           <span class="s2">"I got the bread"</span><span class="p">,</span>
+           <span class="s2">"I got the winda"</span><span class="p">]</span>
+
+<span class="n">but_not</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"but not the grace"</span><span class="p">,</span>
+           <span class="s2">"but not the face"</span><span class="p">,</span>
+           <span class="s2">"but not the butter"</span><span class="p">,</span>
+           <span class="s2">"but not the shutter"</span><span class="p">]</span>
+
+<span class="n">i_got</span><span class="p">.</span><span class="nf">zip</span><span class="p">(</span><span class="n">but_not</span><span class="p">)</span>
+<span class="c1"># =&gt; [["I got the style", "but not the grace"],</span>
+<span class="c1">#     ["I got the clothes", "but not the face"],</span>
+<span class="c1">#     ["I got the bread", "but not the butter"],</span>
+<span class="c1">#     ["I got the winda", "but not the shutter"]]</span>
+</code></pre></div></div>
+<p>Pretty nice, but why don’t we do <a href="http://www.youtube.com/watch?v=ByomIJf5n9w">Tom Waits</a> proud and join those phrases?</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">i_got</span><span class="p">.</span><span class="nf">zip</span><span class="p">(</span><span class="n">but_not</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">got_not</span><span class="o">|</span> <span class="n">got_not</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">", "</span><span class="p">)}</span>
+<span class="c1"># =&gt; nil</span>
+</code></pre></div></div>
+<p>Whoops! Passing <code class="highlighter-rouge">#zip</code> a block will invoke the block for each output array, but return <code class="highlighter-rouge">nil</code> at the end of the day. A call to <code class="highlighter-rouge">#map</code> to will do the trick.</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">i_got</span><span class="p">.</span><span class="nf">zip</span><span class="p">(</span><span class="n">but_not</span><span class="p">).</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span><span class="n">got_not</span><span class="o">|</span> <span class="n">got_not</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">", "</span><span class="p">)}</span>
+<span class="c1"># =&gt; ["I got the style, but not the grace",</span>
+<span class="c1">#     "I got the clothes, but not the face",</span>
+<span class="c1">#     "I got the bread, but not the butter",</span>
+<span class="c1">#     "I got the winda, but not the shutter"]</span>
+</code></pre></div></div>
+<p>In fact, <code class="highlighter-rouge">#zip</code> can merge any number of arrays…</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">bagels</span>  <span class="o">=</span> <span class="p">[</span><span class="s2">"sesame bagel"</span><span class="p">,</span>
+           <span class="s2">"plain bagel"</span><span class="p">,</span>
+           <span class="s2">"poppy bagel"</span><span class="p">,</span>
+           <span class="s2">"pumpernickel bagel"</span><span class="p">]</span>
+
+<span class="n">spreads</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"cream cheese"</span><span class="p">,</span>
+           <span class="s2">"butter"</span><span class="p">,</span>
+           <span class="s2">"peanut-butter"</span><span class="p">,</span>
+           <span class="s2">"jam"</span><span class="p">]</span>
+
+<span class="n">extras</span>  <span class="o">=</span> <span class="p">[</span><span class="s2">"lox"</span><span class="p">,</span>
+           <span class="s2">"tomato"</span><span class="p">,</span>
+           <span class="s2">"chives"</span><span class="p">,</span>
+           <span class="s2">"lettuce"</span><span class="p">]</span>
+
+<span class="n">bagels</span><span class="p">.</span><span class="nf">zip</span><span class="p">(</span><span class="n">spreads</span><span class="p">,</span> <span class="n">extras</span><span class="p">).</span><span class="nf">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">bgl</span><span class="p">,</span> <span class="n">spd</span><span class="p">,</span> <span class="n">xtr</span><span class="o">|</span>
+  <span class="s2">"</span><span class="si">#{</span><span class="n">bgl</span><span class="si">}</span><span class="s2"> with </span><span class="si">#{</span><span class="n">spd</span><span class="si">}</span><span class="s2"> and </span><span class="si">#{</span><span class="n">xtr</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">end</span>
+<span class="c1"># =&gt; ["sesame bagel with cream cheese and lox",</span>
+<span class="c1">#     "plain bagel with butter and tomato",</span>
+<span class="c1">#     "poppy bagel with peanut-butter and chives",</span>
+<span class="c1">#     "pumpernickel bagel with jam and lettuce"]</span>
+</code></pre></div></div>
+<p>Not all the tastiest combinations, but that’s how <code class="highlighter-rouge">#zip</code> works, it just matches up the elements in whatever order they appeared in the original arrays.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/2013-10-17/modules" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/2013-09-24/hello-world" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>

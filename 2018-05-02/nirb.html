@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Nirb &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2018-05-02 23:39:11 -0400">May 02, 2018</time>
+    
+  </div>
+
+  <h1 class="post-title">Nirb</h1>
+  <div class="post-line"></div>
+
+  <p>The <a href="https://github.com/jberkel/interactive_editor">interactive_editor</a> gem lets you launch an instance of Vim within an IRB session.</p>
+
+<p>It brings up a scratch buffer, and when you <code class="highlighter-rouge">:wq</code> (save+quit) Vim, you’re back in IRB, with any methods/classes you defined now available.
+Even better, if you relaunch Vim it will load the code you were editing previously, make it easy to work incrementally and try ideas out in the repl.</p>
+
+<p>To use this on NixOS, I needed to write a nix derivation for it.
+So I created a simple Gemfile:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir </span>interactive-editor <span class="o">&amp;&amp;</span>
+    <span class="nb">cd </span>interactive-editor <span class="o">&amp;&amp;</span>
+    <span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; Gemfile
+source 'https://rubygems.org'
+gem 'interactive_editor'
+</span><span class="no">EOF
+</span></code></pre></div></div>
+<p>Then I used <code class="highlighter-rouge">bundix</code> to generate a gemset.nix describing interactive_editor and its dependencies.</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nix-shell <span class="nt">--packages</span> bundix <span class="nt">--run</span> <span class="s1">'bundix --magic'</span>
+<span class="nb">chmod </span>644 gemset.nix
+</code></pre></div></div>
+<p>The <code class="highlighter-rouge">chmod</code> is a workaround for a small bug in <code class="highlighter-rouge">bundix</code> that creates gemset.nix with 0600 permissions, preventing read access for users other than the file owner.
+Since I want a root-owned copy of this file incorporated into my nixos configuration, setting 0644 permissions ensures non-root users can still use it.</p>
+
+<p>I submitted <a href="https://github.com/manveru/bundix/pull/29">a fix</a> to bundix for the permissions issue, but until the fixed version makes it into the nixpkgs tree, <code class="highlighter-rouge">chmod</code> does the trick.</p>
+
+<p>Next, I copied Gemfile, Gemfile.lock, and gemset.nix into an overlay in my nixos confg.
+I keep most of my custom packages in an overlay under <code class="highlighter-rouge">/etc/nixos/overlays/core/</code>.
+I copied the relevant files to an <code class="highlighter-rouge">interactive-editor/</code> subdirectory, and wrote a derivation with <code class="highlighter-rouge">bundlerEnv</code> in default.nix:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>bash <span class="nt">-c</span> <span class="s1">'
+    mkdir /etc/nixos/overlays/core/interactive-editor &amp;&amp;
+        cp /home/ivan/path/to/interactive-editor/{Gemfile{,.lock},gemset.nix} \
+           /etc/nixos/overlays/interactive-editor/
+        cat &lt;&lt;"EOF" &gt; /etc/nixos/overlays/interactive-editor/default.nix
+{ lib, bundlerEnv, ruby }:
+
+bundlerEnv rec {
+  name = "interactive-editor-${version}";
+
+  version = (import gemset).interactive-editor.version;
+  inherit ruby;
+  # expects Gemfile, Gemfile.lock and gemset.nix in the same directory
+  gemdir = ./.;
+
+  meta = with lib; {
+    description = "Interactive editing in irb";
+    homepage    = http://github.com/jberkel/interactive_editor;
+    license     = with licenses; mit;
+    platforms   = platforms.unix;
+  };
+}
+EOF
+'</span>
+</code></pre></div></div>
+<p>I should call out a small gotcha in the above bash snippet. The opening heredoc delimiter needs to be quoted (<code class="highlighter-rouge">"EOF"</code>), otherwise Bash will try to expand <code class="highlighter-rouge">${version}</code> and substitute the expansion (an empty string, since we haven’t defined any such variable in our shell) in the text we’re writing to default.nix.</p>
+
+<p>We want the <code class="highlighter-rouge">${version}</code> to be inserted literally (it’s a Nix variable, not a Bash variable).
+This is made all the more confusing by the fact that the heredoc is already inside a single-quoted block.
+We’re using the single-quotes to wrap a block of code we want Bash to interpret (<code class="highlighter-rouge">bash -c '...'</code>).
+This way, <code class="highlighter-rouge">sudo</code> runs <code class="highlighter-rouge">mkdir</code>, <code class="highlighter-rouge">cp</code>, and <code class="highlighter-rouge">cat</code> all with elevated privileges.</p>
+
+<p>With the derivation in place, I added it to my <a href="https://github.com/ivanbrennan/nixbox/blob/91f8f3b12f167fbae1643ee8ba559dffc556e089/overlays/core/default.nix#L4">overlay</a>:</p>
+<div class="language-nix highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">self</span><span class="p">:</span> <span class="nv">super</span><span class="p">:</span> <span class="p">{</span>
+  <span class="c"># ...</span>
+
+  <span class="nv">interactive-editor</span> <span class="o">=</span> <span class="nv">super</span><span class="o">.</span><span class="nv">callPackage</span> <span class="sx">./interactive-editor</span> <span class="p">{</span> <span class="p">};</span>
+
+  <span class="c"># ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>I <a href="https://github.com/ivanbrennan/nixbox/commit/f63c0a6c873958bef9e13b5c117ada60e4e92442">aliased</a> <code class="highlighter-rouge">nirb</code> to launch IRB with interactive_editor available:</p>
+<div class="language-nix highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">nix-shell</span> <span class="o">--</span><span class="nv">packages</span> <span class="nv">ruby</span> <span class="nv">interactive-editor</span> <span class="o">--</span><span class="nv">command</span> <span class="nv">irb</span>
+</code></pre></div></div>
+<p>Finally, in order for <code class="highlighter-rouge">nix-shell</code> to find packages in my overlay, I <a href="https://github.com/ivanbrennan/nixbox/blob/91f8f3b12f167fbae1643ee8ba559dffc556e089/configuration.nix#L46">added a nixpkgs-overlays</a> entry to my NIX_PATH.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+  
+    <a href="/2018-04-30/can-i-nix-it" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>

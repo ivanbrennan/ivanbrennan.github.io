@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Chef roles &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2013-11-21 09:11:00 -0500">November 21, 2013</time>
+    
+  </div>
+
+  <h1 class="post-title">Chef roles</h1>
+  <div class="post-line"></div>
+
+  <p>It took me a while to wrap my head around a Chef role. It sounds simple enough at first – a collection of recipes that allows a node to act in a certain capacity, as say, a Redis server – but Chef also deals in cookbooks, which are also collections of recipes. So then what’s the difference between a cookbook and a role?</p>
+
+<p>A cookbook is a collection of recipes relating to a particular piece of technology. The nginx cookbook, for example, contains several recipes related to building and configuring nginx: <code class="highlighter-rouge">nginx::source</code> builds nginx from source, <code class="highlighter-rouge">nginx::ohai_plugin</code> provides the Ohai plugin as a template, <code class="highlighter-rouge">nginx::passenger</code> builds the passenger gem, etc.</p>
+
+<p>A node is a single server, and Chef can apply a variety of recipes to the node to set it up as needed. Those recipes can be selected from a variety of cookbooks, and we don’t have to use every recipe in a given cookbook. So how do we package the particular mix of recipes we need for a certain type of node? In a role.</p>
+
+<p>For lack of a better analogy, you could think of a role as a multi-course meal made from several recipes pulled from a variety of cookbooks. A couple from a Pasta cookbook, one from a French Cuisine cookbook, one from a Pastries cookbook. The meal won’t be made from every single recipe in those books, just the desired ones.</p>
+
+<p>Recipes can include each other too, like mixins in Ruby (the <code class="highlighter-rouge">nginx::source</code> recipe, for example, includes the <code class="highlighter-rouge">nginx::ohai_plugin</code> recipe as part of it) but let’s not add to the confusion just yet.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/2014-01-14/polymorphic-mythology" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/2013-11-19/sandboxing-chef-solo" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>

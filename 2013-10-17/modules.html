@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      modules, classes, pterosaurs &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2013-10-17 12:50:00 -0400">October 17, 2013</time>
+    
+  </div>
+
+  <h1 class="post-title">modules, classes, pterosaurs</h1>
+  <div class="post-line"></div>
+
+  <p><img class="illustration" src="http://upload.wikimedia.org/wikipedia/commons/3/38/Homology.jpg" alt="wings" /></p>
+
+<p>Pterosaurs, bats, and birds can/could all fly, but each evolved the ability independent of the others. This is an example of <a href="http://en.wikipedia.org/wiki/Convergent_evolution">convergent evolution</a>, the <em>“independent evolution of similar features in species of different lineages”</em>. The wings of bats, pterosaurs, and birds, the body-plans of marsupials and mammals, and the eyes of vertebrates and cephalopods are just some examples of this.</p>
+
+<p>In Ruby, classes allow objects to be arranged into a hierarchical lineage, using inheritence to pass features from a parent class to all it’s descendants. But we often want to share functionality across unrelated classes. Modules allow us to do just that. Let’s consider the case of pterosaurs and bats.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Flyable</span>
+  <span class="k">def</span> <span class="nf">fly</span>
+    <span class="nb">puts</span> <span class="s2">"A </span><span class="si">#{</span><span class="nb">self</span><span class="p">.</span><span class="nf">class</span><span class="si">}</span><span class="s2"> is flying."</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Bat</span>
+  <span class="kp">include</span> <span class="no">Flyable</span>
+
+  <span class="k">def</span> <span class="nf">echolocate</span>
+    <span class="nb">puts</span> <span class="s2">"A </span><span class="si">#{</span><span class="nb">self</span><span class="p">.</span><span class="nf">class</span><span class="si">}</span><span class="s2"> can see in the dark."</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Pterosaur</span>
+  <span class="kp">include</span> <span class="no">Flyable</span>
+<span class="k">end</span>
+
+<span class="n">bert</span> <span class="o">=</span> <span class="no">Bat</span><span class="p">.</span><span class="nf">new</span>
+<span class="n">bert</span><span class="p">.</span><span class="nf">fly</span>
+<span class="c1"># =&gt; "A Bat is flying."</span>
+
+<span class="n">phil</span> <span class="o">=</span> <span class="no">Pterosaur</span><span class="p">.</span><span class="nf">new</span>
+<span class="n">phil</span><span class="p">.</span><span class="nf">fly</span>
+<span class="c1"># =&gt; "A Pterosaur is flying."</span>
+</code></pre></div></div>
+
+<p>Contrast this with sharing functionality via classes. Let’s create a couple species of bat by defining descendants of the Bat class:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SeminoleBat</span> <span class="o">&lt;</span> <span class="no">Bat</span>
+  <span class="k">def</span> <span class="nf">migrate</span>
+    <span class="nb">puts</span> <span class="s2">"A </span><span class="si">#{</span><span class="nb">self</span><span class="p">.</span><span class="nf">class</span><span class="si">}</span><span class="s2"> is migrating."</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">CanyonBat</span> <span class="o">&lt;</span> <span class="no">Bat</span>
+  <span class="k">def</span> <span class="nf">hibernate</span>
+    <span class="nb">puts</span> <span class="s2">"A </span><span class="si">#{</span><span class="nb">self</span><span class="p">.</span><span class="nf">class</span><span class="si">}</span><span class="s2"> hibernating."</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="n">sam</span> <span class="o">=</span> <span class="no">SeminoleBat</span><span class="p">.</span><span class="nf">new</span>
+<span class="n">sam</span><span class="p">.</span><span class="nf">fly</span>
+<span class="c1"># =&gt; "A SeminoleBat is flying."</span>
+<span class="n">sam</span><span class="p">.</span><span class="nf">echolocate</span>
+<span class="c1"># =&gt; "A SeminoleBat can see in the dark."</span>
+
+<span class="n">candice</span> <span class="o">=</span> <span class="no">CanyonBat</span><span class="p">.</span><span class="nf">new</span>
+<span class="n">candice</span><span class="p">.</span><span class="nf">fly</span>
+<span class="c1"># =&gt; "A CanyonBat is flying."</span>
+<span class="n">candice</span><span class="p">.</span><span class="nf">echolocate</span>
+<span class="c1"># =&gt; "A CanyonBat can see in the dark."</span>
+</code></pre></div></div>
+
+<p>Both <code class="highlighter-rouge">sam</code> and <code class="highlighter-rouge">candice</code> can echolocate and fly, since the <code class="highlighter-rouge">SeminoleBat</code> and <code class="highlighter-rouge">CanyonBat</code> classes are descendants of the <code class="highlighter-rouge">Bat</code> class. The <code class="highlighter-rouge">SeminoleBat</code> and <code class="highlighter-rouge">CanyonBat</code> classes also each have unique functionality that distinguishes them, and is not shared between their two classes. Only instances of <code class="highlighter-rouge">SeminoleBat</code> can migrate, and only those of <code class="highlighter-rouge">CanyonBat</code> can hibernate.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sam</span><span class="p">.</span><span class="nf">migrate</span>
+<span class="c1"># =&gt; "A SeminoleBat is migrating."</span>
+<span class="n">sam</span><span class="p">.</span><span class="nf">hibernate</span>
+<span class="c1"># =&gt; NoMethodError: undefined method `hibernate' for #&lt;SeminoleBat:0x007f88fe006228&gt;</span>
+
+<span class="n">candice</span><span class="p">.</span><span class="nf">hibernate</span>
+<span class="c1"># =&gt; "A CanyonBat is hibernating."</span>
+<span class="n">candice</span><span class="p">.</span><span class="nf">migrate</span>
+<span class="c1"># =&gt; NoMethodError: undefined method `migrate' for #&lt;CanyonBat:0x007f88fe807c38&gt;</span>
+</code></pre></div></div>
+
+<p>And while <code class="highlighter-rouge">Pterosaur</code>, like <code class="highlighter-rouge">Bat</code> and all its descendants, can fly, it can’t echolocate, migrate, or hibernate.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">phil</span><span class="p">.</span><span class="nf">echolocate</span>
+<span class="c1"># =&gt; NoMethodError: undefined method `echolocate' for #&lt;Pterosaur:0x007fdcbc082eb0&gt;</span>
+<span class="n">phil</span><span class="p">.</span><span class="nf">migrate</span>
+<span class="c1"># =&gt; NoMethodError: undefined method `migrate' for #&lt;Pterosaur:0x007fdcbc082eb0&gt;</span>
+<span class="n">phil</span><span class="p">.</span><span class="nf">hibernate</span>
+<span class="c1"># =&gt; NoMethodError: undefined method `hibernate' for #&lt;Pterosaur:0x007fdcbc082eb0&gt;</span>
+</code></pre></div></div>
+
+<p>There is a bit more to Modules (they can be used to define class methods as well as instance methods, and they can include constants), but the general purpose they serve is to enable sharing functionality across unrelated classes.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/2013-10-23/yield-the-weird" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/2013-10-08/enumerables" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>

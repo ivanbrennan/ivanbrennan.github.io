@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Can I Nix It? &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2018-04-30 23:05:18 -0400">April 30, 2018</time>
+    
+  </div>
+
+  <h1 class="post-title">Can I Nix It?</h1>
+  <div class="post-line"></div>
+
+  <p>I’ve been using NixOS lately, and wanted to get octopress &amp; jekyll set up so I could start writing about NixOS from within NixOS.
+I’m still finding my way around the nix ecosystem, and I took a couple wrong turns along the way, but once I found my bearings it was pretty simple.</p>
+
+<p>Since I’m using <a href="https://github.com/octopress/octopress">octopress</a> and <a href="https://jekyllrb.com/">jekyll</a>, my blog is a Ruby project and dependencies are listed in Gemfile and Gemfile.lock.
+Neither Ruby nor octopress are installed globally on my NixOS system, so I can’t just <code class="highlighter-rouge">cd</code> into the project and start running octopress commands.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ octopress new draft "Can I Nix It?"
+octopress: command not found
+
+$ type -t ruby || type -t gem || type -t bundler || echo Nothing
+Nothing
+</code></pre></div></div>
+
+<p>Instead, I’m using <code class="highlighter-rouge">nix-shell</code> to spawn a development environment that’s tailored to meet the needs of this particular project.
+<a href="https://github.com/manveru/bundix/">bundix</a> takes most of the legwork out of setting this up, so I ran a couple bundix commands in an ad hoc <code class="highlighter-rouge">nix-shell</code>.</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nix-shell <span class="nt">--packages</span> bundix <span class="nt">--run</span> <span class="s1">'bundix --magic &amp;&amp; bundix --init'</span>
+</code></pre></div></div>
+
+<p>This generated a gemset.nix file, which describs the gem dependencies in a nix expression, as well as a shell.nix file, which configures the environment produced by running <code class="highlighter-rouge">nix-shell</code> in the project root directory.</p>
+
+<p>I had to make one change to the generated shell.nix, specifying the gem <a href="http://bundler.io/v1.6/groups.html">groups</a> I wanted included.
+In particular, <code class="highlighter-rouge">octopress</code> is grouped under <code class="highlighter-rouge">jekyll_plugins</code> in my Gemfile,so I had to ensure that group was included in the environment.</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">group</span> <span class="ss">:jekyll_plugins</span> <span class="k">do</span>
+  <span class="n">gem</span> <span class="s1">'octopress'</span><span class="p">,</span> <span class="s1">'~&gt; 3.0.11'</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The full shell.nix looks like:</p>
+<div class="language-nix highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">with</span> <span class="p">(</span><span class="kr">import</span> <span class="o">&lt;</span><span class="nv">nixpkgs</span><span class="o">&gt;</span> <span class="p">{});</span>
+<span class="kd">let</span>
+  <span class="nv">env</span> <span class="o">=</span> <span class="nv">bundlerEnv</span> <span class="p">{</span>
+    <span class="nv">name</span> <span class="o">=</span> <span class="s2">"ivanbrennan.github.io-bundler-env"</span><span class="p">;</span>
+    <span class="kn">inherit</span> <span class="nv">ruby</span><span class="p">;</span>
+    <span class="nv">gemfile</span>  <span class="o">=</span> <span class="sx">./Gemfile</span><span class="p">;</span>
+    <span class="nv">lockfile</span> <span class="o">=</span> <span class="sx">./Gemfile.lock</span><span class="p">;</span>
+    <span class="nv">gemset</span>   <span class="o">=</span> <span class="sx">./gemset.nix</span><span class="p">;</span>
+    <span class="nv">groups</span>   <span class="o">=</span> <span class="p">[</span> <span class="s2">"default"</span> <span class="s2">"jekyll_plugins"</span> <span class="p">];</span>
+  <span class="p">};</span>
+<span class="kn">in</span> <span class="nv">stdenv</span><span class="o">.</span><span class="nv">mkDerivation</span> <span class="p">{</span>
+  <span class="nv">name</span> <span class="o">=</span> <span class="s2">"ivanbrennan.github.io"</span><span class="p">;</span>
+  <span class="nv">buildInputs</span> <span class="o">=</span> <span class="p">[</span> <span class="nv">env</span> <span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Now I can <code class="highlighter-rouge">cd</code> into the project, run <code class="highlighter-rouge">nix-shell</code>, and all the octopress &amp; jekyll commands are available.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/2018-05-02/nirb" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/2018-01-06/follow-the-types" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Polymorphic Mythology &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2014-01-14 17:33:00 -0500">January 14, 2014</time>
+    
+  </div>
+
+  <h1 class="post-title">Polymorphic Mythology</h1>
+  <div class="post-line"></div>
+
+  <p>I was recently introduced to polymorphic associations in Active Record. They provide some extra flexibility in how you choose to wire up your models, and can be an elegant solution to some otherwise awkward problems. To demonstrate, I’ll show how you could use them to catalog a collection of mythology.</p>
+
+<p>We’ll start with a tiny collection of tales: The Reign of the Hydra, The Golden Voyage, and The Life of King Adrastus. In addition to needing a myth model, we’ll need models for beasts, voyages, and heros. Let’s set things up so that a character/event/etc. can be the central figure in any number of myths, with each myth centered around a single such figure. Our beast model, then, could simply be,</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Beast</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">has_many</span> <span class="ss">:myths</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>backed by a straightforward migration,</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CreateBeasts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:beasts</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>But wiring up the myth model isn’t so simple. We could write three <code class="highlighter-rouge">belongs_to</code> statements into <code class="highlighter-rouge">myth.rb</code>, create three columns – beast_id, voyage_id, and hero_id – in the myths table, and find a way to enforce that two of the three always hold null values, but that’s pretty cumbersome. Plus, as our catalog expands and we discover new types of central-figures (fools, floods, fires), we’ll have to add more columns to accommodate any new classes we create. That’s a lot of work to store a whole lot of nils.</p>
+
+<p>Polymorphic associations allow you to handle this more elegantly. Let’s describe the role that our central-figure plays in the context of a myth. For lack of a better term, I’ll call it “memorable”. A dragon ravishing the countryside, an epic voyage, a tragic hero, these are all “memorable” things that could take center-stage in a myth. Using this common thread, we’ll build a polymorphic association that can relate a myth to any such “memorable” object.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Myth</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">belongs_to</span> <span class="ss">:memorable</span><span class="p">,</span> <span class="ss">:polymorphic</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>At the other end of the association, we’ll tweak the <code class="highlighter-rouge">has_many</code> statements in each of our “memorable” models, declaring the role they can play in relation to a myth. The beast model, for example, becomes</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Beast</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">has_many</span> <span class="ss">:myths</span><span class="p">,</span> <span class="ss">:as</span> <span class="o">=&gt;</span> <span class="ss">:memorable</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Now we can back the myth model with a much simpler table. The “memorable” central-figure’s id and its type will be stored in a pair of columns, providing a myth with all it needs (a foreign key and the table that key applies to) to retrieve its central-figure.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CreateMyths</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:myths</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span>  <span class="ss">:name</span>
+
+      <span class="n">t</span><span class="p">.</span><span class="nf">integer</span> <span class="ss">:memorable_id</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span>  <span class="ss">:memorable_type</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Active Record provides a shorthand for creating such a pair of columns: <code class="highlighter-rouge">t.references :memorable, :polymorphic =&gt; true</code>, which we could use in place of lines 6 and 7 above.</p>
+
+<p>The polymorphic association allows us to create associations between existing objects,</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">adrastus</span> <span class="o">=</span> <span class="no">Hero</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">"Adrastus"</span><span class="p">)</span>
+<span class="n">life</span> <span class="o">=</span> <span class="no">Myth</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">"The Life of King Adrastus"</span><span class="p">)</span>
+<span class="n">life</span><span class="p">.</span><span class="nf">memorable</span> <span class="o">=</span> <span class="n">adrastus</span>
+
+<span class="n">afterlife</span> <span class="o">=</span> <span class="no">Myth</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">"The Afterlife of King Adrastus"</span><span class="p">)</span>
+<span class="n">adrastus</span><span class="p">.</span><span class="nf">myths</span> <span class="o">&lt;&lt;</span> <span class="n">afterlife</span>
+</code></pre></div></div>
+
+<p>and to build associated myths off of a given “memorable” object,</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">adrastus</span><span class="p">.</span><span class="nf">myths</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">"Adrastus - The Prequel"</span><span class="p">)</span>
+<span class="n">adrastus</span><span class="p">.</span><span class="nf">save</span>
+
+<span class="n">adrastus</span><span class="p">.</span><span class="nf">myths</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">"Adrastus IV - The Return"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Note, however, that we can’t build a “memorable” object off of a given myth, since the type of object (hero, voyage, etc.) is ambiguous.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/2014-01-16/rigging-vims-netrw" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/2013-11-21/chef-roles" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>

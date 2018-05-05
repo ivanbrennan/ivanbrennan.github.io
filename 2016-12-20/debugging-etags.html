@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Debugging etags &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2016-12-20 07:52:00 -0500">December 20, 2016</time>
+    
+  </div>
+
+  <h1 class="post-title">Debugging etags</h1>
+  <div class="post-line"></div>
+
+  <p>I’ve been using ctags to navigate the codebases I work with in Vim for a couple years, largely thanks to a <a href="http://tbaggery.com/2011/08/08/effortless-ctags-with-git.html">blog post</a> by Tim Pope where he describes how to use git hooks to keep your tags up-to-date. Omitting a few details, the script I use boils down to this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git ls-files | ctags -L - -o ".git/tags" --tag-relative=yes --languages=-javascript,sql
+</code></pre></div></div>
+
+<p>On a large Rails app I’ve been working with, it takes 1 second and generates a 7MB tags file.</p>
+
+<p>More recently, I started playing around with Emacs, and I’ve been looking for a way to port my tagging strategy over to <em>e</em>tags. There are a few ways you can generate etags. Emacs comes with its own <code class="highlighter-rouge">etags</code> executable, but the more featureful implementations of ctags can also generate them.</p>
+
+<p>I’ve been using <a href="https://github.com/universal-ctags/ctags">universal-ctags</a>, which picked up where <a href="http://ctags.sourceforge.net">exuberant-ctags</a> left off a few years ago, so I added <code class="highlighter-rouge">-e</code> to my tagging command and gave it a whirl. 90 seconds later it handed me an <strong><em>8GB</em></strong> tags file.</p>
+
+<p>At first, I thought this must be a problem with the etags format itself, but when I tried Emacs’ own <code class="highlighter-rouge">etags</code> executable, it took 13 seconds and produced a 3MB file. Next, I tried exuberant-ctags, which took 2 seconds and produced a 1MB file.</p>
+
+<p>Narrowing in on the problem further was an interesting process that called on several shell-scripting concepts and tools, including I/O redirection, sub-shells, and <code class="highlighter-rouge">awk</code>.</p>
+
+<h2 id="benchmarking">Benchmarking</h2>
+
+<p>First, I needed to gather some data profiling each file’s contribution to execution time and tags-size. I wanted something like,</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>some_file.rb &lt;- source-file
+0.004        &lt;- processing time (seconds)
+8159         &lt;- source file-size (bytes)
+13389        &lt;- tags file-size (bytes)
+
+another_file.rb
+0.002
+345
+4859
+
+...
+</code></pre></div></div>
+
+<p>I wrote a shell script to iterate through the files, generating tags for each and recording the time taken and resulting tags size, appending these stats to a log file.</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/sh</span>
+
+<span class="k">for </span>f <span class="k">in</span> <span class="k">$(</span>git ls-files<span class="k">)</span>
+<span class="k">do</span>
+  <span class="o">(</span> <span class="nb">echo</span> <span class="s2">"</span><span class="nv">$f</span><span class="s2">"</span>
+    <span class="o">(</span> <span class="nv">TIMEFORMAT</span><span class="o">=</span><span class="s1">'%R'</span>
+      <span class="nb">time </span>ctags <span class="nt">-e</span> <span class="nt">-o</span> tmp.TAGS <span class="nt">--tag-relative</span><span class="o">=</span><span class="nb">yes</span> <span class="nt">--languages</span><span class="o">=</span><span class="nt">-javascript</span>,sql <span class="nv">$f</span> <span class="o">)</span>
+    <span class="o">(</span> <span class="nb">ls</span> <span class="nt">-l</span> <span class="nv">$f</span>
+      <span class="nb">ls</span> <span class="nt">-l</span> tmp.TAGS <span class="o">)</span> | <span class="nb">awk</span> <span class="s1">'{ print $5 }'</span>
+    <span class="nb">echo</span> <span class="o">)</span> <span class="o">&gt;&gt;</span> etagging.log 2&gt;&amp;1
+  <span class="nb">rm </span>tmp.TAGS
+<span class="k">done</span>
+</code></pre></div></div>
+<p>I’ll break this down a bit. First, we run <code class="highlighter-rouge">git ls-files</code> in a sub-shell to generate a list of files to loop through.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>for f in $(git ls-files)
+</code></pre></div></div>
+
+<p>For each file, we run some commands (<code class="highlighter-rouge">echo</code>, <code class="highlighter-rouge">time</code>, <code class="highlighter-rouge">ctags</code>, <code class="highlighter-rouge">ls</code>) and redirect their output to a log file. This could be done like,</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>run a command &gt;&gt; etagging.log
+run another command &gt;&gt; etagging.log
+run one more command &gt;&gt; etagging.log
+</code></pre></div></div>
+
+<p>but using a sub-shell lets us capture it all in one go:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>( run a command
+  run another command
+  run one more command ) &gt;&gt; etagging.log
+</code></pre></div></div>
+
+<h3 id="time-and-redirection">Time and redirection</h3>
+
+<p>Using the <code class="highlighter-rouge">time</code> <a href="https://en.wikipedia.org/wiki/Shell_builtin">builtin</a> to benchmark tags creation introduces a little more complexity. We only want the real (perceived) time, so we need to set the <code class="highlighter-rouge">TIMEFORMAT</code> shell variable accordingly.</p>
+
+<p>Since <code class="highlighter-rouge">time</code> broadcasts its results through stderr rather than stdout, we can’t rely on just <code class="highlighter-rouge">&gt;&gt;</code>, which redirects stdout, or our time data would print to screen rather than being recorded. So once we’ve redirected stdout to the log-file, we need to redirect stderr there as well.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>( run a command
+  run another command
+  run one more command ) &gt;&gt; etagging.log 2&gt;&amp;1
+</code></pre></div></div>
+
+<p>You could read this as,</p>
+<blockquote>
+  <p>run commands in a sub-shell, send the sub-shell’s standard output to the log-file, and send its standard error data to the same location you’re sending the standard output (i.e. the log-file)</p>
+</blockquote>
+
+<p>The digits in <code class="highlighter-rouge">2&gt;&amp;1</code> are <a href="https://en.wikipedia.org/wiki/File_descriptor">file descriptors</a>, indicating stderr (<code class="highlighter-rouge">2</code>) and stdout (<code class="highlighter-rouge">1</code>). A running process has 3 standard I/O streams through which to communicate. As a source of input, it has stdin (<code class="highlighter-rouge">0</code>); when it’s ready to broadcast some output, it <em>generally</em> sends that to stdout (<code class="highlighter-rouge">1</code>), but <em>some</em> output is semantically different (e.g. error messages), and it’s useful to have a separate stream for such data. This is where stderr (<code class="highlighter-rouge">2</code>) comes in.</p>
+
+<p>If you’re familiar with pointers in C, you could think of <code class="highlighter-rouge">&amp;1</code> as the location of stdout, so <code class="highlighter-rouge">2&gt;&amp;1</code> says to redirect stderr to the same place that stdout is headed. The order of redirection operations is significant. If we’d written,</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>( run some commands ) 2&gt;&amp;1 &gt;&gt; etagging.log
+</code></pre></div></div>
+
+<p>we’d be directing stderr to the same location as stdout and then directing stdout elsewhere. It would be like saying,</p>
+<blockquote>
+  <p>Hey stderr, ask stdout where it’s currently headed. Go there.</p>
+</blockquote>
+
+<blockquote>
+  <p>Hey stdout, change of plans: I want you to go to this log-file.</p>
+</blockquote>
+
+<h3 id="space-and-a-little-awk">Space and a little awk</h3>
+
+<p>We also want to record the size of the source-file and the size of the tags-file. We use <code class="highlighter-rouge">awk</code> to extract these sizes (in bytes) from the 5th field of long-format <code class="highlighter-rouge">ls</code> file-listings:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>( ls -l $f
+  ls -l tmp.TAGS ) | awk '{ print $5 }'
+</code></pre></div></div>
+
+<h2 id="sorting-the-results">Sorting the results</h2>
+
+<p>Once I had the profiling data, I wanted to sort it by time and tag-size to see which files were causing the big slowdown and eating up my diskspace. The <code class="highlighter-rouge">sort</code> command expects newline-separated records with whitespace-separated fields. I used <code class="highlighter-rouge">awk</code> to translate the results to the horizontal format <code class="highlighter-rouge">sort</code> expects.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>awk 'BEGIN { RS=""; FS="\n" } { print $1, $2, $3, $4 }' etagging.log
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">BEGIN</code> block to sets up awk’s <code class="highlighter-rouge">RS</code> (record-separator) and <code class="highlighter-rouge">FS</code> (field-separator) variables, allowing it to correctly identify each record. The next block defines the actions to take on each record. In this case I just want to print each of its fields on a single line. Piping this into <code class="highlighter-rouge">sort</code> generates results sorted by time:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>awk 'BEGIN { RS=""; FS="\n" } { print $1, $2, $3, $4 }' etagging.log | sort -nrk2 &gt; etagging-time
+</code></pre></div></div>
+
+<p>Here I’m telling <code class="highlighter-rouge">sort</code> to sort numerically, in reverse order, treating the 2nd field as the sort-key. I did the same for tag file size, the 4th field:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>awk 'BEGIN { RS=""; FS="\n" } { print $1, $2, $3, $4 }' etagging.log | sort -nrk4 &gt; etagging-size
+</code></pre></div></div>
+
+<h2 id="identifying-the-culprit">Identifying the Culprit</h2>
+
+<p>Here’s what floated to the top:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ head -n 3 etagging-time
+app/models/something_big.json 108.024 273517 8084569921
+vendor/assets/stylesheets/bootstrap/bootstrap.min.css 2.159 118153 288792277
+app/models/appointment.rb 0.252 10096 2481
+
+$ head -n 3 etagging-size
+app/models/something_big.json 108.024 273517 8084569921
+vendor/assets/stylesheets/bootstrap/bootstrap.min.css 2.159 118153 288792277
+vendor/assets/stylesheets/intlTelInput.css 0.051 18194 5464144
+</code></pre></div></div>
+
+<p>The two top offenders, by both time and by size, were a large JSON file and a minified bootstrap stylesheet, neither of which I had much interest in tagging. The JSON file outshadowed everything else by miles, and that shed some light on the performance disparity between universal-ctags and the other tagging libraries: only universal-ctags had JSON support, so it was the only one tagging JSON at all.</p>
+
+<p>A quick fix was to add JSON to the languages I exclude from tagging, but it begged the question, why didn’t <em>c</em>tags exhibit the same problem as <em>e</em>tags?</p>
+
+<p>The hint was hiding in that <em>minified</em> stylesheet. The JSON file and the stylesheet had extremely long lines. Both ctags and etags include source line references, and these references get truncated to a reasonable length when generating <em>c</em>tags, but not when generating <em>e</em>tags.</p>
+
+<h3 id="conclusion">Conclusion</h3>
+
+<p>The team at <a href="https://github.com/universal-ctags/ctags">universal-ctags</a> was incredibly helpful in debugging this and helped turn a source of frustration into a learning experience. They were quick to respond and are looking into resolving the underlying issue. In the meantime, I’ve adjusted my command for generating <em>e</em>tags.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git ls-files | ctags -L - -e -o ".git/etags" --tag-relative=yes --languages=-javascript,sql,json,css
+</code></pre></div></div>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/2017-06-03/shell-while-loops-and-variables" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/2015-06-06/karabiner" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      unix know-how &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2014-11-04 22:48:00 -0500">November 04, 2014</time>
+    
+  </div>
+
+  <h1 class="post-title">unix know-how</h1>
+  <div class="post-line"></div>
+
+  <p>I was working with MySQL queries that involved timezone conversion when I noticed that my local instance of MySQL didn’t recognize named timezones. Queries with named timezones were returning <code class="highlighter-rouge">null</code>, while those with numeric offsets from UTC were returning correct conversions:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt; SELECT CONVERT_TZ('2014-01-01 12:00:00', 'America/New_York', 'UTC');
+=&gt; null
+
+&gt; SELECT CONVERT_TZ('2014-01-01 12:00:00', '-5:00', '+00:00');
+=&gt; 2014-01-01 17:00:00
+</code></pre></div></div>
+
+<p>I hadn’t loaded my system’s zoneinfo files into the <code class="highlighter-rouge">mysql</code> database. As per the <a href="http://dev.mysql.com/doc/refman/5.5/en/time-zone-support.html">docs</a>, I used the <code class="highlighter-rouge">mysql_tzinfo_to_sql</code> utility to load them from <code class="highlighter-rouge">/usr/share/zoneinfo</code>:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root mysql
+</code></pre></div></div>
+
+<p>The process failed before loading all the tables:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ERROR 1406 (22001) at line 38408: Data too long for column 'Abbreviation' at row 1
+</code></pre></div></div>
+
+<p>Now I could reference <code class="highlighter-rouge">America/New_York</code>, but not <code class="highlighter-rouge">UTC</code>, since the process had failed before loading that table. A coworker suggested I write the command’s output to a file so I could debug:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mysql_tzinfo_to_sql /usr/share/zoneinfo &gt; debuggingfile
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">debuggingfile</code> contained many insert statements, and line 38408 revealed the problem:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>INSERT INTO time_zone_transition_type (Time_zone_id, Transition_type_id, Offset, Is_DST, Abbreviation) VALUES (@time_zone_id, 0, 0, 0, 'Local time zone must be set--see zic manual page');
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">'Local time zone must be set--see zic manual page'</code> value was too long for the Abbreviation column. I shortened it to <code class="highlighter-rouge">'unset'</code>, fed the file into mysql, and all was well.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mysql -u root mysql &lt; debuggingfile
+</code></pre></div></div>
+
+<p>I was struck by the simplicity of this solution, and how a little unix know-how can demystify a problem.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/2015-06-06/karabiner" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/2014-11-04/search-and-replace" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>

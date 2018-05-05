@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      search & replace &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2014-11-04 08:05:00 -0500">November 04, 2014</time>
+    
+  </div>
+
+  <h1 class="post-title">search & replace</h1>
+  <div class="post-line"></div>
+
+  <p>Performing a project-wide search-and-replace is a common task, and yet I still forget how to do it in Vim. While there’s not that much to it (build an argument list of relevant files and run a global substitution across them), I’ve had to look it up enough times to start wondering if there’s a better way. I ended up writing a shell function, as well as a Ruby-specific wrapper for it.</p>
+
+<p>Now if I want to rename a function across my project’s javascript files, I can drop onto the command-line and run:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ greplace **.js uglyFunctionName nicerFunctionName
+</code></pre></div></div>
+
+<p>Or, if I’m renaming a Ruby method:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ rupl bad_method_name good_method_name
+</code></pre></div></div>
+
+<h2 id="the-sauce">The Sauce</h2>
+<p>Using <code class="highlighter-rouge">find</code>, <code class="highlighter-rouge">grep</code>, and <code class="highlighter-rouge">sed</code> in concert, we declare which files to search, what to search for, and what to do with those files that contain a match.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>greplace<span class="o">()</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">[</span> <span class="s2">"$#"</span> <span class="o">!=</span> 3 <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">echo</span> <span class="s2">"Usage: greplace file_pattern search_pattern replacement"</span>
+    <span class="k">return </span>1
+  <span class="k">else
+    </span><span class="nv">file_pattern</span><span class="o">=</span><span class="nv">$1</span>
+    <span class="nv">search_pattern</span><span class="o">=</span><span class="nv">$2</span>
+    <span class="nv">replacement</span><span class="o">=</span><span class="nv">$3</span>
+
+    <span class="c"># This is built for BSD grep and the sed bundled with OS X.</span>
+    <span class="c"># GNU grep takes -Z instead of --null, and other versions of sed may not support the -i '' syntax.</span>
+
+    find <span class="nb">.</span> <span class="nt">-name</span> <span class="s2">"</span><span class="nv">$file_pattern</span><span class="s2">"</span> <span class="nt">-exec</span> <span class="nb">grep</span> <span class="nt">-lw</span> <span class="nt">--null</span> <span class="s2">"</span><span class="nv">$search_pattern</span><span class="s2">"</span> <span class="o">{}</span> + |
+    xargs <span class="nt">-0</span> <span class="nb">sed</span> <span class="nt">-i</span> <span class="s1">''</span> <span class="s2">"s/[[:&lt;:]]</span><span class="nv">$search_pattern</span><span class="s2">[[:&gt;:]]/</span><span class="nv">$replacement</span><span class="s2">/g"</span>
+  <span class="k">fi</span>
+<span class="o">}</span>
+
+rupl<span class="o">()</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">[</span> <span class="s2">"$#"</span> <span class="o">!=</span> 2 <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">echo</span> <span class="s2">"Usage: rupl search_pattern replacement"</span>
+    <span class="k">return </span>1
+  <span class="k">else
+    </span><span class="nv">search_pattern</span><span class="o">=</span><span class="nv">$1</span>
+    <span class="nv">replacement</span><span class="o">=</span><span class="nv">$2</span>
+
+    greplace <span class="s1">'**.rb'</span> <span class="s2">"</span><span class="nv">$search_pattern</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$replacement</span><span class="s2">"</span>
+  <span class="k">fi</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="ingredients">Ingredients</h2>
+<p>The first thing <code class="highlighter-rouge">greplace</code> does is test whether it received the wrong number of arguments: <code class="highlighter-rouge">[ "$#" != 3 ]</code>. If so, we print a usage message and return an error code. Otherwise, we set some local variables with more memorable names than <code class="highlighter-rouge">1</code>, <code class="highlighter-rouge">2</code>, and <code class="highlighter-rouge">3</code>.</p>
+
+<p>Next, we <code class="highlighter-rouge">find</code> pathnames in the current directory (and subdirectories) that match <code class="highlighter-rouge">file_pattern</code>. Using <code class="highlighter-rouge">find ... --exec &lt;command&gt; {};</code> lets us run a command on each found path, expanding <code class="highlighter-rouge">{}</code> to the pathname. Replacing <code class="highlighter-rouge">;</code> with <code class="highlighter-rouge">+</code> will instead expand <code class="highlighter-rouge">{}</code> to as many of the found pathnames as possible, which allows us to feed all the found files as arguments to a single <code class="highlighter-rouge">grep</code>.</p>
+
+<p>We <code class="highlighter-rouge">grep</code> the relevant files for <code class="highlighter-rouge">search_pattern</code>, restricting results to the names of files (<code class="highlighter-rouge">-l</code>) that contain a whole-word (<code class="highlighter-rouge">-w</code>) match. We also print a <a href="http://en.wikipedia.org/wiki/Null_character">null-character</a> after each filename in the results (<code class="highlighter-rouge">--null</code>), which will be useful as a delimiter in the next step.</p>
+
+<p>The results of <code class="highlighter-rouge">grep</code> are piped into <code class="highlighter-rouge">xargs -0</code>, which constructs an argument list (recognizing the null-character delimiter) and feeds this list to <code class="highlighter-rouge">sed</code> for further processing.</p>
+
+<p>We then use <code class="highlighter-rouge">sed -i</code> to edit each file “in place” (rather than writing results to stdout) without creating any backup files (<code class="highlighter-rouge">''</code>), which could be risky, but since I’m working with Git this seems reasonable.</p>
+
+<p>The actual search-and-replace is simply a pattern substitution. The <code class="highlighter-rouge">[[:&lt;:]]</code> and <code class="highlighter-rouge">[[:&gt;:]]</code> delimiters restrict it to whole-word matches.</p>
+
+<h2 id="caveats">Caveats</h2>
+<p>A few things limit this function’s portability. For one, not all versions of <code class="highlighter-rouge">grep</code> recognize the <code class="highlighter-rouge">--null</code> flag. GNU grep uses <code class="highlighter-rouge">-Z</code> instead. Also, the <code class="highlighter-rouge">-i ''</code> syntax may not be recognized by all versions of <code class="highlighter-rouge">sed</code> (actually, from what I was able to gather, that syntax might be unique to the version bundled with OSX).</p>
+
+<p>That being said, it would only take a few minor tweaks to get this working on a different system.</p>
+
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/2014-11-04/unix-know-how" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/2014-10-27/faster-specs" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>

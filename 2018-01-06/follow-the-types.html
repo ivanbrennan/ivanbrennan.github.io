@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      type tetris &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2018-01-06 13:18:00 -0500">January 06, 2018</time>
+    
+  </div>
+
+  <h1 class="post-title">type tetris</h1>
+  <div class="post-line"></div>
+
+  <p>Time for some Haskell. The following expression evaluates to <code class="highlighter-rouge">Just 6</code>:</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fmap</span> <span class="n">sum</span> <span class="o">$</span> <span class="kt">Just</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>So does this one:</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="n">fmap</span> <span class="o">.</span> <span class="n">fmap</span><span class="p">)</span> <span class="n">sum</span> <span class="kt">Just</span> <span class="o">$</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>How does the second one work? How do the type signatures line up?</p>
+
+<p>First consider <code class="highlighter-rouge">fmap . fmap</code>:</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="o">.</span><span class="p">)</span> <span class="o">::</span> <span class="p">(</span><span class="n">b</span> <span class="o">-&gt;</span> <span class="n">c</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">c</span>
+
+<span class="n">fmap</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+
+<span class="p">(</span><span class="o">.</span><span class="p">)</span> <span class="n">fmap</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a1</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">))</span>
+                      <span class="o">-&gt;</span> <span class="n">a1</span>
+                      <span class="o">-&gt;</span> <span class="p">(</span><span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+
+<span class="n">fmap</span> <span class="o">.</span> <span class="n">fmap</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Functor</span> <span class="n">f</span><span class="p">,</span> <span class="kt">Functor</span> <span class="n">f1</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span>
+                                       <span class="o">-&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="n">a</span><span class="p">)</span>
+                                       <span class="o">-&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Then <code class="highlighter-rouge">sum</code>:</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sum</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Num</span> <span class="n">a</span><span class="p">,</span> <span class="kt">Foldable</span> <span class="n">t</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">t</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">a</span>
+</code></pre></div></div>
+
+<p>Now apply <code class="highlighter-rouge">fmap . fmap</code> to <code class="highlighter-rouge">sum</code>:</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="n">fmap</span> <span class="o">.</span> <span class="n">fmap</span><span class="p">)</span> <span class="n">sum</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Num</span> <span class="n">b</span><span class="p">,</span>
+                      <span class="kt">Foldable</span> <span class="n">t</span><span class="p">,</span>
+                      <span class="kt">Functor</span> <span class="n">f</span><span class="p">,</span>
+                      <span class="kt">Functor</span> <span class="n">f1</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">))</span>
+                                  <span class="o">-&gt;</span> <span class="n">f1</span> <span class="p">(</span><span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Next, the tricky bit.
+Note that <code class="highlighter-rouge">(a -&gt; b) ~ ((-&gt;) a b)</code>.
+So the signature of <code class="highlighter-rouge">Just</code>, which we’d usually write:</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">Just</span> <span class="o">::</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Maybe</span> <span class="n">a</span>
+</code></pre></div></div>
+<p>can also be expressed as:</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">Just</span> <span class="o">::</span> <span class="p">(</span><span class="o">-&gt;</span><span class="p">)</span> <span class="n">a</span> <span class="p">(</span><span class="kt">Maybe</span> <span class="n">a</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>We want the type signature for <code class="highlighter-rouge">(fmap . fmap) sum Just</code>.</p>
+
+<p>Consider the signature of <code class="highlighter-rouge">(fmap . fmap) sum</code>.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
+Functor f,
+Functor f1) =&gt; f1 (f (t b))
+            -&gt; f1 (f b)
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">f1</code> must have a Functor instance.</p>
+
+<p><code class="highlighter-rouge">((-&gt;) a)</code> has a <a href="https://github.com/ghc/packages-base/blob/52c0b09036c36f1ed928663abb2f295fd36a88bb/GHC/Base.lhs#L234">Functor instance</a> for all <code class="highlighter-rouge">a</code>.</p>
+
+<p><code class="highlighter-rouge">((-&gt;) (t b))</code>, therefore, has a Functor instance.</p>
+
+<p>If we replace <code class="highlighter-rouge">f1</code> with <code class="highlighter-rouge">((-&gt;) (t b))</code>, we produce a more specific type signature, expressing a specialization of <code class="highlighter-rouge">(fmap . fmap) sum</code></p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        ... =&gt; ((-&gt;) (t b)) (f (t b))
+            -&gt; ((-&gt;) (t b)) (f b)
+</code></pre></div></div>
+
+<p>We can further specialize it by replacing <code class="highlighter-rouge">f</code> with Maybe.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        ... =&gt; ((-&gt;) (t b)) (Maybe (t b))
+            -&gt; ((-&gt;) (t b)) (Maybe b)
+</code></pre></div></div>
+
+<p>Now consider a specialization of <code class="highlighter-rouge">Just</code> where <code class="highlighter-rouge">a ~ (t b)</code></p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Just :: (-&gt;) (t b) (Maybe (t b))
+</code></pre></div></div>
+
+<p>If we apply the specialized <code class="highlighter-rouge">(fmap . fmap) sum</code> to this specialization of <code class="highlighter-rouge">Just</code>, we get:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        ... =&gt; ((-&gt;) (t b)) (Maybe b)
+</code></pre></div></div>
+<p>which can be rewritten idiomatically as:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        ... =&gt; t b -&gt; Maybe b
+</code></pre></div></div>
+
+<p>This leaves us with:</p>
+<div class="language-haskell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="n">fmap</span> <span class="o">.</span> <span class="n">fmap</span><span class="p">)</span> <span class="n">sum</span> <span class="kt">Just</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Num</span> <span class="n">b</span><span class="p">,</span> <span class="kt">Foldable</span> <span class="n">t</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">t</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="kt">Maybe</span> <span class="n">b</span>
+</code></pre></div></div>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/2018-04-30/can-i-nix-it" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/2017-08-05/command-history-filter" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>

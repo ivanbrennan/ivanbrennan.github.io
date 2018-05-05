@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      History: filtered vs unfiltered &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-08-05 08:49:00 -0400">August 05, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">History: filtered vs unfiltered</h1>
+  <div class="post-line"></div>
+
+  <p>I get a lot of use out of shell history. At its simplest, tapping <code class="highlighter-rouge">↑</code> cycles through previous commands. Incremental search (<code class="highlighter-rouge">C-r</code>) will retrieve matching history entries, updating as you type. There are more ways you can access history, but these two in particular have become ingrained in my workflow.</p>
+
+<p>I’m running Bash (for now), and have it configured to save a good deal of history:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">HISTSIZE</span><span class="o">=</span>10000
+<span class="nb">shopt</span> <span class="nt">-s</span> histappend
+</code></pre></div></div>
+<p>When you start a shell, Bash reads <code class="highlighter-rouge">~/.bash_history</code> (or <code class="highlighter-rouge">$HISTFILE</code> if that’s been set), initializing the in-memory history your session will interact with. When exiting the shell, new history is written to disk, making it available to future sessions. With <code class="highlighter-rouge">histappend</code> set, the history file is appended to rather than overwritten.</p>
+
+<p>I’ve also configured it to save multiline commands with embedded newlines, separated by timestamps. This makes it easy to recall and modify more complex commands, like loops and functions.</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">HISTTIMEFORMAT</span><span class="o">=</span><span class="s1">'%F %T '</span>
+<span class="nb">shopt</span> <span class="nt">-s</span> cmdhist lithist
+</code></pre></div></div>
+
+<p>Bash has a <code class="highlighter-rouge">HISTIGNORE</code> variable that can hold patterns you want to exclude from history. The patterns are colon-separated and treated as shell globs that must match the entire line. Multiline entries are decided based on the first line.</p>
+
+<p>If, for example, you wanted to ignore the <code class="highlighter-rouge">jobs</code> builtin and any <code class="highlighter-rouge">ls</code> commands, you could set:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">HISTIGNORE</span><span class="o">=</span><span class="s1">'jobs:ls[ ]*'</span>
+</code></pre></div></div>
+<p>I tried this out but quickly realized I prefer an unfiltered recent history. If I run,</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ls /path/to/some/directory
+</code></pre></div></div>
+
+<p>I want to be able to repeat <code class="highlighter-rouge">ls</code> on a subdirectory by tapping <code class="highlighter-rouge">↑</code> and appending to the path.</p>
+
+<p>More distant history, on the other hand, could benefit from filtering. I don’t see much value in persisting <code class="highlighter-rouge">ls</code> or <code class="highlighter-rouge">man</code> commands from one session to the next. I’m not likely to search for them, and when I’m reaching back into a previous session’s history it’s nearly always via search – either <em>reverse-search-history</em> (<code class="highlighter-rouge">C-r</code>) or the less well-known <em>history-search-backward</em>, which retrieves the previous command matching what you’ve already typed, and which I’ve bound to <code class="highlighter-rouge">M-p</code>.</p>
+
+<p>The only things I’m using <code class="highlighter-rouge">HISTIGNORE</code> for are commands like <code class="highlighter-rouge">jobs</code> and <code class="highlighter-rouge">fg</code>, which I tend to just retype.</p>
+
+<h3 id="filtering-persisted-history">Filtering persisted history</h3>
+
+<p>To keep commands like <code class="highlighter-rouge">ls</code> from polluting the history of future shell sessions, I’ve written a script to filter my <code class="highlighter-rouge">~/.bash_history</code> when exiting the shell. The script is triggered by an <code class="highlighter-rouge">EXIT</code> trap in my <code class="highlighter-rouge">~/.bashrc</code>:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="o">[[</span> <span class="nv">$-</span> <span class="o">==</span> <span class="k">*</span>i<span class="k">*</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then
+  </span><span class="nb">trap</span> <span class="s1">'$HOME/.bash_history_filter &gt;/dev/null 2&gt;&amp;1 &amp;'</span> EXIT
+<span class="k">fi</span>
+</code></pre></div></div>
+<p>The cryptic <code class="highlighter-rouge">$-</code> variable holds flags indicating which shell options are in effect, and I’m using it to restrict the trap to interactive shells (indicated by the <code class="highlighter-rouge">i</code> flag). The script it runs is as follows:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/sh</span>
+
+<span class="nv">tmpfile</span><span class="o">=</span><span class="k">$(</span><span class="nb">mktemp</span><span class="k">)</span>
+<span class="nb">trap</span> <span class="s1">'rm -f "$tmpfile"'</span> EXIT
+
+<span class="nv">awk_script</span><span class="o">=</span><span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/.bash_history_filter.awk"</span>
+<span class="nv">persisted_history</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">HISTFILE</span><span class="k">:-</span><span class="nv">$HOME</span><span class="p">/.bash_history</span><span class="k">}</span><span class="s2">"</span>
+
+<span class="k">if</span> <span class="o">[[</span> <span class="nt">-r</span> <span class="s2">"</span><span class="nv">$awk_script</span><span class="s2">"</span> <span class="o">&amp;&amp;</span> <span class="nt">-r</span> <span class="s2">"</span><span class="nv">$persisted_history</span><span class="s2">"</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then
+  </span><span class="nb">awk</span> <span class="nt">-f</span> <span class="s2">"</span><span class="nv">$awk_script</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$persisted_history</span><span class="s2">"</span> <span class="o">&gt;</span> <span class="s2">"</span><span class="nv">$tmpfile</span><span class="s2">"</span>
+
+  <span class="nb">mv</span> <span class="s2">"</span><span class="nv">$tmpfile</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$persisted_history</span><span class="s2">"</span>
+<span class="k">fi</span>
+</code></pre></div></div>
+<p>The actual filtering logic lives in an Awk script. The shell history is run through that filter and output to a temporary file, which subsequently replaces the original history file. An exit trap will remove the temporary file if something goes wrong and the script exits before executing the <code class="highlighter-rouge">mv</code>.</p>
+
+<p>Awk processes input one line at a time, splitting the line into individual fields (space-delimited by default). The fields are referenceable as <code class="highlighter-rouge">$1</code>, <code class="highlighter-rouge">$2</code>, etc. and the entire line is available in <code class="highlighter-rouge">$0</code>. Each line is run through the set of Awk commands you define. A common idiom, in pseudocode is:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/pattern/ {
+  # commands to run on any line matching pattern 
+}
+
+$1 ~ /word/ {
+  # commands to run on any line whose first field matches word 
+}
+</code></pre></div></div>
+
+<p>You can call <code class="highlighter-rouge">next</code> to skip any subsequent commands and jump to the next line of input. You can also set and manipulate variables to track state, accumulate text, etc. and <code class="highlighter-rouge">print</code> to write output. My filter is:</p>
+<div class="language-awk highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">/^</span><span class="c1">#[[:digit:]]{10}$/ {</span>
+  <span class="nx">timestamp</span> <span class="o">=</span> <span class="nv">$0</span>
+  <span class="nx">histentry</span> <span class="o">=</span> <span class="s2">""</span>
+  <span class="k">next</span>
+<span class="p">}</span>
+
+<span class="p">(</span><span class="nv">$1</span> <span class="o">~</span> <span class="sr">/^</span><span class="se">(</span><span class="sr">ls</span><span class="se">?</span><span class="sr">|man|cat</span><span class="se">)</span><span class="sr">$/</span><span class="p">)</span> <span class="o">||</span> <span class="sr">/^</span><span class="se">[</span><span class="sr">[:alpha:</span><span class="se">]</span><span class="sr">]$/</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span> <span class="nx">timestamp</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">print</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">histentry</span> <span class="o">=</span> <span class="nv">$0</span>
+  <span class="p">}</span>
+  <span class="k">next</span>
+<span class="p">}</span>
+
+<span class="nx">timestamp</span> <span class="p">{</span>
+  <span class="k">print</span> <span class="nx">timestamp</span>
+  <span class="nx">timestamp</span> <span class="o">=</span> <span class="s2">""</span>
+<span class="p">}</span>
+
+<span class="nx">histentry</span> <span class="p">{</span>
+  <span class="k">print</span> <span class="nx">histentry</span>
+  <span class="nx">histentry</span> <span class="o">=</span> <span class="s2">""</span>
+<span class="p">}</span>
+
+<span class="p">{</span> <span class="k">print</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>It’s essentially a state-machine.</p>
+
+<p><img class="state-machine" src="/images/history-filter/state-machine.png" alt="'state-machine'" /></p>
+
+<p>Getting the Awk script just right took some work, and I found it helpful to have some <a href="https://github.com/ivanbrennan/dotfiles/blob/master/shell/filter_test">automated tests</a> at my back as I fiddled with it.</p>
+
+<p>When processing multiline entries, I decided that if a command is complex enough to warrant mutliple lines, it’s worth remembering, even if its first line matches an “uninteresting” pattern. The “uninteresting” predicate ended up as:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>($1 ~ /^(ls?|man|cat)$/) || /^[[:alpha:]]$/
+</code></pre></div></div>
+
+<p>This matches some commands that are uninteresting with or without arguments, any line that consists of a single letter. I have some functions/aliases I use – <code class="highlighter-rouge">v</code> for (neo)vim, <code class="highlighter-rouge">e</code> for emacs, <code class="highlighter-rouge">t</code> for tmux – which aren’t very interesting by themselves, but could have interesting arguments. I frequently use <code class="highlighter-rouge">C-r</code>, for example, to recall/reuse a previous <code class="highlighter-rouge">tmux new-session</code> command:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>t new-session -s ruby-project -c /path/to/ruby-project
+</code></pre></div></div>
+
+<p>I tried out Sed as an alternative to Awk for this use, but decided against it. Sed has an extremely terse syntax and fought me most of the way. I finally found a couple ways to make it work, but they’re pretty gnarly. If you install GNU Sed, you can tell Sed to treat lines as separated by NULL bytes. The entire file will be slurped into a single “line” on which you can apply substitution:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gsed --null-data \
+     --regexp-extended \
+     's/(#[0-9]{10}\n((cat|ls?|man)([^[:alnum:]][^\n]*)?|[[:alpha:]])\n)+(#[0-9]{10}\n|$)/\5/g' \
+     "$infile" &gt;"$outfile"
+</code></pre></div></div>
+
+<p>Sed implementations that don’t have the NULL byte trick up their sleeve (e.g. BSD Sed), will instead have to juggle data back and forth between the “hold-space” and “pattern-space”. I scripted this out of morbid curiosity, but I wouldn’t wish it on anyone:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sed -E -f horrendous.sed "$infile" &gt;"$outfile"
+</code></pre></div></div>
+
+<p>with the following <code class="highlighter-rouge">horrendous.sed</code> script:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ {
+  1 h
+  1!H
+  x
+  /^#[[:digit:]]{10}\n((ls?|cat|man)([^[:alnum:]][[:print:]]*)?|[[:alpha:]])$/ d
+  p
+}
+
+/^#[[:digit:]]{10}$/ !{
+  1 h
+  1!H
+  d
+}
+
+x
+/^$/ d
+/^#[[:digit:]]{10}$/ d
+/^#[[:digit:]]{10}\n((ls?|cat|man)([^[:alnum:]][[:print:]]*)?|[[:alpha:]])$/ d
+</code></pre></div></div>
+
+<p>Benchmarking the Awk, GNU Sed, and Sed solutions on a 50,000 line file:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>awk  0.070s
+gsed 0.060s
+sed  0.080s
+</code></pre></div></div>
+
+<p>Awk is the best choice, I think. GNU Sed can shave 10 milliseconds off the run time, but the extra dependency and the 80+ character regex aren’t worth it.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/2018-01-06/follow-the-types" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/2017-06-03/shell-while-loops-and-variables" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      yield the weird &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2013-10-23 22:32:00 -0400">October 23, 2013</time>
+    
+  </div>
+
+  <h1 class="post-title">yield the weird</h1>
+  <div class="post-line"></div>
+
+  <p>I’m messing around with <code class="highlighter-rouge">yield</code> to get a handle on the various closures in Ruby, and I built a method that returns a rotated-mapped array. You could of course do this with the built-in <code class="highlighter-rouge">#rotate</code> and <code class="highlighter-rouge">#map</code> methods, but what fun is that?</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">rotomap</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+  <span class="n">arr</span><span class="p">.</span><span class="nf">each_index</span><span class="p">.</span><span class="nf">inject</span><span class="p">([])</span> <span class="k">do</span> <span class="o">|</span><span class="n">roto</span><span class="p">,</span> <span class="n">i</span><span class="o">|</span>
+    <span class="n">roto</span> <span class="o">&lt;&lt;</span> <span class="k">yield</span><span class="p">(</span> <span class="n">arr</span><span class="p">[</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">n</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">arr</span><span class="p">.</span><span class="nf">count</span><span class="p">)</span> <span class="p">]</span> <span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="n">rotomap</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span> <span class="s2">"</span><span class="si">#{</span><span class="n">x</span> <span class="o">*</span> <span class="mi">5</span><span class="si">}</span><span class="s2"> merge requests"</span> <span class="p">}</span>
+<span class="c1"># =&gt; ["20 merge requests", "25 merge requests", "5 merge requests", "10 merge requests", "15 merge requests"]</span>
+</code></pre></div></div>
+<p>I don’t imagine there’s a lot of rotomapping going on out there, but it was fun to slap this together.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/2013-11-01/other-peoples-dotfiles" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/2013-10-17/modules" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>

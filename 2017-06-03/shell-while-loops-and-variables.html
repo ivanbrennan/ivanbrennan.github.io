@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Shell: while loops and variables &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-06-03 11:22:00 -0400">June 03, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">Shell: while loops and variables</h1>
+  <div class="post-line"></div>
+
+  <p>A common idiom in shell scripting is to tweak the value of <code class="highlighter-rouge">IFS</code> (internal field separator) while reading lines of input:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">while </span><span class="nv">IFS</span><span class="o">=</span> <span class="nb">read</span> <span class="nt">-r</span> line
+<span class="k">do</span>
+    <span class="c"># ...</span>
+<span class="k">done</span>
+</code></pre></div></div>
+<p>This leads to questions about <code class="highlighter-rouge">IFS</code> itself and the <code class="highlighter-rouge">-r</code> flag, and there are plenty of good answers out there. I’d like to focus, however, on the <em>syntax</em> of <code class="highlighter-rouge">IFS=</code> and it’s location in the above line.</p>
+
+<p>Shell variables can be assigned and referenced:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> <span class="nv">var</span><span class="o">=</span>A
+<span class="o">&gt;</span> <span class="nb">echo</span> <span class="nv">$var</span>
+A
+</code></pre></div></div>
+<p>Sometimes you want to set a variable for the duration of a single command:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> <span class="nv">name</span><span class="o">=</span>Bob bash <span class="nt">-c</span> <span class="s1">'echo $name'</span>
+Bob
+<span class="o">&gt;</span> <span class="nb">echo</span> <span class="nv">$name</span>
+ 
+</code></pre></div></div>
+<p>At first glance, you might expect the first line of our <code class="highlighter-rouge">while</code> loop to look like:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">IFS</span><span class="o">=</span> <span class="k">while </span><span class="nb">read</span> <span class="nt">-r</span> line
+</code></pre></div></div>
+<p>but this causes a syntax error. In the <code class="highlighter-rouge">name=Bob</code> example, our entire line consisted of a single <a href="http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_01">simple command</a>, defined as</p>
+<blockquote>
+  <p>a sequence of optional variable assignments and redirections, in any sequence, optionally followed by words and redirections, terminated by a control operator.</p>
+</blockquote>
+
+<p>The <code class="highlighter-rouge">while</code> loop, however, is a <a href="http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_04">compound command</a>, with the format:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>while compound-list-1
+do
+    compound-list-2
+done
+</code></pre></div></div>
+<p>with <code class="highlighter-rouge">compound-list-1</code> being a sequence of <a href="http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_03">lists</a>. A list is defined as</p>
+<blockquote>
+  <p>a sequence of one or more AND-OR lists separated by the operators ‘;’ and ‘&amp;’.</p>
+</blockquote>
+
+<p>with an <code class="highlighter-rouge">AND-OR</code> list being</p>
+<blockquote>
+  <table>
+    <tbody>
+      <tr>
+        <td>a sequence of one or more pipelines separated by the operators “&amp;&amp;” and “</td>
+        <td> </td>
+        <td>” .</td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
+
+<p>A <a href="http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_02">pipeline</a>, in turn, has the format:</p>
+<blockquote>
+  <table>
+    <tbody>
+      <tr>
+        <td>[!] command1 [</td>
+        <td>command2 …]</td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
+
+<p>It feels like we’re going in circles, but the long and short of it is that we can view</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">while </span><span class="nv">IFS</span><span class="o">=</span> <span class="nb">read</span> <span class="nt">-r</span> line
+</code></pre></div></div>
+<p>as</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>while simple-command
+</code></pre></div></div>
+<p>Note that this means we’re setting <code class="highlighter-rouge">IFS</code> to a temporary value only during the <code class="highlighter-rouge">read</code> command, not during the body of the loop.</p>
+
+<p>To make this a little more concrete, here’s a script I’ve called <code class="highlighter-rouge">while-vars.sh</code>:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">var</span><span class="o">=</span>A
+<span class="nv">i</span><span class="o">=</span>1
+
+tester<span class="o">()</span> <span class="o">{</span>
+  <span class="nb">echo</span> <span class="s2">"var in tester: </span><span class="nv">$var</span><span class="s2">"</span>
+  <span class="o">((</span> <span class="nv">$i</span> <span class="o">&gt;</span> 0 <span class="o">))</span>
+<span class="o">}</span>
+
+<span class="nb">echo</span> <span class="nt">-e</span> <span class="s2">"var before loop: </span><span class="nv">$var</span><span class="se">\n</span><span class="s2">"</span>
+
+<span class="k">while </span><span class="nv">var</span><span class="o">=</span>B tester<span class="p">;</span> <span class="k">do
+  </span><span class="nb">let </span>i-<span class="o">=</span>1
+  <span class="nb">echo</span> <span class="s2">"var in loop: </span><span class="nv">$var</span><span class="s2">"</span>
+<span class="k">done
+
+</span><span class="nb">echo</span> <span class="nt">-e</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">var after loop: </span><span class="nv">$var</span><span class="s2">"</span>
+</code></pre></div></div>
+
+<p>The result:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> bash <span class="k">while</span><span class="nt">-vars</span>.sh
+var before loop: A
+
+var <span class="k">in </span>tester: B
+var <span class="k">in </span>loop: A
+var <span class="k">in </span>tester: B
+
+var after loop: A
+</code></pre></div></div>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/2017-08-05/command-history-filter" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/2016-12-20/debugging-etags" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>

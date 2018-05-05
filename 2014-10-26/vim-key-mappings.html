@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      vim key-mappings &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2014-10-26 12:04:00 -0400">October 26, 2014</time>
+    
+  </div>
+
+  <h1 class="post-title">vim key-mappings</h1>
+  <div class="post-line"></div>
+
+  <h3 id="map">:map</h3>
+<p>In the land of Vim, most key sequences can easily be mapped to others. The basic syntax is <code class="highlighter-rouge">map a b</code>, which tells Vim that when you type <code class="highlighter-rouge">a</code>, it should act like <code class="highlighter-rouge">b</code>. Similarly, <code class="highlighter-rouge">map abc wxyz</code> would process <code class="highlighter-rouge">wxyz</code> when you typed <code class="highlighter-rouge">abc</code>, but let’s look at a more useful example.</p>
+
+<p>You can use <code class="highlighter-rouge">m</code> to set a mark at the current cursor position, then jump to it later using the backtick (<code class="highlighter-rouge">`</code>) key. Take this buffer for example:</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">penguify</span><span class="p">(</span><span class="n">being</span><span class="p">)</span>
+  <span class="no">Penguin</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">being</span><span class="p">.</span><span class="nf">mass</span><span class="p">)</span>
+<span class="k">rescue</span> <span class="no">NameError</span>
+  <span class="nb">puts</span> <span class="s2">"Can't penguify massless being."</span>
+<span class="k">end</span>
+</code></pre></div></div>
+<p>I’ll put my cursor on the <em>N</em> in <code class="highlighter-rouge">NameError</code> and type (in normal mode) <code class="highlighter-rouge">mx</code>. This sets a mark we can jump to by typing ```x``. This is nice, but the backtick isn’t the most comfortable key to reach for.</p>
+
+<p>There’s a similar command using the single-quote. Typing <code class="highlighter-rouge">'x</code> jumps to the first non-whitespace character on the marked line. Probably not as useful. Let’s map the more reachable <code class="highlighter-rouge">'</code> to the more useful <code class="highlighter-rouge">`</code>.</p>
+
+<p>On Vim’s command-line, enter: <code class="highlighter-rouge">map ' `</code>. Now both <code class="highlighter-rouge">`</code> and <code class="highlighter-rouge">'</code> will take us directly to our mark. Instead of ditching the single-quote’s original command entirely, let’s map the backtick to it with <code class="highlighter-rouge">map ` '</code>. But this causes a problem. Hit either <code class="highlighter-rouge">`</code> or <code class="highlighter-rouge">'</code> and you’ll get an error (<code class="highlighter-rouge">E223: recursive mapping</code>). We’ve mapped <code class="highlighter-rouge">`</code> to <code class="highlighter-rouge">'</code>, which triggers <code class="highlighter-rouge">`</code>, which triggers <code class="highlighter-rouge">'</code>, and on and on.</p>
+
+<h3 id="noremap">:noremap</h3>
+<p>To recover, let’s remove both mappings with <code class="highlighter-rouge">unmap `</code> and <code class="highlighter-rouge">unmap '</code>, to start fresh. Now instead of using <code class="highlighter-rouge">map</code> we’ll use <code class="highlighter-rouge">noremap</code>. Running <code class="highlighter-rouge">noremap a b</code> will map <code class="highlighter-rouge">a</code> to <code class="highlighter-rouge">b</code> but avoid triggering anything <code class="highlighter-rouge">b</code> is mapped to. So we can enter <code class="highlighter-rouge">noremap ' `</code> and <code class="highlighter-rouge">noremap ` '</code> to swap our keys without falling into a recursive pit.</p>
+
+<h3 id="map-modes">map-modes</h3>
+<p>Depending on how you define them, your key-mappings will only apply in certain modes. The mappings we created with <code class="highlighter-rouge">map</code> and <code class="highlighter-rouge">noremap</code> apply in Normal, Visual, Select, and Operator-pending modes. Note the absence of Insert mode in that list – we’re not in danger of inserting <code class="highlighter-rouge">doesn`t</code> when we wanted <code class="highlighter-rouge">doesn't</code>.</p>
+
+<p>The <code class="highlighter-rouge">map</code>, <code class="highlighter-rouge">noremap</code>, and <code class="highlighter-rouge">unmap</code> commands each have mode-specific variations. My .vimrc, for instance, has a mapping for line-completion in Insert mode:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>inoremap &lt;C-L&gt; &lt;C-X&gt;&lt;C-L&gt;
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">&lt;C-L&gt;</code> represents Control-L, and is case-insensitive (same as <code class="highlighter-rouge">&lt;c-l&gt;</code>). This makes line-completion less cumbersome without polluting modes other than Insert with the mapping. For more on map-modes, check out <code class="highlighter-rouge">:help :map-modes</code>. The map-overview (<code class="highlighter-rouge">:help map-overview</code>) is a good place to start.</p>
+
+<h3 id="key-notation">key-notation</h3>
+<p>Vim uses a special notation for some keys. We saw <code class="highlighter-rouge">&lt;C-L&gt;</code> already. There’s also <code class="highlighter-rouge">&lt;Left&gt;</code>, <code class="highlighter-rouge">&lt;S-Left&gt;</code> (shift-left), <code class="highlighter-rouge">&lt;Space&gt;</code>, <code class="highlighter-rouge">&lt;CR&gt;</code> (carriage return / enter), and many more (see <code class="highlighter-rouge">:help key-notation</code>). We can use these to expand our key-mapping vocabulary.</p>
+
+<h3 id="editor-envy">editor-envy</h3>
+<p>I noticed a feature in Sublime Text that I wanted to simulate in Vim: <code class="highlighter-rouge">⌘Enter</code> adds a newline to the <em>end</em> of the current line rather than inserting it at the cursor position. This is handy if you’re in the middle of a line and want to open a new line beneath it without breaking the text the cursor’s on.</p>
+
+<p>To similate this, I needed to <code class="highlighter-rouge">inoremap</code> something to <code class="highlighter-rouge">&lt;C-O&gt;o</code>. From Insert mode, <code class="highlighter-rouge">&lt;C-O&gt;</code> pops you into Normal mode for a single command. Once there, <code class="highlighter-rouge">o</code> opens a new line beneath the current one and drops you onto it in Insert mode. In the interest of portability, I decided against using the <code class="highlighter-rouge">⌘</code> key, since it’s Mac-specific, and went with Control instead:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>inoremap &lt;C-CR&gt; &lt;C-O&gt;o
+</code></pre></div></div>
+
+<p>Now I can hit Control-Enter from Insert mode to drop down to a new line without disrupting the one I’m on. Actually no, I can’t. I can if I’m using MacVim, but terminal Vim doesn’t recognize the <code class="highlighter-rouge">&lt;C-CR&gt;</code> key-combo. This is where things get interesting.</p>
+
+<h3 id="terminal-keycodes">terminal keycodes</h3>
+<p>To get the <code class="highlighter-rouge">&lt;C-CR&gt;</code> key-mapping to work in terminal Vim, I needed to first tell iTerm what to send when I hit Control-Enter, then tell Vim what to listen for and how to interpret it. Let’s start with iTerm. The steps for Terminal.app are similar, though the menus and appearance will differ.</p>
+
+<p>In iTerm’s <em>Preferences</em> (<code class="highlighter-rouge">⌘,</code>), the <em>Profiles</em> tab has a <em>Keys</em> subtab. From there, you can define custom actions to trigger with any number of key-combinations. Clicking the ‘<strong>+</strong>’ at the bottom of the list reveals a dialog to add a new combination.</p>
+
+<p><img class="screenshot" src="/images/iterm/keys.png" alt="'keys'" /></p>
+
+<p>I hit Control-Enter to enter <code class="highlighter-rouge">^↩</code> in the <em>Keyboard Shortcut</em> field and selected <em>Send Escape Sequence</em> from the <em>Action</em> drop-down, revealing a field labeled “Esc+”. Here I entered <code class="highlighter-rouge">[25~</code>, telling iTerm to send Esc + <code class="highlighter-rouge">[25~</code> when Control-Enter is typed.</p>
+
+<p>“Why <code class="highlighter-rouge">[25~</code>? Where did that come from?” I was hoping you wouldn’t ask. Figuring out what codes to use, what wouldn’t conflict with anything, and what would be interpretted consistently across xterm, GNU screen, and tmux was not a straightforward process. Lots of googling and trial and error, and recounting it is probably best saved for another post. For now, I’ll stay focused on getting it wired up with Vim.</p>
+
+<p>Next, I needed to tell Vim how to interpret the <code class="highlighter-rouge">^[[25~</code> escape sequence that iTerm would be sending its way. (Note that the initial <code class="highlighter-rouge">^[</code> is the Escape character itself.) I set an unused Function key to the escape sequence:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>set &lt;F13&gt;=^[[25~
+</code></pre></div></div>
+
+<p>To enter that command correctly, you need to type <code class="highlighter-rouge">set &lt;F13&gt;=</code>, hit Control-V, hit Escape, then finish with <code class="highlighter-rouge">[25~</code>. Control-V followed by Escape enters the actual terminal code for the Escape key (which <em>appears</em> as the single character <code class="highlighter-rouge">^[</code>). The same is true whether you’re entering it on Vim’s command-line or inserting it in your .vimrc.</p>
+
+<p>With Vim listening for the escape sequence and associating it with a key, I mapped that key to <code class="highlighter-rouge">&lt;C-CR&gt;</code>:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>map  &lt;F13&gt; &lt;C-Cr&gt;  
+map! &lt;F13&gt; &lt;C-Cr&gt;
+</code></pre></div></div>
+
+<p>The call to <code class="highlighter-rouge">map</code> applies the mapping in Normal, Visual, Select, and Operator-pending mappings, while <code class="highlighter-rouge">map!</code> applies to Insert and Command-line mappings. With all this in place, terminal Vim can recognize Control-Enter and the <code class="highlighter-rouge">&lt;C-CR&gt;</code> key-notation.</p>
+
+<p>You can apply this approach to a lot of other key’s that would otherwise be off-limits. A section of my <a href="https://github.com/ivanbrennan/vim/blob/master/vimrc">vimrc</a> wires up a bunch of them. I’m cutting down on the mappings these days, but it’s nice to know you can do this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>if &amp;term =~ "xterm" || &amp;term =~ "screen" || &amp;term =~ "builtin_gui"
+  " Ctrl-Enter
+  set  &lt;F13&gt;=[25~
+  map  &lt;F13&gt; &lt;C-CR&gt;
+  map! &lt;F13&gt; &lt;C-CR&gt;
+
+  " Shift-Enter
+  set  &lt;F14&gt;=[27~
+  map  &lt;F14&gt; &lt;S-CR&gt;
+  map! &lt;F14&gt; &lt;S-CR&gt;
+
+  " Ctrl-Space
+  set  &lt;F15&gt;=[29~
+  map  &lt;F15&gt; &lt;C-Space&gt;
+  map! &lt;F15&gt; &lt;C-Space&gt;
+
+  " Shift-Space
+  set  &lt;F16&gt;=[30~
+  map  &lt;F16&gt; &lt;S-Space&gt;
+  map! &lt;F16&gt; &lt;S-Space&gt;
+
+  " Ctrl-Backspace
+  set  &lt;F17&gt;=[1;5P
+  map  &lt;F17&gt; &lt;C-BS&gt;
+  map! &lt;F17&gt; &lt;C-BS&gt;
+
+  " Alt-Tab
+  set  &lt;F18&gt;=[1;5Q
+  map  &lt;F18&gt; &lt;M-Tab&gt;
+  map! &lt;F18&gt; &lt;M-Tab&gt;
+
+  " Alt-Shift-Tab
+  set  &lt;F19&gt;=[1;5R
+  map  &lt;F19&gt; &lt;M-S-Tab&gt;
+  map! &lt;F19&gt; &lt;M-S-Tab&gt;
+
+  " Ctrl-Up
+  set  &lt;F20&gt;=[1;5A
+  map  &lt;F20&gt; &lt;C-Up&gt;
+  map! &lt;F20&gt; &lt;C-Up&gt;
+
+  " Ctrl-Down
+  set  &lt;F21&gt;=[1;5B
+  map  &lt;F21&gt; &lt;C-Down&gt;
+  map! &lt;F21&gt; &lt;C-Down&gt;
+
+  " Ctrl-Right
+  set  &lt;F22&gt;=[1;5C
+  map  &lt;F22&gt; &lt;C-Right&gt;
+  map! &lt;F22&gt; &lt;C-Right&gt;
+
+  " Ctrl-Left
+  set  &lt;F23&gt;=[1;5D
+  map  &lt;F23&gt; &lt;C-Left&gt;
+  map! &lt;F23&gt; &lt;C-Left&gt;
+
+  " Ctrl-Tab
+  set  &lt;F24&gt;=[31~
+  map  &lt;F24&gt; &lt;C-Tab&gt;
+  map! &lt;F24&gt; &lt;C-Tab&gt;
+
+  " Ctrl-Shift-Tab
+  set  &lt;F25&gt;=[32~
+  map  &lt;F25&gt; &lt;C-S-Tab&gt;
+  map! &lt;F25&gt; &lt;C-S-Tab&gt;
+
+  " Ctrl-Comma
+  set  &lt;F26&gt;=[33~
+  map  &lt;F26&gt; &lt;C-,&gt;
+  map! &lt;F26&gt; &lt;C-,&gt;
+
+  " Ctrl-Shift-Space
+  set  &lt;F27&gt;=[34~
+  map  &lt;F27&gt; &lt;C-S-Space&gt;
+  map! &lt;F27&gt; &lt;C-S-Space&gt;
+endif
+</code></pre></div></div>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/2014-10-27/faster-specs" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/2014-01-16/rigging-vims-netrw" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-05 09:56:47 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>
