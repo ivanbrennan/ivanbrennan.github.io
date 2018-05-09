@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Vim on NixOS &middot; glob
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">glob</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        ivan
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2018-05-09 08:51:23 -0400">May 09, 2018</time>
+    
+  </div>
+
+  <h1 class="post-title">Vim on NixOS</h1>
+  <div class="post-line"></div>
+
+  <p>Configuring Vim on NixOS took me into the depths of Vim’s initialization process and was a good primer on composing Nix expressions.</p>
+
+<p>The <a href="https://github.com/NixOS/nixpkgs/blob/a9cbf62c60ad68a54af0a4c10277af6d5655910b/pkgs/applications/editors/vim/configurable.nix"><code class="highlighter-rouge">vim_configurable</code></a> derivation lets you bake plugins and configuration options into Vim system-wide, rather than on a per-user basis.
+There’s still room for per-user configuration, but this provides a nice baseline, and means you won’t be faced with an unconfigured Vim when you need to run as root.</p>
+
+<h3 id="sudoedit">sudoedit</h3>
+
+<p>If you’re familiar with <code class="highlighter-rouge">sudoedit</code>, you might ask why I’d bother with a system-wide Vim configuration when I could instead run <code class="highlighter-rouge">sudoedit</code> from my normal user account, launching the editor with elevated privileges and still loading my user’s configuration.</p>
+
+<p>While this works well when editing a single file, it’s less helpful when you want to edit several related files.
+Because <code class="highlighter-rouge">sudoedit</code> uses tempfiles to run its magic, the editing buffer lives in <code class="highlighter-rouge">/var/tmp</code>.
+Attempting to open another file relative to the one you’re editing won’t behave as expected.
+Also, any root-owned files you open from within Vim will be opened read-only, rather than as editable tempfiles.</p>
+
+<p>So <code class="highlighter-rouge">sudoedit</code> is nice when you know upfront exactly which files you’ll be touching, but if there’s any exploration involved, it falls short.
+For these reasons, I switch to the root user and run Vim directly when I need to edit a family of root-owned files, such as the components of my nixos configuration.</p>
+
+<h3 id="vim_configurable">vim_configurable</h3>
+
+<p>In the following <a href="https://github.com/ivanbrennan/nixbox/blob/24bfa278be03df421af228401d9710105d3903d8/overlays/vim/default.nix">default.nix</a> overlay, I use <code class="highlighter-rouge">vim_configurable</code> to set up my plugins and vimrc:</p>
+<div class="language-nix highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">self</span><span class="p">:</span> <span class="nv">super</span><span class="p">:</span>
+
+<span class="kd">let</span>
+  <span class="nv">configured</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nv">packages</span><span class="o">.</span><span class="nv">core</span> <span class="o">=</span> <span class="p">(</span><span class="kr">import</span> <span class="sx">./core-package.nix</span><span class="p">)</span> <span class="nv">self</span><span class="p">;</span>
+    <span class="nv">customRC</span> <span class="o">=</span> <span class="kr">builtins</span><span class="o">.</span><span class="nv">readFile</span> <span class="s2">"</span><span class="si">${</span><span class="nv">self</span><span class="o">.</span><span class="nv">dotvim</span><span class="si">}</span><span class="s2">/vimrc"</span><span class="p">;</span>
+  <span class="p">};</span>
+
+<span class="kn">in</span>
+
+<span class="p">{</span>
+  <span class="nv">dotvim</span> <span class="o">=</span> <span class="nv">super</span><span class="o">.</span><span class="nv">callPackage</span> <span class="sx">./dotvim.nix</span> <span class="p">{</span> <span class="p">};</span>
+
+  <span class="nv">vimPrivatePlugins</span> <span class="o">=</span> <span class="p">(</span><span class="kr">import</span> <span class="sx">./plugins.nix</span><span class="p">)</span> <span class="nv">super</span><span class="p">;</span>
+
+  <span class="nv">vim-configured</span> <span class="o">=</span> <span class="nv">self</span><span class="o">.</span><span class="nv">vim_configurable</span><span class="o">.</span><span class="nv">customize</span> <span class="p">{</span>
+    <span class="nv">name</span> <span class="o">=</span> <span class="s2">"vim"</span><span class="p">;</span>
+    <span class="nv">vimrcConfig</span> <span class="o">=</span> <span class="nv">configured</span><span class="p">;</span>
+  <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><a href="https://github.com/ivanbrennan/nixbox/blob/24bfa278be03df421af228401d9710105d3903d8/overlays/vim/core-package.nix">core-packages.nix</a> lists the plugins to include in a Vim native package.
+It can select plugins from <code class="highlighter-rouge">pkgs.vimPlugins</code> (plugins already defined in nixpkgs) and <code class="highlighter-rouge">pkgs.vimPrivatePlugins</code> (additional plugins I define in plugins.nix).</p>
+<div class="language-nix highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">pkgs</span><span class="p">:</span>
+
+<span class="kn">with</span> <span class="p">(</span><span class="nv">pkgs</span><span class="o">.</span><span class="nv">vimPlugins</span><span class="p">)</span> <span class="o">//</span> <span class="p">(</span><span class="nv">pkgs</span><span class="o">.</span><span class="nv">vimPrivatePlugins</span><span class="p">);</span> <span class="p">{</span>
+  <span class="nv">start</span> <span class="o">=</span>
+    <span class="p">[</span> <span class="nv">abolish</span>
+      <span class="nv">articulate</span>
+      <span class="c"># ...</span>
+    <span class="p">];</span>
+
+  <span class="nv">opt</span> <span class="o">=</span>
+    <span class="p">[</span> <span class="nv">haskell-vim</span>
+      <span class="nv">splitjoin</span>
+      <span class="c"># ...</span>
+    <span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>In <a href="https://github.com/ivanbrennan/nixbox/blob/24bfa278be03df421af228401d9710105d3903d8/overlays/vim/plugins.nix">plugins.nix</a>, I describe a set of Vim plugins not already present in <code class="highlighter-rouge">pkgs.vimPlugins</code>.</p>
+<div class="language-nix highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">pkgs</span><span class="p">:</span>
+
+<span class="p">{</span>
+  <span class="nv">abolish</span> <span class="o">=</span> <span class="nv">pkgs</span><span class="o">.</span><span class="nv">vimUtils</span><span class="o">.</span><span class="nv">buildVimPlugin</span> <span class="p">{</span>
+    <span class="nv">name</span> <span class="o">=</span> <span class="s2">"abolish"</span><span class="p">;</span>
+    <span class="nv">src</span> <span class="o">=</span> <span class="nv">pkgs</span><span class="o">.</span><span class="nv">fetchFromGitHub</span> <span class="p">{</span>
+      <span class="nv">owner</span> <span class="o">=</span> <span class="s2">"tpope"</span><span class="p">;</span>
+      <span class="nv">repo</span> <span class="o">=</span> <span class="s2">"vim-abolish"</span><span class="p">;</span>
+      <span class="nv">rev</span> <span class="o">=</span> <span class="s2">"b6a8b49e2173ba5a1b34d00e68e0ed8addac3ebd"</span><span class="p">;</span>
+      <span class="nv">sha256</span> <span class="o">=</span> <span class="s2">"0i9q3l7r5p8mk4in3c1j4x0jbln7ir9lg1cqjxci0chjjzfzc53m"</span><span class="p">;</span>
+    <span class="p">};</span>
+  <span class="p">};</span>
+
+  <span class="c"># ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><a href="https://github.com/ivanbrennan/nixbox/blob/24bfa278be03df421af228401d9710105d3903d8/overlays/vim/dotvim.nix">dotvim.nix</a> is a derivation that pulls my vimrc from a git repo.
+This lets me read the contents of my vimrc into the <code class="highlighter-rouge">rcConfig</code> attribute that <code class="highlighter-rouge">vim_configurable</code> uses.</p>
+<div class="language-nix highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span> <span class="nv">stdenv</span>
+<span class="p">,</span> <span class="nv">fetchFromGitHub</span>
+<span class="p">}:</span>
+
+<span class="nv">stdenv</span><span class="o">.</span><span class="nv">mkDerivation</span> <span class="p">{</span>
+  <span class="nv">name</span> <span class="o">=</span> <span class="s2">"dotvim"</span><span class="p">;</span>
+
+  <span class="nv">src</span> <span class="o">=</span> <span class="nv">fetchFromGitHub</span> <span class="p">{</span>
+    <span class="nv">owner</span> <span class="o">=</span> <span class="s2">"ivanbrennan"</span><span class="p">;</span>
+    <span class="nv">repo</span> <span class="o">=</span> <span class="s2">"dotvim"</span><span class="p">;</span>
+    <span class="nv">rev</span> <span class="o">=</span> <span class="s2">"97bed1f2e534ea583c51b4317d8d9ea53c4728cf"</span><span class="p">;</span>
+    <span class="nv">sha256</span> <span class="o">=</span> <span class="s2">"0bxhqvzswg37dswnqqgrwq4fwc1jb3lks85fb26i77has57lzv2y"</span><span class="p">;</span>
+  <span class="p">};</span>
+
+  <span class="nv">phases</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"unpackPhase"</span>
+    <span class="s2">"installPhase"</span>
+  <span class="p">];</span>
+
+  <span class="nv">installPhase</span> <span class="o">=</span> <span class="s2">''</span><span class="err">
+</span><span class="s2">    mkdir -p $out</span><span class="err">
+</span><span class="s2">    cp $src/vimrc $out/vimrc</span><span class="err">
+</span><span class="s2">  ''</span><span class="p">;</span>
+
+  <span class="nv">meta</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nv">description</span> <span class="o">=</span> <span class="s2">"A minimal vimrc."</span><span class="p">;</span>
+  <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="nix-store">Nix store</h3>
+
+<p>To see how this all ties together, let’s list everything in the nix store related to Vim.</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nix-store <span class="nt">--query</span> <span class="nt">--requisites</span> <span class="se">\</span>
+  /run/current-system/sw <span class="se">\</span>
+  | <span class="nb">grep</span> <span class="nt">-P</span> <span class="s1">'^[^-]+-.*?\K\bvim'</span>
+</code></pre></div></div>
+
+<p>The first several results are paths to plugins, for example:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/nix/store/0lgaf7k8sjciky1hd1n70h82mi62cznd-vimplugin-fzf-0.17.3
+</code></pre></div></div>
+
+<p>The remainder includes <code class="highlighter-rouge">vim-pack-dir</code> (the result of core-packages.nix), a couple vimrc’s (more on these in a moment), <code class="highlighter-rouge">vim_configurable</code>, and <code class="highlighter-rouge">vim</code> (a wrapper script):</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/nix/store/79a8mada9j90b6sr74v16c1afhl65hcw-vim-pack-dir
+/nix/store/d52j23wnwz3swwbgv68mnl1i463a1hpn-vimrc
+/nix/store/63av9cp8hkwsr332nv5whpnq2k3z0iqg-nixos-vimrc
+/nix/store/sz52xjgb6viyfbp7w0221hj2jr5avkgf-vim_configurable-8.0.1605
+/nix/store/pf28xvba6q4j50iiihlzym58l4x4w0rg-vim
+</code></pre></div></div>
+
+<p>So where’s the real Vim?</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>which vim
+/run/current-system/sw/bin/vim
+
+<span class="nb">readlink</span> <span class="nt">-f</span> <span class="k">$(</span>which vim<span class="k">)</span>
+/nix/store/pf28xvba6q4j50iiihlzym58l4x4w0rg-vim/bin/vim
+</code></pre></div></div>
+
+<p>So when I run <code class="highlighter-rouge">vim</code> at the command line, that’s what my PATH is pointing to.
+This is not the actual executable, but a wrapper script:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="k">$(</span> <span class="nb">readlink</span> <span class="nt">-f</span> <span class="k">$(</span>which vim<span class="k">)</span> <span class="k">)</span>
+<span class="c">#!/bin/sh</span>
+<span class="nb">exec</span> /nix/store/sz52xjgb6viyfbp7w0221hj2jr5avkgf-vim_configurable-8.0.1605/bin/vim <span class="nt">-u</span> /nix/store/d52j23wnwz3swwbgv68mnl1i463a1hpn-vimrc  <span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span>
+</code></pre></div></div>
+<p>It invokes Vim using <code class="highlighter-rouge">-u</code> to control which vimrc is used.</p>
+
+<h2 id="vimrc">vimrc</h2>
+
+<p>Let’s see what’s actually loaded when I start Vim.</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vim <span class="nt">-c</span> <span class="s1">'set nomore'</span> <span class="se">\</span>
+    <span class="nt">-c</span> <span class="s1">'redir &gt; outfile | scriptnames | redir END'</span> <span class="se">\</span>
+    <span class="nt">-c</span> <span class="s1">'quit'</span>
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">scriptnames</code> ex command lists all the scripts Vim has sourced, in order.
+The resulting <code class="highlighter-rouge">outfile</code> lists about 60 scripts, but it’s worth noting what’s <em>not</em> in the list.
+When we queried the nix store earlier, we saw a couple vimrc entries:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/nix/store/d52j23wnwz3swwbgv68mnl1i463a1hpn-vimrc
+/nix/store/63av9cp8hkwsr332nv5whpnq2k3z0iqg-nixos-vimrc
+</code></pre></div></div>
+
+<p>The first one sets up Vim’s <code class="highlighter-rouge">'packpath'</code> (so the plugins in <code class="highlighter-rouge">vim-pack-dir</code> can be used) and contains the contents of the vimrc I passed as <code class="highlighter-rouge">customRC</code>.
+This is what Vim is using.</p>
+
+<p>The second, <code class="highlighter-rouge">nixos-vimrc</code>, is not being used, so why is it there?
+We can see that it’s referenced by <code class="highlighter-rouge">vim_configurable</code>, and it turns out the reference is a <a href="https://github.com/NixOS/nixpkgs/blob/a9cbf62c60ad68a54af0a4c10277af6d5655910b/pkgs/applications/editors/vim/configurable.nix#L183">symlink</a> in <code class="highlighter-rouge">"$out"/share/vim/vimrc</code>.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nix-store --query --referrers /nix/store/63av9cp8hkwsr332nv5whpnq2k3z0iqg-nixos-vimrc
+/nix/store/sz52xjgb6viyfbp7w0221hj2jr5avkgf-vim_configurable-8.0.1605
+
+ls -l $(nix-store --query --requisites \
+          /run/current-system/sw \
+        | grep 'vim_configurable')/share/vim/vimrc
+</code></pre></div></div>
+
+<p>Inside Vim, we can see that <code class="highlighter-rouge">"$out"/share/vim/vimrc</code> corresponds to <code class="highlighter-rouge">$VIM/vimrc</code>:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>:echo glob("$VIM/vimrc")
+/nix/store/sz52xjgb6viyfbp7w0221hj2jr5avkgf-vim_configurable-8.0.1605/share/vim/vimrc
+</code></pre></div></div>
+
+<p>When Vim is started normally, it reads the system vimrc (e.g. <code class="highlighter-rouge">$VIM/vimrc</code>) and your personal vimrc (e.g. <code class="highlighter-rouge">$HOME/.vim/vimrc</code>).
+But when invoked with <code class="highlighter-rouge">-u</code> specifying a vimrc, Vim loads <em>only</em> that vimrc.</p>
+
+<p>This is why neither the symlinked <code class="highlighter-rouge">nixos-vimrc</code> nor <code class="highlighter-rouge">$HOME/.vim/vimrc</code> are loaded by our <code class="highlighter-rouge">vim</code> wrapper.
+It’s also why <code class="highlighter-rouge">$MYVIMRC</code> isn’t set.</p>
+
+<p>We can verify this by comparing a wrapped invocation with one that calls the executable directly:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># wrapped: /nix/store/pf28xvba6q4j50iiihlzym58l4x4w0rg-vim/bin/vim</span>
+vim <span class="se">\</span>
+  <span class="nt">-c</span> <span class="s1">'set nomore'</span> <span class="se">\</span>
+  <span class="nt">-c</span> <span class="s1">'redir @a | scriptnames | redir END'</span> <span class="se">\</span>
+  <span class="nt">-c</span> <span class="s1">'call append(".", matchstr(@a, "\\S\\+vimrc\\S*\\&gt;"))'</span>
+</code></pre></div></div>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># direct: /nix/store/sz52xjgb6viyfbp7w0221hj2jr5avkgf-vim_configurable-8.0.1605/bin/vim</span>
+<span class="k">$(</span><span class="nb">grep</span> <span class="nt">--max-count</span><span class="o">=</span>1 <span class="nt">-oP</span> <span class="s1">'exec \K\S+'</span> <span class="k">$(</span><span class="nb">readlink</span> <span class="nt">-f</span> <span class="k">$(</span>which vim<span class="k">)))</span> <span class="se">\</span>
+  <span class="nt">-c</span> <span class="s1">'set nomore'</span> <span class="se">\</span>
+  <span class="nt">-c</span> <span class="s1">'redir @a | scriptnames | redir END'</span> <span class="se">\</span>
+  <span class="nt">-c</span> <span class="s1">'call append(".", matchstr(@a, "\\S\\+vimrc\\S*\\&gt;"))'</span>
+</code></pre></div></div>
+
+<p>Since we’re not using <code class="highlighter-rouge">nixos-vimrc</code>, what are we missing out on?</p>
+
+<p><code class="highlighter-rouge">nixos-vimrc</code> <a href="https://github.com/NixOS/nixpkgs/blob/a9cbf62c60ad68a54af0a4c10277af6d5655910b/pkgs/applications/editors/vim/configurable.nix#L23-L33">searches a few locations</a>, including <code class="highlighter-rouge">/run/current-system/sw/share/vim-plugins/</code>, for plugins.
+It then <a href="https://github.com/NixOS/nixpkgs/blob/a9cbf62c60ad68a54af0a4c10277af6d5655910b/pkgs/applications/editors/vim/configurable.nix#L40-L44">sources</a> <code class="highlighter-rouge">/etc/vimrc</code> or <code class="highlighter-rouge">/etc/vim/vimrc</code> if either exists.</p>
+
+<p>In light of this, I might rethink my current configuration.
+I’d like to continue using Vim’s <code class="highlighter-rouge">'packpath'</code> to manage plugins, but rather than using <code class="highlighter-rouge">-u</code> to specify a vimrc, I think putting my system-wide configuration in <code class="highlighter-rouge">/etc/vimrc</code> would provide a more consistent, intuitive user experience, since <code class="highlighter-rouge">$HOME/.vim/vimrc</code> would still be loaded and <code class="highlighter-rouge">$MYVIMRC</code> would be set.</p>
+
+<p>The plugins you bake into Vim using <code class="highlighter-rouge">vim_configurable.customize</code> won’t get symlinked into <code class="highlighter-rouge">/run/current-system/sw/share/vim-plugins/</code> unless you also list them in <code class="highlighter-rouge">environment.systemPackages</code>.
+So if you don’t want to bother with the intricacies of <code class="highlighter-rouge">customize</code>, you could instead list <code class="highlighter-rouge">vimHugeX</code> and the plugins you want in <code class="highlighter-rouge">environment.systemPackages</code>.
+<code class="highlighter-rouge">vimHugeX</code> uses <code class="highlighter-rouge">vim_configurable</code> as is, so the <code class="highlighter-rouge">nixos-vimrc</code> will be used and it will load your plugins.
+And since it also checks for the presence of <code class="highlighter-rouge">/etc/vimrc</code>, you could put your system-wide configuration there.</p>
+
+<h2 id="vimrc-1">vimrc</h2>
+
+<p>Let’s look at the vimrc that Vim <em>is</em> using.</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># /nix/store/d52j23wnwz3swwbgv68mnl1i463a1hpn-vimrc</span>
+less <span class="k">$(</span>nix-store <span class="nt">--query</span> <span class="nt">--requisites</span> <span class="se">\</span>
+         /run/current-system/sw <span class="se">\</span>
+         | <span class="nb">grep</span> <span class="nt">-P</span> <span class="s1">'^[^-]+-vimrc$'</span><span class="k">)</span>
+</code></pre></div></div>
+<div class="language-vim highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">" minimal setup, generated by NIX</span>
+<span class="k">set</span> nocompatible
+
+<span class="k">set</span> packpath<span class="p">-=~</span><span class="sr">/.vim/</span>after
+<span class="k">set</span> packpath<span class="p">+=</span><span class="sr">/nix/</span>store/<span class="m">79</span>a8mada9j90b6sr74v16c1afhl65hcw<span class="p">-</span><span class="k">vim</span><span class="p">-</span><span class="k">pack</span><span class="p">-</span><span class="k">dir</span>
+<span class="k">set</span> packpath<span class="p">+=~</span><span class="sr">/.vim/</span>after
+
+<span class="k">filetype</span> indent plugin <span class="k">on</span> <span class="p">|</span> <span class="k">syn</span> <span class="k">on</span>
+
+<span class="c">" This file is sourced early in the initialization process.</span>
+<span class="c">"</span>
+<span class="c">" I've extracted most customizations to into plugins organized using Vim 8's</span>
+<span class="c">" package feature. The only settings that need to remain in vimrc are those</span>
+<span class="c">" that must be set before loading other runtime files, plugins, or packages.</span>
+
+<span class="k">if</span> exists<span class="p">(</span><span class="s1">'g:loaded_vimrc'</span><span class="p">)</span> <span class="p">|</span> <span class="k">finish</span> <span class="p">|</span> <span class="k">endif</span>
+<span class="k">let</span> <span class="nv">g:loaded_vimrc</span> <span class="p">=</span> <span class="m">1</span>
+
+<span class="k">let</span> <span class="nv">g:loaded_netrwPlugin</span> <span class="p">=</span> <span class="m">1</span> " disable netrw <span class="p">(</span>use dirvish instead<span class="p">)</span>
+<span class="k">let</span> <span class="nv">g:is_bash</span><span class="p">=</span><span class="m">1</span>              " <span class="k">sh</span> <span class="k">is</span> bash
+<span class="k">let</span> <span class="nv">g:sh_fold_enabled</span><span class="p">=</span><span class="m">1</span>      " <span class="k">fold</span> <span class="k">sh</span> functions
+<span class="k">let</span> <span class="nv">g:vimsyn_folding</span> <span class="p">=</span> <span class="s2">"f"</span>   " <span class="k">fold</span> <span class="k">vim</span> functions
+<span class="k">let</span> <span class="nv">g:vimsyn_noerror</span> <span class="p">=</span> <span class="m">1</span>     " <span class="k">vim</span><span class="p">.</span><span class="k">vim</span> sometimes gets it wrong
+<span class="k">let</span> <span class="nv">g:fugitive_no_maps</span> <span class="p">=</span> <span class="m">1</span>   " leave me free <span class="k">to</span> remap <span class="p">&lt;</span>C<span class="p">-</span>R<span class="p">&gt;</span>
+
+<span class="k">silent</span><span class="p">!</span> source <span class="p">~</span><span class="sr">/.vim/</span>vimrc<span class="p">.</span>local
+</code></pre></div></div>
+
+<p>It adds <code class="highlighter-rouge">/nix/store/79a8mada9j90b6sr74v16c1afhl65hcw-vim-pack-dir</code> to Vim’s <code class="highlighter-rouge">'packpath'</code>, allowing Vim’s native <code class="highlighter-rouge">packages</code> feature to pick up the plugins I listed in <code class="highlighter-rouge">core-package.nix</code>.
+Everything after the <code class="highlighter-rouge">filetype</code> line is from the <code class="highlighter-rouge">customRC</code> that I configured.
+I’ve extracted most of my personal configuration into plugins, so my vimrc only contains things that need to be configured <em>before</em> plugins are loaded.</p>
+
+<h2 id="plugins-packages-after">plugins, packages, after</h2>
+
+<p>After reading vimrc(s), Vim searches its <code class="highlighter-rouge">'runtimepath'</code> for plugins.
+From Vim’s <code class="highlighter-rouge">:help load-plugins</code>:</p>
+<blockquote>
+  <p>Load the plugin scripts.
+This does the same as the command: <code class="highlighter-rouge">runtime! plugin/**/*.vim</code></p>
+
+  <p>The result is that all directories in the ‘runtimepath’ option will be
+searched for the “plugin” sub-directory and all files ending in “.vim”
+will be sourced (in alphabetical order per directory), also in subdirectories.
+However, directories in ‘runtimepath’ ending in “after” are skipped</p>
+</blockquote>
+
+<p>Next, Vim searches for packages:</p>
+<blockquote>
+  <p>Packages are loaded.  These are plugins, as above, but found in the
+“start” directory of each entry in ‘packpath’.  Every plugin directory
+found is added in ‘runtimepath’ and then the plugins are sourced.</p>
+</blockquote>
+
+<p>Finally, Vim sources the contents of any <code class="highlighter-rouge">after</code> directories in the <code class="highlighter-rouge">'runtimepath'</code>.</p>
+
+<h2 id="more-to-come">More to come</h2>
+
+<p>As I mentioned, using <code class="highlighter-rouge">-u</code> to specify a vimrc means Vim won’t try to load <code class="highlighter-rouge">/etc/vimrc</code> or <code class="highlighter-rouge">$HOME/.vim/vimrc</code>, nor will it set the <code class="highlighter-rouge">$MYVIMRC</code> variable.
+This is inconsistent with the behavior most users (myself included) are used to.</p>
+
+<p>After getting more familiar with the inner workings of <code class="highlighter-rouge">vim_configurable</code>, I suspect it would be preferable to use <code class="highlighter-rouge">/etc/vimrc</code> to drive my system-wide configuration.
+I’ll revisit this in a followup post if I make that change.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+  
+    <a href="/2018-05-02/nirb" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-05-09 08:54:58 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
+  </body>
+</html>
