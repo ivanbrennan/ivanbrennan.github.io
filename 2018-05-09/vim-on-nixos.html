@@ -191,7 +191,7 @@ This lets me read the contents of my vimrc into the <code class="highlighter-rou
 </code></pre></div></div>
 
 <p>So when I run <code class="highlighter-rouge">vim</code> at the command line, that’s what my PATH is pointing to.
-This is not the actual executable, but a wrapper script:</p>
+This is not the actual executable though, but a wrapper script:</p>
 <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="k">$(</span> <span class="nb">readlink</span> <span class="nt">-f</span> <span class="k">$(</span>which vim<span class="k">)</span> <span class="k">)</span>
 <span class="c">#!/bin/sh</span>
 <span class="nb">exec</span> /nix/store/sz52xjgb6viyfbp7w0221hj2jr5avkgf-vim_configurable-8.0.1605/bin/vim <span class="nt">-u</span> /nix/store/d52j23wnwz3swwbgv68mnl1i463a1hpn-vimrc  <span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span>
@@ -352,7 +352,7 @@ I’ll revisit this in a followup post if I make that change.</p>
 
     <footer>
       <span>
-        &copy; <time datetime="2018-05-11 22:59:40 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+        &copy; <time datetime="2018-05-11 23:04:17 -0400">2018</time> ivan. Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
       </span>
     </footer>
   </body>
