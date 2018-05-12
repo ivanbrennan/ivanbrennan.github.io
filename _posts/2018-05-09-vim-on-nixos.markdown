@@ -151,7 +151,7 @@ readlink -f $(which vim)
 ```
 
 So when I run `vim` at the command line, that's what my PATH is pointing to.
-This is not the actual executable, but a wrapper script:
+This is not the actual executable though, but a wrapper script:
 ```sh
 cat $( readlink -f $(which vim) )
 #!/bin/sh
