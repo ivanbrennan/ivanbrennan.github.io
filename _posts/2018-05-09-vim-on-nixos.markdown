@@ -14,8 +14,7 @@ There's still room for per-user configuration, but this provides a nice baseline
 If you're familiar with `sudoedit`, you might ask why I'd bother with a system-wide Vim configuration when I could instead run `sudoedit` from my normal user account, launching the editor with elevated privileges and still loading my user's configuration.
 
 While this works well when editing a single file, it's less helpful when you want to edit several related files.
-Because `sudoedit` uses tempfiles to run its magic, the editing buffer lives in `/var/tmp`.
-Attempting to open another file relative to the one you're editing won't behave as expected.
+Because `sudoedit` uses tempfiles to run its magic, the editing buffer lives in `/var/tmp`, so trying to open another file relative to the current one won't behave as expected.
 Also, any root-owned files you open from within Vim will be opened read-only, rather than as editable tempfiles.
 
 So `sudoedit` is nice when you know upfront exactly which files you'll be touching, but if there's any exploration involved, it falls short.
